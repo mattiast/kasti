@@ -2,7 +2,7 @@
 -- https://guide.elm-lang.org/architecture/user_input/buttons.html
 
 import Html exposing (beginnerProgram, div, button, text, audio, br)
-import Html.Attributes exposing (src, controls)
+import Html.Attributes exposing (src, controls, style)
 import Html.Events exposing (onClick)
 
 audioUrl : String
@@ -18,7 +18,7 @@ view model =
     , div [] [ text (toString model) ]
     , button [ onClick Increment ] [ text "+" ]
     , br [] []
-    , audio [ src audioUrl, controls True ] []
+    , audio [ src audioUrl, controls True, style [("width", "1000px")] ] []
     ]
 
 

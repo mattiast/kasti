@@ -16,7 +16,7 @@ audioUrl =
 
 
 main =
-    beginnerProgram { model = 0, view = view, update = update }
+    beginnerProgram { model = Model 0 0, view = view, update = update }
 
 
 view model =
@@ -51,13 +51,20 @@ type Msg
     | TimeUpdate Float
 
 
+type alias Model =
+    { x : Int
+    , time : Float
+    }
+
+
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         Increment ->
-            model + 1
+            { model | x = model.x + 1 }
 
         Decrement ->
-            model - 1
+            { model | x = model.x - 1 }
 
-        TimeUpdate x ->
-            model
+        TimeUpdate t ->
+            { model | time = t }

@@ -4,28 +4,26 @@ import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio
 import Html.Attributes exposing (src, controls, style)
 import Html.Events exposing (onClick, on)
 import Json.Decode as Json
-
-
-audioUrl : String
-audioUrl =
-    "http://feeds.soundcloud.com/stream/322754602-stack-exchange-stack-overflow-podcast-109.mp3"
+import Episode as E
 
 
 type alias Msg =
     Float
 
 
-type alias Progress =
-    Float
+type alias State =
+    { episode : E.Episode
+    , time : Float
+    }
 
 
-view : Progress -> Html Msg
-view model =
+view : State -> Html Msg
+view state =
     div []
-        [ div [] [ text (toString model) ]
+        [ div [] [ text (toString state) ]
         , br [] []
         , audio
-            [ src audioUrl
+            [ src state.episode.url
             , controls True
             , style [ ( "width", "1000px" ) ]
             , onTimeUpdate
@@ -33,6 +31,8 @@ view model =
             []
         ]
 
+update : Msg -> State -> State
+update t state = { state | time = t }
 
 onTimeUpdate : Attribute Msg
 onTimeUpdate =

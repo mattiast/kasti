@@ -4,7 +4,7 @@ release/index.html: frontend/Play.elm
 	cd frontend ; elm-make Play.elm --output index.html
 	cp frontend/index.html release
 
-release/browse.html: frontend/Browse.elm
+release/browse.html: frontend/*.elm
 	cd frontend ; elm-make Browse.elm --output browse.html
 	cp frontend/browse.html release
 

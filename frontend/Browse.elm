@@ -1,7 +1,6 @@
 module Browse exposing (..)
 
 import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a)
-import Html.Attributes exposing (src, controls, style, href)
 import Html.Events exposing (onClick, on)
 import Json.Decode as D
 import Http
@@ -9,6 +8,7 @@ import Platform.Cmd as Cmd
 import Platform.Sub as Sub
 import RemoteData as RD
 import Episode as E
+import Play as P
 
 
 main : Program Never Model Msg
@@ -24,6 +24,7 @@ main =
 type alias Model =
     { feeds : RD.WebData (List Feed)
     , episodes : RD.WebData (List E.Episode)
+    , progress : RD.WebData P.State
     }
 
 
@@ -32,6 +33,8 @@ type Msg
     | EpMsg E.Msg
     | AskEpList Int
     | ReceiveEpList (RD.WebData (List E.Episode))
+    | ReceiveProgress (RD.WebData P.State)
+    | ProgMsg P.Msg
 
 
 type alias Feed =
@@ -43,7 +46,7 @@ type alias Feed =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model RD.NotAsked RD.NotAsked
+    ( Model RD.NotAsked RD.NotAsked RD.NotAsked
     , Http.get "/feeds" (D.list decodeFeed)
         |> RD.sendRequest
         |> Cmd.map FeedsReceive
@@ -59,7 +62,11 @@ update msg model =
             )
 
         EpMsg (E.Pick ep) ->
-            ( model, Cmd.none )
+            ( model
+            , Http.get ("/progress/" ++ toString ep.id) (D.map (P.State ep) D.float)
+                |> RD.sendRequest
+                |> Cmd.map ReceiveProgress
+            )
 
         AskEpList feed_id ->
             ( { model | episodes = RD.Loading }
@@ -71,11 +78,20 @@ update msg model =
         ReceiveEpList stuff ->
             ( { model | episodes = stuff }, Cmd.none )
 
+        ReceiveProgress stuff ->
+            ( { model | progress = stuff }, Cmd.none )
+
+        ProgMsg m ->
+            ( { model | progress = RD.map (P.update m) model.progress }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
     div []
-        [ feedList model.feeds
+        [ RD.map P.view model.progress
+            |> RD.withDefault (div [] [])
+            |> Html.map ProgMsg
+        , feedList model.feeds
         , model.episodes
             |> RD.map E.episodeList
             |> RD.withDefault (text (toString model.episodes))

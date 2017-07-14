@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, GeneralizedNewtypeDeriving #-}
 module GetFeed where
-import Control.Lens
+import Control.Lens hiding ((.=))
 import Control.Monad((>=>),(<=<))
 import Data.Aeson
 import Data.Aeson.Types(typeMismatch)
-import Database.SQLite.Simple
+import Database.SQLite.Simple hiding ((:=))
 import Database.SQLite.Simple.FromField
 import Database.SQLite.Simple.ToField
 import Database.SQLite.Simple.ToRow
@@ -17,7 +17,7 @@ import Data.Time.Calendar
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
 import Data.Traversable(forM)
-import Network.Wreq
+import Network.Wreq hiding ((:=))
 import qualified Data.ByteString.Lazy.Char8 as B
 import Text.Feed.Import
 import Text.Feed.Query
@@ -33,14 +33,21 @@ data FeedInfo = FeedInfo {
 }
 
 newtype FeedId = FeedId { fromFeedId :: Int }
-    deriving (Eq, Ord, Num, FromField, ToField)
+    deriving (Eq, Ord, Num, FromField, ToField, ToJSON)
 
 instance FromJSON FeedInfo where
     parseJSON (Object v) = FeedInfo <$> v .: "name" <*> v .: "url"
     parseJSON wat = typeMismatch "FeedInfo" wat
 
+instance ToJSON FeedInfo where
+    toJSON (FeedInfo name url) =
+        object ["name" .= name, "url" .= url]
+
 instance ToRow FeedInfo where
     toRow fi = toRow (fname fi, furl fi)
+
+instance FromRow FeedInfo where
+    fromRow = FeedInfo <$> field <*> field
 
 getFeeds :: FilePath -> IO [FeedInfo]
 getFeeds path = do
@@ -75,10 +82,21 @@ data Episode = Episode {
 
 newtype EpisodeUrl = EpisodeUrl {
     fromEpUrl :: String
-} deriving (Eq, Ord, Show, IsString, ToField)
+} deriving (Eq, Ord, Show, IsString, ToField, FromField, ToJSON)
+
+newtype EpisodeId = EpisodeId { fromEpisodeId :: Int }
+    deriving (Eq, Ord, Num, FromField, ToField, ToJSON)
 
 instance ToRow Episode where
     toRow ep = toRow (epUrl ep, epTitle ep, epDate ep)
+
+instance FromRow Episode where
+    fromRow = Episode <$> field <*> field <*> field
+
+instance ToJSON Episode where
+    toJSON ep =
+        object ["url" .= epUrl ep, "title" .= epTitle ep, "date" .= epDate ep]
+
 -- items have state: New, Done, Not Started, In Progress (how much)
 
 fetchEpisodes :: FeedInfo -> IO (String, [Episode])
@@ -109,3 +127,13 @@ populateDB = do
     conn <- open "db.sqlite" 
     writeFeeds conn fs
     sequence_ [ writeEpisodes conn fi | fi <- fs ]
+
+feedsFromDB :: Connection -> IO [(FeedId, FeedInfo)]
+feedsFromDB conn = query_ conn "select id, name, url from feeds"
+    & fmap (fmap $ \((Only id) :. fi) -> (id, fi))
+
+episodesFromDB :: FeedId -> Connection -> IO [Episode]
+episodesFromDB fid conn = query conn "select url, title, date from episodes where feed_id = ?" (Only fid)
+
+withConn :: (Connection -> IO a) -> IO a
+withConn = withConnection "db.sqlite"

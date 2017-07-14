@@ -1,7 +1,7 @@
 module Browse exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br)
-import Html.Attributes exposing (src, controls, style)
+import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a)
+import Html.Attributes exposing (src, controls, style, href)
 import Html.Events exposing (onClick, on)
 import Json.Decode as D
 import Http
@@ -47,7 +47,18 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    text (toString model)
+    case model.feeds of
+        RD.Success fs ->
+            let
+                feedItem f =
+                    li [] [ a [href f.url] [text f.name] ]
+            in
+                fs
+                    |> List.map feedItem
+                    |> ul []
+
+        _ ->
+            text (toString model)
 
 
 getFeeds : Http.Request (List Feed)
@@ -60,8 +71,6 @@ type alias Feed =
     , name : String
     , url : String
     }
-
-
 
 
 decodeFeed : D.Decoder Feed

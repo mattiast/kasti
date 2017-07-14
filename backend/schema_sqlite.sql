@@ -12,3 +12,10 @@ CREATE TABLE IF NOT EXISTS episodes (
   , date DATE NOT NULL
   , FOREIGN KEY (feed_id) REFERENCES feeds(id)
 );
+
+CREATE TABLE IF NOT EXISTS progress (
+    id INTEGER PRIMARY KEY
+  , episode_id INTEGER NOT NULL UNIQUE
+  , position DOUBLE PRECISION NOT NULL
+  , FOREIGN KEY (episode_id) REFERENCES episodes(id)
+);

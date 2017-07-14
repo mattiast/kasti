@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Lib
     ( someFunc
     ) where
@@ -18,6 +18,14 @@ someFunc = scotty 3000 $ do
         fid <- FeedId <$> param "feed_id"
         eps <- liftAndCatchIO $ withConn $ episodesFromDB fid
         json eps
+    post "/progress" $ do
+        (msg :: ProgressMsg) <- jsonData
+        liftAndCatchIO $ withConn $ savePosition msg
+        return ()
+    get "/progress/:episode_id" $ do
+        eid <- EpisodeId <$> param "episode_id"
+        (pos :: Double) <- liftAndCatchIO $ withConn $ getPosition eid
+        json pos
     get "/browse" $ do
         setHeader "Content-Type" "text/html; charset=utf-8"
         file "browse.html"

@@ -85,7 +85,7 @@ newtype EpisodeUrl = EpisodeUrl {
 } deriving (Eq, Ord, Show, IsString, ToField, FromField, ToJSON)
 
 newtype EpisodeId = EpisodeId { fromEpisodeId :: Int }
-    deriving (Eq, Ord, Num, FromField, ToField, ToJSON)
+    deriving (Eq, Ord, Num, FromField, ToField, ToJSON, FromJSON)
 
 instance ToRow Episode where
     toRow ep = toRow (epUrl ep, epTitle ep, epDate ep)
@@ -97,6 +97,17 @@ instance ToJSON Episode where
     toJSON ep =
         object ["url" .= epUrl ep, "title" .= epTitle ep, "date" .= epDate ep]
 
+
+data ProgressMsg = ProgressMsg {
+    prEpId :: EpisodeId
+  , proPos :: Double
+}
+
+instance FromJSON ProgressMsg where
+    parseJSON (Object v) = ProgressMsg
+                            <$> v .: "episode_id"
+                            <*> v .: "position"
+    parseJSON _ = mempty
 -- items have state: New, Done, Not Started, In Progress (how much)
 
 fetchEpisodes :: FeedInfo -> IO (String, [Episode])
@@ -137,3 +148,11 @@ episodesFromDB fid conn = query conn "select url, title, date from episodes wher
 
 withConn :: (Connection -> IO a) -> IO a
 withConn = withConnection "db.sqlite"
+
+savePosition :: ProgressMsg -> Connection -> IO ()
+savePosition msg conn = do
+    return ()
+
+getPosition :: EpisodeId -> Connection -> IO Double
+getPosition eid conn = do
+    return 15

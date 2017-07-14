@@ -18,6 +18,9 @@ someFunc = scotty 3000 $ do
         fid <- FeedId <$> param "feed_id"
         eps <- liftAndCatchIO $ withConn $ episodesFromDB fid
         json eps
+    get "/browse" $ do
+        setHeader "Content-Type" "text/html; charset=utf-8"
+        file "browse.html"
     get "/:word" $ do
         beam <- param "word"
         html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]

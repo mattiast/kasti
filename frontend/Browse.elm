@@ -44,7 +44,8 @@ type alias Feed =
 init : ( Model, Cmd Msg )
 init =
     ( Model RD.NotAsked RD.NotAsked
-    , RD.sendRequest getFeeds
+    , Http.get "/feeds" (D.list decodeFeed)
+        |> RD.sendRequest
         |> Cmd.map FeedsReceive
     )
 
@@ -96,11 +97,6 @@ feedList feeds =
 
         _ ->
             text (toString feeds)
-
-
-getFeeds : Http.Request (List Feed)
-getFeeds =
-    Http.get "/feeds" (D.list decodeFeed)
 
 
 decodeFeed : D.Decoder Feed

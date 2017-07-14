@@ -143,8 +143,9 @@ feedsFromDB :: Connection -> IO [(FeedId, FeedInfo)]
 feedsFromDB conn = query_ conn "select id, name, url from feeds"
     & fmap (fmap $ \((Only id) :. fi) -> (id, fi))
 
-episodesFromDB :: FeedId -> Connection -> IO [Episode]
-episodesFromDB fid conn = query conn "select url, title, date from episodes where feed_id = ?" (Only fid)
+episodesFromDB :: FeedId -> Connection -> IO [(EpisodeId, Episode)]
+episodesFromDB fid conn = query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
+    & fmap (fmap $ \((Only id) :. ep) -> (id, ep))
 
 withConn :: (Connection -> IO a) -> IO a
 withConn = withConnection "db.sqlite"

@@ -12,7 +12,8 @@ import Date exposing (Date)
 
 
 type alias Episode =
-    { title : String
+    { id : Int
+    , title : String
     , url : String
     , date : Date
     }
@@ -20,10 +21,11 @@ type alias Episode =
 
 decodeEpisode : D.Decoder Episode
 decodeEpisode =
-    D.map3 Episode
-        (D.field "title" D.string)
-        (D.field "url" D.string)
-        (D.field "date" decodeDate)
+    D.map4 Episode
+        (D.index 0 D.int)
+        (D.index 1 <| D.field "title" D.string)
+        (D.index 1 <| D.field "url" D.string)
+        (D.index 1 <| D.field "date" decodeDate)
 
 
 decodeDate : D.Decoder Date

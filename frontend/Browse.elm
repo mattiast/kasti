@@ -7,6 +7,7 @@ import Json.Decode as D
 import Http
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
+import RemoteData as RD
 
 
 main =
@@ -18,30 +19,35 @@ main =
         }
 
 
-type Model
-    = Model Int
+type alias Model =
+    { feeds : RD.WebData (List Feed)
+    }
 
 
 type Msg
-    = SetValue Int
-    | FeedsReceive (Result Http.Error (List Feed))
+    = FeedsReceive (RD.WebData (List Feed))
 
-init : (Model, Cmd Msg)
-init = ( Model 0, Http.send FeedsReceive getFeeds )
 
-update : Msg -> Model -> (Model, Cmd Msg)
+init : ( Model, Cmd Msg )
+init =
+    ( Model RD.NotAsked
+    , RD.sendRequest getFeeds
+        |> Cmd.map FeedsReceive
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SetValue x ->
-            (Model x, Cmd.none)
-
-        FeedsReceive _ ->
-            (model, Cmd.none)
+        FeedsReceive stuff ->
+            ( { model | feeds = stuff }
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
-view (Model x) =
-    text (toString x)
+view model =
+    text (toString model)
 
 
 getFeeds : Http.Request (List Feed)
@@ -49,22 +55,18 @@ getFeeds =
     Http.get "/feeds" (D.list decodeFeed)
 
 
-type Feed
-    = Feed String String
+type alias Feed =
+    { id : Int
+    , name : String
+    , url : String
+    }
 
 
-feedName : Feed -> String
-feedName (Feed n _) =
-    n
-
-
-feedUrl : Feed -> String
-feedUrl (Feed _ u) =
-    u
 
 
 decodeFeed : D.Decoder Feed
 decodeFeed =
-    D.map2 Feed
-        (D.field "name" (D.string))
-        (D.field "url" (D.string))
+    D.map3 Feed
+        (D.index 0 D.int)
+        (D.index 1 <| D.field "name" (D.string))
+        (D.index 1 <| D.field "url" (D.string))

@@ -1,7 +1,7 @@
 all: stuff.tar.gz
 
-release/index.html: frontend/foo.elm
-	cd frontend ; elm-make foo.elm --output index.html
+release/index.html: frontend/Play.elm
+	cd frontend ; elm-make Play.elm --output index.html
 	cp frontend/index.html release
 
 release/browse.html: frontend/Browse.elm

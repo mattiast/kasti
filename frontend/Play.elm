@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Play exposing (..)
 
 import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br)
 import Html.Attributes exposing (src, controls, style)

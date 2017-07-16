@@ -29,6 +29,6 @@ someFunc = scotty 3000 $ do
     get "/browse" $ do
         setHeader "Content-Type" "text/html; charset=utf-8"
         file "browse.html"
-    get "/:word" $ do
-        beam <- param "word"
-        html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
+    get "/elm.js" $ do
+        setHeader "Content-Type" "application/javascript"
+        file "elm.js"

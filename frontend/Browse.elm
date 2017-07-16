@@ -1,7 +1,8 @@
-module Browse exposing (..)
+port module Browse exposing (..)
 
 import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a)
 import Html.Events exposing (onClick, on)
+import Html.Attributes exposing (id, style)
 import Json.Decode as D
 import Http
 import Platform.Cmd as Cmd
@@ -111,9 +112,9 @@ update msg model =
             ( model, Cmd.none |> Debug.log "nop" )
 
 
-setCurrentTime : Float -> Cmd msg
-setCurrentTime t =
-    Cmd.none
+port setCurrentTime : Float -> Cmd msg
+-- setCurrentTime t =
+--     Cmd.none
 
 
 postProgress : P.State -> Cmd Msg
@@ -129,7 +130,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ RD.map P.view model.progress
-            |> RD.withDefault (div [] [])
+            |> RD.withDefault (audio [id "audio-player", style [("display", "none")]] [])
             |> Html.map ProgMsg
         , feedList model.feeds
         , model.episodes

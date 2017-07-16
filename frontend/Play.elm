@@ -1,7 +1,7 @@
 module Play exposing (..)
 
 import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br)
-import Html.Attributes exposing (src, controls, style)
+import Html.Attributes exposing (src, controls, style, id)
 import Html.Events exposing (onClick, on)
 import Json.Decode as J
 import Json.Encode as JE
@@ -10,6 +10,7 @@ import Episode as E
 
 type Msg
     = TimeUpdate Float
+    | Complete
 
 
 type alias State =
@@ -36,6 +37,7 @@ view state =
             , controls True
             , style [ ( "width", "1000px" ) ]
             , onTimeUpdate
+            , id "audio-player"
             ]
             []
         ]
@@ -47,10 +49,18 @@ update msg state =
         TimeUpdate t ->
             { state | time = t }
 
+        Complete ->
+            state
+
 
 onTimeUpdate : Attribute Msg
 onTimeUpdate =
     on "timeupdate" (J.map TimeUpdate targetCurrentTime)
+
+
+onAudioComplete : Attribute Msg
+onAudioComplete =
+    on "complete" (J.succeed Complete)
 
 
 targetCurrentTime : J.Decoder Float

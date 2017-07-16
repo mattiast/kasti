@@ -21,7 +21,7 @@ someFunc = scotty 3000 $ do
     post "/progress" $ do
         (msg :: ProgressMsg) <- jsonData
         liftAndCatchIO $ withConn $ savePosition msg
-        return ()
+        json ([] :: [String])
     get "/progress/:episode_id" $ do
         eid <- EpisodeId <$> param "episode_id"
         (pos :: Double) <- liftAndCatchIO $ withConn $ getPosition eid

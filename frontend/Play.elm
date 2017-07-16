@@ -3,18 +3,27 @@ module Play exposing (..)
 import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br)
 import Html.Attributes exposing (src, controls, style)
 import Html.Events exposing (onClick, on)
-import Json.Decode as Json
+import Json.Decode as J
+import Json.Encode as JE
 import Episode as E
 
 
-type alias Msg =
-    Float
+type Msg
+    = TimeUpdate Float
 
 
 type alias State =
     { episode : E.Episode
     , time : Float
     }
+
+
+encodeProgress : State -> JE.Value
+encodeProgress state =
+    JE.object
+        [ ( "episode_id", JE.int state.episode.id )
+        , ( "position", JE.float state.time )
+        ]
 
 
 view : State -> Html Msg
@@ -31,14 +40,19 @@ view state =
             []
         ]
 
+
 update : Msg -> State -> State
-update t state = { state | time = t }
+update msg state =
+    case msg of
+        TimeUpdate t ->
+            { state | time = t }
+
 
 onTimeUpdate : Attribute Msg
 onTimeUpdate =
-    on "timeupdate" targetCurrentTime
+    on "timeupdate" (J.map TimeUpdate targetCurrentTime)
 
 
-targetCurrentTime : Json.Decoder Float
+targetCurrentTime : J.Decoder Float
 targetCurrentTime =
-    Json.at [ "target", "currentTime" ] Json.float
+    J.at [ "target", "currentTime" ] J.float

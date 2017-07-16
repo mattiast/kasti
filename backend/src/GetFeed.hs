@@ -109,6 +109,9 @@ instance FromJSON ProgressMsg where
                             <*> v .: "position"
     parseJSON _ = mempty
 -- items have state: New, Done, Not Started, In Progress (how much)
+--
+instance ToRow ProgressMsg where
+    toRow msg = toRow (prEpId msg, proPos msg)
 
 fetchEpisodes :: FeedInfo -> IO (String, [Episode])
 fetchEpisodes fi = do
@@ -152,7 +155,8 @@ withConn = withConnection "db.sqlite"
 
 savePosition :: ProgressMsg -> Connection -> IO ()
 savePosition msg conn = do
-    return ()
+    execute conn "insert or ignore into progress(episode_id, position) values (?, ?)" msg
+    execute conn "update progress set position = ? where episode_id = ?" (proPos msg, prEpId msg)
 
 getPosition :: EpisodeId -> Connection -> IO Double
 getPosition eid conn = do

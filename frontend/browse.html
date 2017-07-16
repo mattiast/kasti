@@ -1,0 +1,10 @@
+<div id="elm"></div>
+<script src="elm.js"></script>
+<script>
+    var app = Elm.Browse.fullscreen();
+
+    app.ports.setCurrentTime.subscribe(function(time) {
+        var audio = document.getElementById('audio-player');
+        audio.currentTime = time;
+    });
+</script>

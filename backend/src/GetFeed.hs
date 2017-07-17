@@ -85,7 +85,7 @@ newtype EpisodeUrl = EpisodeUrl {
 } deriving (Eq, Ord, Show, IsString, ToField, FromField, ToJSON)
 
 newtype EpisodeId = EpisodeId { fromEpisodeId :: Int }
-    deriving (Eq, Ord, Num, FromField, ToField, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Num, FromField, ToField, ToJSON, FromJSON)
 
 instance ToRow Episode where
     toRow ep = toRow (epUrl ep, epTitle ep, epDate ep)
@@ -112,6 +112,10 @@ instance FromJSON ProgressMsg where
 --
 instance ToRow ProgressMsg where
     toRow msg = toRow (prEpId msg, proPos msg)
+
+instance FromRow ProgressMsg where
+    fromRow = ProgressMsg <$> field <*> field
+
 
 fetchEpisodes :: FeedInfo -> IO (String, [Episode])
 fetchEpisodes fi = do
@@ -160,4 +164,11 @@ savePosition msg conn = do
 
 getPosition :: EpisodeId -> Connection -> IO Double
 getPosition eid conn = do
-    return 15
+    (poss :: [Double]) <- query conn "select position from progress where episode_id = ?" (Only eid)
+        & fmap (map fromOnly)
+
+    case poss of
+        [] -> return 0
+        [pos] -> return pos
+        _ -> fail $ "weird, position not unique for" ++ show eid
+

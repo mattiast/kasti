@@ -45,9 +45,10 @@ type Msg
     | Tick
     | Nop
 
+type alias FeedId = Int
 
 type alias Feed =
-    { id : Int
+    { id : FeedId
     , name : String
     , url : String
     }
@@ -93,11 +94,17 @@ update msg model =
                 |> RD.withDefault Cmd.none
             )
 
+        ProgMsg (P.AskTime ep) ->
+            ( model
+            , Http.get ("/progress/" ++ toString ep.id) (D.map (P.State ep) D.float)
+                |> RD.sendRequest
+                |> Cmd.map ReceiveProgress
+            )
+
         ProgMsg m ->
             ( { model
                 | progress =
                     RD.map (P.update m) model.progress
-                        |> Debug.log "msg prog"
               }
             , Cmd.none
             )
@@ -109,18 +116,16 @@ update msg model =
             )
 
         Nop ->
-            ( model, Cmd.none |> Debug.log "nop" )
+            ( model, Cmd.none )
 
 
 port setCurrentTime : Float -> Cmd msg
--- setCurrentTime t =
---     Cmd.none
 
 
 postProgress : P.State -> Cmd Msg
 postProgress state =
     Http.post "/progress"
-        (Http.jsonBody <| Debug.log "tick" <| P.encodeProgress state)
+        (Http.jsonBody <| P.encodeProgress state)
         (D.list D.string)
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)
@@ -130,7 +135,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ RD.map P.view model.progress
-            |> RD.withDefault (audio [id "audio-player", style [("display", "none")]] [])
+            |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
         , feedList model.feeds
         , model.episodes

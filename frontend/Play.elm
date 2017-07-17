@@ -1,6 +1,6 @@
 module Play exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br)
+import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a)
 import Html.Attributes exposing (src, controls, style, id)
 import Html.Events exposing (onClick, on)
 import Json.Decode as J
@@ -10,6 +10,7 @@ import Episode as E
 
 type Msg
     = TimeUpdate Float
+    | AskTime E.Episode
     | Complete
 
 
@@ -36,10 +37,12 @@ view state =
             [ src state.episode.url
             , controls True
             , style [ ( "width", "1000px" ) ]
-            , onTimeUpdate
             , id "audio-player"
             ]
             []
+        , br [] []
+        , a [ onClick (TimeUpdate 120) ] [ text "Save position" ]
+        , a [ onClick (AskTime state.episode) ] [ text "Get position" ]
         ]
 
 
@@ -51,6 +54,8 @@ update msg state =
 
         Complete ->
             state
+                |> Debug.log "complete tota"
+        AskTime e -> state
 
 
 onTimeUpdate : Attribute Msg

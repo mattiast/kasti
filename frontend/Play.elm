@@ -10,8 +10,8 @@ import Episode as E
 
 type Msg
     = TimeUpdate Float
+    | PostTime State
     | AskTime E.Episode
-    | Complete
 
 
 type alias State =
@@ -38,10 +38,11 @@ view state =
             , controls True
             , style [ ( "width", "1000px" ) ]
             , id "audio-player"
+            , onTimeUpdate
             ]
             []
         , br [] []
-        , a [ onClick (TimeUpdate 120) ] [ text "Save position" ]
+        , a [ onClick (PostTime state) ] [ text "Save position" ]
         , a [ onClick (AskTime state.episode) ] [ text "Get position" ]
         ]
 
@@ -52,20 +53,14 @@ update msg state =
         TimeUpdate t ->
             { state | time = t }
 
-        Complete ->
-            state
-                |> Debug.log "complete tota"
         AskTime e -> state
+
+        PostTime s -> state
 
 
 onTimeUpdate : Attribute Msg
 onTimeUpdate =
     on "timeupdate" (J.map TimeUpdate targetCurrentTime)
-
-
-onAudioComplete : Attribute Msg
-onAudioComplete =
-    on "complete" (J.succeed Complete)
 
 
 targetCurrentTime : J.Decoder Float

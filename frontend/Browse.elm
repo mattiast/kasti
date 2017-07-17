@@ -10,12 +10,7 @@ import Platform.Sub as Sub
 import RemoteData as RD
 import Episode as E
 import Play as P
-import Time
 
-
-tick : Sub.Sub Msg
-tick =
-    Time.every (Time.second * 2) (\t -> Tick)
 
 
 main : Program Never Model Msg
@@ -24,7 +19,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> tick
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -42,7 +37,6 @@ type Msg
     | ReceiveEpList (RD.WebData (List E.Episode))
     | ReceiveProgress (RD.WebData P.State)
     | ProgMsg P.Msg
-    | Tick
     | Nop
 
 type alias FeedId = Int
@@ -101,18 +95,15 @@ update msg model =
                 |> Cmd.map ReceiveProgress
             )
 
+        ProgMsg (P.PostTime s) ->
+            ( model , postProgress s )
+
         ProgMsg m ->
             ( { model
                 | progress =
                     RD.map (P.update m) model.progress
               }
             , Cmd.none
-            )
-
-        Tick ->
-            ( model
-            , RD.map postProgress model.progress
-                |> RD.withDefault Cmd.none
             )
 
         Nop ->
@@ -125,7 +116,7 @@ port setCurrentTime : Float -> Cmd msg
 postProgress : P.State -> Cmd Msg
 postProgress state =
     Http.post "/progress"
-        (Http.jsonBody <| P.encodeProgress state)
+        (Http.jsonBody <| Debug.log "posting" <| P.encodeProgress state)
         (D.list D.string)
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)

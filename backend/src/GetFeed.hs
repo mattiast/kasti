@@ -101,7 +101,7 @@ instance ToJSON Episode where
 data ProgressMsg = ProgressMsg {
     prEpId :: EpisodeId
   , proPos :: Double
-}
+} deriving Show
 
 instance FromJSON ProgressMsg where
     parseJSON (Object v) = ProgressMsg

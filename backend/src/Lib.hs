@@ -20,6 +20,7 @@ someFunc = scotty 3000 $ do
         json eps
     post "/progress" $ do
         (msg :: ProgressMsg) <- jsonData
+        liftAndCatchIO $ print msg
         liftAndCatchIO $ withConn $ savePosition msg
         json ([] :: [String])
     get "/progress/:episode_id" $ do

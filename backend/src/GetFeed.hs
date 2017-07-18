@@ -1,22 +1,18 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, GeneralizedNewtypeDeriving #-}
 module GetFeed where
 import Control.Lens hiding ((.=))
-import Control.Monad((>=>),(<=<))
 import Data.Aeson
 import Data.Aeson.Types(typeMismatch)
 import Database.SQLite.Simple hiding ((:=))
 import Database.SQLite.Simple.FromField
 import Database.SQLite.Simple.ToField
-import Database.SQLite.Simple.ToRow
 import Data.ByteString.Lazy(ByteString)
 import Data.Function((&))
 import Data.Maybe
 import Data.String
 import Data.Text(Text, pack)
-import Data.Time.Calendar
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
-import Data.Traversable(forM)
 import Network.Wreq hiding ((:=))
 import qualified Data.ByteString.Lazy.Char8 as B
 import Text.Feed.Import
@@ -148,11 +144,11 @@ populateDB = do
 
 feedsFromDB :: Connection -> IO [(FeedId, FeedInfo)]
 feedsFromDB conn = query_ conn "select id, name, url from feeds"
-    & fmap (fmap $ \((Only id) :. fi) -> (id, fi))
+    & fmap (fmap $ \((Only fid) :. fi) -> (fid, fi))
 
 episodesFromDB :: FeedId -> Connection -> IO [(EpisodeId, Episode)]
 episodesFromDB fid conn = query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
-    & fmap (fmap $ \((Only id) :. ep) -> (id, ep))
+    & fmap (fmap $ \((Only eid) :. ep) -> (eid, ep))
 
 withConn :: (Connection -> IO a) -> IO a
 withConn = withConnection "db.sqlite"

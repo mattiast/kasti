@@ -3,7 +3,6 @@ module Lib
     ( someFunc
     ) where
 import Web.Scotty
-import Data.Monoid (mconcat)
 import GetFeed
 
 someFunc :: IO ()

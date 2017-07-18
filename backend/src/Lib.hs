@@ -4,6 +4,8 @@ module Lib
     ) where
 import Web.Scotty
 import GetFeed
+import Types
+import EpisodeDb
 
 someFunc :: IO ()
 someFunc = scotty 3000 $ do

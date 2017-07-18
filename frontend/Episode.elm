@@ -48,7 +48,7 @@ episodeList eps =
     eps
         |> List.sortWith (\x y -> Date.compare y.date x.date)
         |> List.map episodeRow
-        |> (\rows -> [tr [] [th [] [text "Date"], th [] [text "Title"]]] ++ rows)
+        |> (\rows -> [ tr [] [ th [] [ text "Date" ], th [] [ text "Title" ] ] ] ++ rows)
         |> table []
 
 

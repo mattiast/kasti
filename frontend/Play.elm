@@ -1,10 +1,11 @@
 module Play exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a)
-import Html.Attributes exposing (src, controls, style, id)
+import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a, h3, p)
+import Html.Attributes exposing (src, controls, style, id, href)
 import Html.Events exposing (onClick, on)
 import Json.Decode as J
 import Json.Encode as JE
+import Date.Extra as Date
 import Episode as E
 
 
@@ -31,7 +32,7 @@ encodeProgress state =
 view : State -> Html Msg
 view state =
     div []
-        [ div [] [ text (toString state) ]
+        [ showState state
         , br [] []
         , audio
             [ src state.episode.url
@@ -47,15 +48,31 @@ view state =
         ]
 
 
+showState : State -> Html Msg
+showState state =
+    div []
+        [ h3 [] [ text state.episode.title ]
+        , text ("id = " ++ toString state.episode.id)
+        , br [] []
+        , a [ href state.episode.url ] [ text "[mp3 link]" ]
+        , br [] []
+        , text (Date.toFormattedString "y/M/d" state.episode.date)
+        , br [] []
+        , text (toString state.time)
+        ]
+
+
 update : Msg -> State -> State
 update msg state =
     case msg of
         TimeUpdate t ->
             { state | time = t }
 
-        AskTime e -> state
+        AskTime e ->
+            state
 
-        PostTime s -> state
+        PostTime s ->
+            state
 
 
 onTimeUpdate : Attribute Msg

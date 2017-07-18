@@ -2,13 +2,13 @@
 module GetFeed where
 import Control.Lens hiding ((.=))
 import Data.Aeson
-import Database.SQLite.Simple hiding ((:=))
 import Data.ByteString.Lazy(ByteString)
 import Data.Function((&))
 import Data.Maybe
 import Data.Text(pack)
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
+import Data.Foldable(traverse_)
 import Network.Wreq hiding ((:=))
 import qualified Data.ByteString.Lazy.Char8 as B
 import Text.Feed.Import
@@ -16,7 +16,7 @@ import Text.Feed.Query
 import Text.Feed.Types
 import Text.RSS.Syntax(DateString)
 import Types
-import EpisodeDb(withConn)
+import EpisodeDb
 
 getFeeds :: FilePath -> IO [FeedInfo]
 getFeeds path = do
@@ -31,18 +31,11 @@ fetchFeed url = do
         feed = parseFeedString $ B.unpack $ b
     return feed
 
-writeFeeds :: Connection -> [FeedInfo] -> IO ()
-writeFeeds conn fis = do
-    executeMany conn "insert into feeds(name, url) values (?,?)" fis
-
-writeEpisodes :: Connection -> FeedInfo -> IO ()
-writeEpisodes conn fi = do
-    -- TODO this is bad, fix the assumption
-    [[feed_id :: FeedId]] <- query conn "select id from feeds where url = ?" (Only (furl fi))
+syncFeed :: FeedId -> IO ()
+syncFeed fid = withConn $ \conn -> do
+    fi <- getFeedInfo fid conn
     eps <- fetchEpisodes fi
-    executeMany conn "insert or ignore into episodes(feed_id, url, title, date) values (?,?,?,?)"
-            [ Only feed_id :. ep | ep <- eps ]
-    return ()
+    writeEpisodes conn fid eps
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do
@@ -69,4 +62,6 @@ populateDB = do
     fs <- getFeeds "/home/matti/.vim/podcasts.json" 
     withConn $ \conn -> do
         writeFeeds conn fs
-        sequence_ [ writeEpisodes conn fi | fi <- fs ]
+        feedsFromDB conn >>= (traverse_ $ \(fid, fi) -> do
+            eps <- fetchEpisodes fi
+            writeEpisodes conn fid eps)

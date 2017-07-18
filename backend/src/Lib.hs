@@ -6,6 +6,7 @@ import Web.Scotty
 import GetFeed
 import Types
 import EpisodeDb
+import Network.HTTP.Types(status200)
 
 someFunc :: IO ()
 someFunc = scotty 3000 $ do
@@ -19,6 +20,10 @@ someFunc = scotty 3000 $ do
         fid <- FeedId <$> param "feed_id"
         eps <- liftAndCatchIO $ withConn $ episodesFromDB fid
         json eps
+    get "/syncfeed/:feed_id" $ do
+        fid <- FeedId <$> param "feed_id"
+        liftAndCatchIO $ syncFeed fid
+        status status200
     post "/progress" $ do
         (msg :: ProgressMsg) <- jsonData
         liftAndCatchIO $ print msg

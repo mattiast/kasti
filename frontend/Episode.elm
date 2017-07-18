@@ -1,6 +1,6 @@
 module Episode exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a)
+import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a, tr, td, th, table)
 import Html.Events exposing (onClick, on)
 import Json.Decode as D
 import Date exposing (Date)
@@ -47,5 +47,14 @@ episodeList : List Episode -> Html Msg
 episodeList eps =
     eps
         |> List.sortWith (\x y -> Date.compare y.date x.date)
-        |> List.map (\e -> li [] [ a [ onClick (Pick e) ] [ text e.title ] ])
-        |> ul []
+        |> List.map episodeRow
+        |> (\rows -> [tr [] [th [] [text "Date"], th [] [text "Title"]]] ++ rows)
+        |> table []
+
+
+episodeRow : Episode -> Html Msg
+episodeRow ep =
+    tr [ onClick (Pick ep) ]
+        [ td [] [ text (Date.toFormattedString "y/M/d" ep.date) ]
+        , td [] [ text ep.title ]
+        ]

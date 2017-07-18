@@ -1,14 +1,10 @@
 module Episode exposing (..)
 
 import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a)
-import Html.Attributes exposing (src, controls, style, href)
 import Html.Events exposing (onClick, on)
 import Json.Decode as D
-import Http
-import Platform.Cmd as Cmd
-import Platform.Sub as Sub
-import RemoteData as RD
 import Date exposing (Date)
+import Date.Extra as Date
 
 
 type alias Episode =
@@ -50,5 +46,6 @@ type Msg
 episodeList : List Episode -> Html Msg
 episodeList eps =
     eps
+        |> List.sortWith (\x y -> Date.compare y.date x.date)
         |> List.map (\e -> li [] [ a [ onClick (Pick e) ] [ text e.title ] ])
         |> ul []

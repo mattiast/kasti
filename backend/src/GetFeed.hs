@@ -16,6 +16,7 @@ import Text.Feed.Query
 import Text.Feed.Types
 import Text.RSS.Syntax(DateString)
 import Types
+import EpisodeDb(withConn)
 
 getFeeds :: FilePath -> IO [FeedInfo]
 getFeeds path = do
@@ -39,7 +40,7 @@ writeEpisodes conn fi = do
     -- TODO this is bad, fix the assumption
     [[feed_id :: FeedId]] <- query conn "select id from feeds where url = ?" (Only (furl fi))
     eps <- fetchEpisodes fi
-    executeMany conn "insert into episodes(feed_id, url, title, date) values (?,?,?,?)"
+    executeMany conn "insert or ignore into episodes(feed_id, url, title, date) values (?,?,?,?)"
             [ Only feed_id :. ep | ep <- eps ]
     return ()
 
@@ -66,7 +67,6 @@ itemEpisodeInfo item = do
 populateDB :: IO ()
 populateDB = do
     fs <- getFeeds "/home/matti/.vim/podcasts.json" 
-    conn <- open "db.sqlite" 
-    writeFeeds conn fs
-    sequence_ [ writeEpisodes conn fi | fi <- fs ]
-
+    withConn $ \conn -> do
+        writeFeeds conn fs
+        sequence_ [ writeEpisodes conn fi | fi <- fs ]

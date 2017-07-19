@@ -25,7 +25,7 @@ writeEpisodes conn fid eps =
 
 writeFeeds :: Connection -> [FeedInfo] -> IO ()
 writeFeeds conn fis =
-    executeMany conn "insert into feeds(name, url) values (?,?)" fis
+    executeMany conn "insert or ignore into feeds(name, url) values (?,?)" fis
 
 withConn :: (Connection -> IO a) -> IO a
 withConn = withConnection "db.sqlite"

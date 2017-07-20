@@ -14,11 +14,11 @@ someFunc = scotty 3000 $ do
         setHeader "Content-Type" "text/html; charset=utf-8"
         file "index.html"
     get "/feeds" $ do
-        fs <- liftAndCatchIO $ withConn feedsFromDB
+        fs <- liftAndCatchIO $ withConn readFeeds
         json fs
     get "/episodes/:feed_id" $ do
         fid <- FeedId <$> param "feed_id"
-        eps <- liftAndCatchIO $ withConn $ episodesFromDB fid
+        eps <- liftAndCatchIO $ withConn $ readEpisodes fid
         json eps
     get "/syncfeed/:feed_id" $ do
         fid <- FeedId <$> param "feed_id"
@@ -27,11 +27,11 @@ someFunc = scotty 3000 $ do
     post "/progress" $ do
         (msg :: ProgressMsg) <- jsonData
         liftAndCatchIO $ print msg
-        liftAndCatchIO $ withConn $ savePosition msg
+        liftAndCatchIO $ withConn $ writePosition msg
         json ([] :: [String])
     get "/progress/:episode_id" $ do
         eid <- EpisodeId <$> param "episode_id"
-        (pos :: Double) <- liftAndCatchIO $ withConn $ getPosition eid
+        (pos :: Double) <- liftAndCatchIO $ withConn $ readPosition eid
         json pos
     get "/browse" $ do
         setHeader "Content-Type" "text/html; charset=utf-8"

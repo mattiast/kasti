@@ -33,7 +33,7 @@ fetchFeed url = do
 
 syncFeed :: FeedId -> IO ()
 syncFeed fid = withConn $ \conn -> do
-    fi <- getFeedInfo fid conn
+    fi <- readFeed fid conn
     eps <- fetchEpisodes fi
     writeEpisodes conn fid eps
 
@@ -62,6 +62,6 @@ populateDB = do
     fs <- getFeeds "/home/matti/.vim/podcasts.json" 
     withConn $ \conn -> do
         writeFeeds conn fs
-        feedsFromDB conn >>= (traverse_ $ \(fid, fi) -> do
+        readFeeds conn >>= (traverse_ $ \(fid, fi) -> do
             eps <- fetchEpisodes fi
             writeEpisodes conn fid eps)

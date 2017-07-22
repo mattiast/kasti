@@ -17,9 +17,6 @@ import Data.Maybe(fromMaybe)
 someFunc :: IO ()
 someFunc = scotty 3000 $ do
     middleware $ basicAuth (\_u _p -> return True) "FooRealm"
-    get "/play" $ do
-        setHeader "Content-Type" "text/html; charset=utf-8"
-        file "index.html"
     get "/checkuser" $ do
         ma <- header "Authorization"
         let x = ma

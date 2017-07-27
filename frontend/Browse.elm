@@ -117,7 +117,7 @@ postProgress : P.State -> Cmd Msg
 postProgress state =
     Http.post "/progress"
         (Http.jsonBody <| Debug.log "posting" <| P.encodeProgress state)
-        (D.list D.string)
+        (D.succeed "")
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)
 

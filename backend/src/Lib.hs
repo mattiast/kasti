@@ -1,29 +1,70 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Lib
-    ( someFunc
-    ) where
+module Lib where
 import Web.Scotty
 import GetFeed
 import Types
 import EpisodeDb
 import Network.HTTP.Types(status200)
 import Network.Wai.Middleware.HttpAuth(basicAuth, extractBasicAuth)
-import Data.Text.Lazy(pack)
-import Data.Text.Lazy.Encoding(encodeUtf8)
+import Data.Text.Lazy(fromStrict)
+import qualified Data.Text.Lazy.Encoding as L
+import qualified Data.Text as S
+import Data.Text.Encoding(decodeUtf8)
 import Data.Function((&))
 import Data.ByteString.Lazy(toStrict)
 import Data.Maybe(fromMaybe)
+import qualified Data.ByteString as B
+import Options.Applicative hiding (header)
+import Data.Aeson.Lens
+import qualified Data.Aeson as A
+import Data.Aeson((.=))
+import Control.Lens((^?),(.~),(^.))
+import Data.Monoid((<>))
+import qualified Network.Wreq as W
 
-someFunc :: IO ()
-someFunc = scotty 3000 $ do
+data KastiConfig = KastiConfig {
+    clientId :: S.Text
+  , clientSecret :: S.Text
+} deriving Show
+
+getToken :: KastiConfig -> S.Text -> IO (Maybe S.Text)
+getToken conf session_code = do
+    let (opts :: W.Options) = W.defaults & W.header "Accept" .~ ["application/json"]
+    r <- W.postWith opts "https://github.com/login/oauth/access_token"
+                (A.object [ "client_id" .= clientId conf
+                          , "client_secret" .= clientSecret conf
+                          , "code" .= session_code
+                          ])
+    let mAT = r ^? W.responseBody . key "access_token" . _String
+    return mAT
+
+getConf :: IO KastiConfig
+getConf = do
+    let args = argument str (metavar "CONFIGFILE")
+    (confPath :: FilePath) <- execParser $ info args fullDesc
+    bs <- B.readFile confPath
+    let mcId = bs ^? key "client_id" . _String
+        mcSecret = bs ^? key "client_secret" . _String
+        mConf = KastiConfig <$> mcId <*> mcSecret
+    maybe (fail "couldn't parse conf file") return mConf
+
+userName :: ActionM (Maybe S.Text)
+userName = do
+    ma <- header "Authorization"
+    let x = ma
+            & fmap (toStrict . L.encodeUtf8)
+            >>= extractBasicAuth
+            & fmap (decodeUtf8 . fst)
+    return x
+
+
+someFunc :: KastiConfig -> IO ()
+someFunc conf = scotty 3000 $ do
     middleware $ basicAuth (\_u _p -> return True) "FooRealm"
     get "/checkuser" $ do
-        ma <- header "Authorization"
-        let x = ma
-                & fmap (toStrict . encodeUtf8)
-                >>= extractBasicAuth
-                & fromMaybe ("not", "found")
-        text $ pack $ show $ x
+        u <- userName
+        text $ fromStrict $ u
+            & fromMaybe "not found"
     get "/feeds" $ do
         fs <- liftAndCatchIO $ withConn readFeeds
         json fs
@@ -39,7 +80,7 @@ someFunc = scotty 3000 $ do
         (msg :: ProgressMsg) <- jsonData
         liftAndCatchIO $ print msg
         liftAndCatchIO $ withConn $ writePosition msg
-        json ([] :: [String])
+        status status200
     get "/progress/:episode_id" $ do
         eid <- EpisodeId <$> param "episode_id"
         (pos :: Double) <- liftAndCatchIO $ withConn $ readPosition eid
@@ -50,3 +91,13 @@ someFunc = scotty 3000 $ do
     get "/elm.js" $ do
         setHeader "Content-Type" "application/javascript"
         file "elm.js"
+    get "/callback" $ do
+        (code :: S.Text) <- param "code"
+        mToken <- liftAndCatchIO $ getToken conf code
+        text $ "callback with code " <> fromStrict code
+    get "/login" $ do
+        html $ mconcat
+            [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
+            , fromStrict (clientId conf)
+            , "\">Click here</a>"
+            ]

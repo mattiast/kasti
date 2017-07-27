@@ -6,12 +6,12 @@ import Types
 import EpisodeDb
 import Network.HTTP.Types(status200)
 import Network.Wai.Middleware.HttpAuth(basicAuth, extractBasicAuth)
-import Data.Text.Lazy(fromStrict)
+import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Text as S
 import Data.Text.Encoding(decodeUtf8)
 import Data.Function((&))
-import Data.ByteString.Lazy(toStrict)
+import Data.ByteString.Lazy(ByteString,toStrict)
 import Data.Maybe(fromMaybe)
 import qualified Data.ByteString as B
 import Options.Applicative hiding (header)
@@ -38,6 +38,13 @@ getToken conf session_code = do
     let mAT = r ^? W.responseBody . key "access_token" . _String
     return mAT
 
+userInfo :: S.Text -> IO ByteString
+userInfo token = do
+    let opts = W.defaults & W.param "access_token" .~ [ token ]
+    r <- W.getWith opts "https://api.github.com/user"
+    let x = r ^. W.responseBody
+    return x
+
 getConf :: IO KastiConfig
 getConf = do
     let args = argument str (metavar "CONFIGFILE")
@@ -60,10 +67,10 @@ userName = do
 
 someFunc :: KastiConfig -> IO ()
 someFunc conf = scotty 3000 $ do
-    middleware $ basicAuth (\_u _p -> return True) "FooRealm"
+--    middleware $ basicAuth (\_u _p -> return True) "FooRealm"
     get "/checkuser" $ do
         u <- userName
-        text $ fromStrict $ u
+        text $ L.fromStrict $ u
             & fromMaybe "not found"
     get "/feeds" $ do
         fs <- liftAndCatchIO $ withConn readFeeds
@@ -94,10 +101,13 @@ someFunc conf = scotty 3000 $ do
     get "/callback" $ do
         (code :: S.Text) <- param "code"
         mToken <- liftAndCatchIO $ getToken conf code
-        text $ "callback with code " <> fromStrict code
+        user <- liftAndCatchIO $ case mToken of
+            Nothing -> return ""
+            Just token -> userInfo token
+        text $ "callback with code " <> L.fromStrict code <> "  " <> L.decodeUtf8 user
     get "/login" $ do
         html $ mconcat
             [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
-            , fromStrict (clientId conf)
+            , L.fromStrict (clientId conf)
             , "\">Click here</a>"
             ]

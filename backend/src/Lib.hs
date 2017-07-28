@@ -1,31 +1,35 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+
 module Lib where
-import Web.Scotty
-import GetFeed
-import Types
-import EpisodeDb
+import Control.Lens((^?),(.~),(^.))
+import Control.Monad(join)
+import Data.Aeson((.=))
+import Data.Aeson.Lens
+import Data.ByteString.Lazy(ByteString,toStrict)
+import Data.Function((&))
+import Data.Foldable(traverse_)
+import Data.Maybe(fromMaybe)
+import Data.Monoid((<>))
+import Data.Text.Encoding(decodeUtf8)
 import Network.HTTP.Types(ok200)
 import Network.Wai.Middleware.HttpAuth(extractBasicAuth)
 import Network.Wai.Session
 import Network.Wai.Session.Map(mapStore)
 import Network.Wai(vault)
-import Web.Cookie
-import qualified Data.Vault.Lazy as Vault
+import Options.Applicative hiding (header)
+import qualified Data.Aeson as A
+import qualified Data.ByteString as B
+import qualified Data.Text as S
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.Encoding as L
-import qualified Data.Text as S
-import Data.Text.Encoding(decodeUtf8)
-import Data.Function((&))
-import Data.ByteString.Lazy(ByteString,toStrict)
-import Data.Maybe(fromMaybe)
-import qualified Data.ByteString as B
-import Options.Applicative hiding (header)
-import Data.Aeson.Lens
-import qualified Data.Aeson as A
-import Data.Aeson((.=))
-import Control.Lens((^?),(.~),(^.))
-import Data.Monoid((<>))
+import qualified Data.Vault.Lazy as Vault
 import qualified Network.Wreq as W
+import Web.Cookie
+import Web.Scotty
+import GetFeed
+import Types
+import EpisodeDb
 
 data KastiConfig = KastiConfig {
     clientId :: S.Text
@@ -60,29 +64,45 @@ getConf = do
         mConf = KastiConfig <$> mcId <*> mcSecret
     maybe (fail "couldn't parse conf file") return mConf
 
-userName :: ActionM (Maybe S.Text)
-userName = do
-    ma <- header "Authorization"
-    let x = ma
-            & fmap (toStrict . L.encodeUtf8)
-            >>= extractBasicAuth
-            & fmap (decodeUtf8 . fst)
-    return x
+type MySession = Vault.Key (Session ActionM String S.Text)
 
+mySessionLookup :: MySession -> String -> ActionM (Maybe S.Text)
+mySessionLookup session k = do
+    v <- vault <$> request
+    let mLookup = fst <$> Vault.lookup session v
+    fmap join $ sequence $ mLookup <*> pure k
+
+mySessionInsert :: MySession -> String -> S.Text -> ActionM ()
+mySessionInsert session k val = do
+    v <- vault <$> request
+    let Just sessionInsert = snd <$> Vault.lookup session v
+    sessionInsert k val
 
 someFunc :: KastiConfig -> IO ()
 someFunc conf = do
     (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
-    session <- Vault.newKey
+    (session :: MySession) <- Vault.newKey
     scotty 3000 $ do
         middleware $ withSession sessionStore "kasti_token" def session
+        get "/login" $ do
+            html $ mconcat
+                [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
+                , L.fromStrict (clientId conf)
+                , "\">Click here</a>"
+                ]
+        get "/callback" $ do
+            (code :: S.Text) <- param "code"
+            mToken <- liftAndCatchIO $ getToken conf code
+            mapM_ (mySessionInsert session "token") mToken
+            (mUser :: Maybe ByteString) <- liftAndCatchIO $ mapM userInfo mToken
+            let mName = do
+                    user <- mUser
+                    user ^? key "name" . _String
+            mapM_ (mySessionInsert session "name") mName
+            redirect "/browse"
         get "/checkuser" $ do
-            v <- vault <$> request
-            let Just (sessionLookup, sessionInsert) = Vault.lookup session v
-            u <- userName
-            u2 <- sessionLookup "user"
-            sessionInsert "user" "matti"
-            text $ L.fromStrict $ (fromMaybe "u not found" $ u) <> (fromMaybe "u2 not found" $ u2)
+            mUser <- mySessionLookup session "name"
+            text $ L.fromStrict $ fromMaybe "not found" $ mUser
         get "/feeds" $ do
             fs <- liftAndCatchIO $ withConn readFeeds
             json fs
@@ -109,16 +129,3 @@ someFunc conf = do
         get "/elm.js" $ do
             setHeader "Content-Type" "application/javascript"
             file "elm.js"
-        get "/callback" $ do
-            (code :: S.Text) <- param "code"
-            mToken <- liftAndCatchIO $ getToken conf code
-            user <- liftAndCatchIO $ case mToken of
-                Nothing -> return ""
-                Just token -> userInfo token
-            text $ "callback with code " <> L.fromStrict code <> "  " <> L.decodeUtf8 user
-        get "/login" $ do
-            html $ mconcat
-                [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
-                , L.fromStrict (clientId conf)
-                , "\">Click here</a>"
-                ]

@@ -4,8 +4,13 @@ import Web.Scotty
 import GetFeed
 import Types
 import EpisodeDb
-import Network.HTTP.Types(status200)
-import Network.Wai.Middleware.HttpAuth(basicAuth, extractBasicAuth)
+import Network.HTTP.Types(ok200)
+import Network.Wai.Middleware.HttpAuth(extractBasicAuth)
+import Network.Wai.Session
+import Network.Wai.Session.Map(mapStore)
+import Network.Wai(vault)
+import Web.Cookie
+import qualified Data.Vault.Lazy as Vault
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Text as S
@@ -66,48 +71,54 @@ userName = do
 
 
 someFunc :: KastiConfig -> IO ()
-someFunc conf = scotty 3000 $ do
---    middleware $ basicAuth (\_u _p -> return True) "FooRealm"
-    get "/checkuser" $ do
-        u <- userName
-        text $ L.fromStrict $ u
-            & fromMaybe "not found"
-    get "/feeds" $ do
-        fs <- liftAndCatchIO $ withConn readFeeds
-        json fs
-    get "/episodes/:feed_id" $ do
-        fid <- FeedId <$> param "feed_id"
-        eps <- liftAndCatchIO $ withConn $ readEpisodes fid
-        json eps
-    get "/syncfeed/:feed_id" $ do
-        fid <- FeedId <$> param "feed_id"
-        liftAndCatchIO $ syncFeed fid
-        status status200
-    post "/progress" $ do
-        (msg :: ProgressMsg) <- jsonData
-        liftAndCatchIO $ print msg
-        liftAndCatchIO $ withConn $ writePosition msg
-        status status200
-    get "/progress/:episode_id" $ do
-        eid <- EpisodeId <$> param "episode_id"
-        (pos :: Double) <- liftAndCatchIO $ withConn $ readPosition eid
-        json pos
-    get "/browse" $ do
-        setHeader "Content-Type" "text/html; charset=utf-8"
-        file "browse.html"
-    get "/elm.js" $ do
-        setHeader "Content-Type" "application/javascript"
-        file "elm.js"
-    get "/callback" $ do
-        (code :: S.Text) <- param "code"
-        mToken <- liftAndCatchIO $ getToken conf code
-        user <- liftAndCatchIO $ case mToken of
-            Nothing -> return ""
-            Just token -> userInfo token
-        text $ "callback with code " <> L.fromStrict code <> "  " <> L.decodeUtf8 user
-    get "/login" $ do
-        html $ mconcat
-            [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
-            , L.fromStrict (clientId conf)
-            , "\">Click here</a>"
-            ]
+someFunc conf = do
+    (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
+    session <- Vault.newKey
+    scotty 3000 $ do
+        middleware $ withSession sessionStore "kasti_token" def session
+        get "/checkuser" $ do
+            v <- vault <$> request
+            let Just (sessionLookup, sessionInsert) = Vault.lookup session v
+            u <- userName
+            u2 <- sessionLookup "user"
+            sessionInsert "user" "matti"
+            text $ L.fromStrict $ (fromMaybe "u not found" $ u) <> (fromMaybe "u2 not found" $ u2)
+        get "/feeds" $ do
+            fs <- liftAndCatchIO $ withConn readFeeds
+            json fs
+        get "/episodes/:feed_id" $ do
+            fid <- FeedId <$> param "feed_id"
+            eps <- liftAndCatchIO $ withConn $ readEpisodes fid
+            json eps
+        get "/syncfeed/:feed_id" $ do
+            fid <- FeedId <$> param "feed_id"
+            liftAndCatchIO $ syncFeed fid
+            status ok200
+        post "/progress" $ do
+            (msg :: ProgressMsg) <- jsonData
+            liftAndCatchIO $ print msg
+            liftAndCatchIO $ withConn $ writePosition msg
+            status ok200
+        get "/progress/:episode_id" $ do
+            eid <- EpisodeId <$> param "episode_id"
+            (pos :: Double) <- liftAndCatchIO $ withConn $ readPosition eid
+            json pos
+        get "/browse" $ do
+            setHeader "Content-Type" "text/html; charset=utf-8"
+            file "browse.html"
+        get "/elm.js" $ do
+            setHeader "Content-Type" "application/javascript"
+            file "elm.js"
+        get "/callback" $ do
+            (code :: S.Text) <- param "code"
+            mToken <- liftAndCatchIO $ getToken conf code
+            user <- liftAndCatchIO $ case mToken of
+                Nothing -> return ""
+                Just token -> userInfo token
+            text $ "callback with code " <> L.fromStrict code <> "  " <> L.decodeUtf8 user
+        get "/login" $ do
+            html $ mconcat
+                [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
+                , L.fromStrict (clientId conf)
+                , "\">Click here</a>"
+                ]

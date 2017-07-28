@@ -33,6 +33,10 @@ library
                      , scotty
                      , http-types
                      , wai-extra
+                     , wai-session
+                     , wai
+                     , cookie
+                     , vault
                      , feed
                      , wreq
 

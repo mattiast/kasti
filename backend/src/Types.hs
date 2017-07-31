@@ -71,3 +71,17 @@ instance ToRow FeedInfo where
 
 instance FromRow FeedInfo where
     fromRow = FeedInfo <$> field <*> field
+
+data UserInfo = UserInfo {
+    userGithubId :: Int
+  , userName :: Text
+  , userGithubLogin :: Text
+} deriving Show
+
+instance FromJSON UserInfo where
+    parseJSON (Object v)
+        = UserInfo
+            <$> v .: "id"
+            <*> v .: "name"
+            <*> v .: "login"
+    parseJSON _ = mempty

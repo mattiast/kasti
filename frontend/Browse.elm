@@ -1,8 +1,8 @@
 port module Browse exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a)
+import Html exposing (..)
 import Html.Events exposing (onClick, on)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (id, style, href, class)
 import Json.Decode as D
 import Http
 import Platform.Cmd as Cmd
@@ -10,7 +10,6 @@ import Platform.Sub as Sub
 import RemoteData as RD
 import Episode as E
 import Play as P
-
 
 
 main : Program Never Model Msg
@@ -39,7 +38,10 @@ type Msg
     | ProgMsg P.Msg
     | Nop
 
-type alias FeedId = Int
+
+type alias FeedId =
+    Int
+
 
 type alias Feed =
     { id : FeedId
@@ -96,7 +98,7 @@ update msg model =
             )
 
         ProgMsg (P.PostTime s) ->
-            ( model , postProgress s )
+            ( model, postProgress s )
 
         ProgMsg m ->
             ( { model
@@ -142,11 +144,20 @@ feedList feeds =
         RD.Success fs ->
             let
                 feedItem f =
-                    li [] [ a [ onClick (AskEpList f.id) ] [ text f.name ] ]
+                    tr []
+                        [ td [] [ a [ onClick (AskEpList f.id) ] [ text f.name ] ]
+                        , td []
+                            [ a [ class "button", href ("/syncfeed/" ++ toString f.id) ]
+                                [ span [ class "icon is-small" ]
+                                    [ i [ class "fa fa-refresh" ] []
+                                    ]
+                                ]
+                            ]
+                        ]
             in
                 fs
                     |> List.map feedItem
-                    |> ul []
+                    |> table []
 
         _ ->
             text (toString feeds)

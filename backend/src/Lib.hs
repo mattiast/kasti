@@ -1,19 +1,13 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-
 module Lib where
 import Control.Lens((^?),(.~),(^.))
 import Control.Monad(join)
 import Data.Aeson((.=))
 import Data.Aeson.Lens
-import Data.ByteString.Lazy(ByteString,toStrict)
+import Data.ByteString.Lazy(ByteString)
 import Data.Function((&))
-import Data.Foldable(traverse_)
 import Data.Maybe(fromMaybe)
-import Data.Monoid((<>))
-import Data.Text.Encoding(decodeUtf8)
 import Network.HTTP.Types(ok200)
-import Network.Wai.Middleware.HttpAuth(extractBasicAuth)
 import Network.Wai.Session
 import Network.Wai.Session.Map(mapStore)
 import Network.Wai(vault)
@@ -22,7 +16,6 @@ import qualified Data.Aeson as A
 import qualified Data.ByteString as B
 import qualified Data.Text as S
 import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Vault.Lazy as Vault
 import qualified Network.Wreq as W
 import Web.Cookie
@@ -35,6 +28,7 @@ data KastiConfig = KastiConfig {
     clientId :: S.Text
   , clientSecret :: S.Text
 } deriving Show
+
 
 getToken :: KastiConfig -> S.Text -> IO (Maybe S.Text)
 getToken conf session_code = do
@@ -94,11 +88,10 @@ someFunc conf = do
             (code :: S.Text) <- param "code"
             mToken <- liftAndCatchIO $ getToken conf code
             mapM_ (mySessionInsert session "token") mToken
-            (mUser :: Maybe ByteString) <- liftAndCatchIO $ mapM userInfo mToken
-            let mName = do
-                    user <- mUser
-                    user ^? key "name" . _String
-            mapM_ (mySessionInsert session "name") mName
+            (mUserStr :: Maybe ByteString) <- liftAndCatchIO $ mapM userInfo mToken
+            let mUser = mUserStr >>= A.decode
+            liftAndCatchIO $ print mUser
+            mapM_ (mySessionInsert session "name") $ userName <$> mUser
             redirect "/browse"
         get "/checkuser" $ do
             mUser <- mySessionLookup session "name"
@@ -113,7 +106,7 @@ someFunc conf = do
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             liftAndCatchIO $ syncFeed fid
-            status ok200
+            redirect "/browse"
         post "/progress" $ do
             (msg :: ProgressMsg) <- jsonData
             liftAndCatchIO $ print msg

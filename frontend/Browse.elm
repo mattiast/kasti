@@ -37,6 +37,8 @@ type Msg
     | ReceiveProgress (RD.WebData P.State)
     | ProgMsg P.Msg
     | Nop
+    | SyncFeedAsk FeedId
+    | SyncFeedReceive FeedId (RD.WebData ())
 
 
 type alias FeedId =
@@ -47,6 +49,7 @@ type alias Feed =
     { id : FeedId
     , name : String
     , url : String
+    , syncState : RD.WebData ()
     }
 
 
@@ -111,8 +114,41 @@ update msg model =
         Nop ->
             ( model, Cmd.none )
 
+        SyncFeedAsk fid ->
+            let
+                upd : Feed -> Feed
+                upd feed =
+                    if feed.id == fid then
+                        Debug.log "asked" { feed | syncState = RD.Loading }
+                    else
+                        feed
+            in
+                ( { model | feeds = RD.map (List.map upd) model.feeds }
+                , syncFeed fid
+                )
+
+        SyncFeedReceive fid state ->
+            let
+                upd : Feed -> Feed
+                upd feed =
+                    if feed.id == fid then
+                        Debug.log "received" { feed | syncState = state }
+                    else
+                        feed
+            in
+                ( { model | feeds = RD.map (List.map upd) model.feeds }
+                , Cmd.none
+                )
+
 
 port setCurrentTime : Float -> Cmd msg
+
+
+syncFeed : FeedId -> Cmd Msg
+syncFeed fid =
+    Http.get ("/syncfeed/" ++ toString fid) (D.succeed ())
+        |> RD.sendRequest
+        |> Cmd.map (SyncFeedReceive fid)
 
 
 postProgress : P.State -> Cmd Msg
@@ -146,13 +182,7 @@ feedList feeds =
                 feedItem f =
                     tr []
                         [ td [] [ a [ onClick (AskEpList f.id) ] [ text f.name ] ]
-                        , td []
-                            [ a [ class "button", href ("/syncfeed/" ++ toString f.id) ]
-                                [ span [ class "icon is-small" ]
-                                    [ i [ class "fa fa-refresh" ] []
-                                    ]
-                                ]
-                            ]
+                        , td [] [ syncButton f ]
                         ]
             in
                 fs
@@ -163,9 +193,34 @@ feedList feeds =
             text (toString feeds)
 
 
+syncButton : Feed -> Html Msg
+syncButton feed =
+    let
+        aClass =
+            case feed.syncState of
+                RD.Loading ->
+                    "button is-loading"
+
+                RD.Success () ->
+                    "button is-success"
+
+                RD.NotAsked ->
+                    "button"
+
+                RD.Failure e ->
+                    "button is-danger"
+    in
+        a [ class aClass, onClick (SyncFeedAsk feed.id) ]
+            [ span [ class "icon is-small" ]
+                [ i [ class "fa fa-refresh" ] []
+                ]
+            ]
+
+
 decodeFeed : D.Decoder Feed
 decodeFeed =
-    D.map3 Feed
+    D.map4 Feed
         (D.index 0 D.int)
         (D.index 1 <| D.field "name" (D.string))
         (D.index 1 <| D.field "url" (D.string))
+        (D.succeed RD.NotAsked)

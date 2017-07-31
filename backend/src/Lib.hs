@@ -104,7 +104,7 @@ someFunc conf = do
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             liftAndCatchIO $ syncFeed fid
-            redirect "/browse"
+            json ("ok" :: String)
         post "/progress" $ do
             (msg :: ProgressMsg) <- jsonData
             liftAndCatchIO $ print msg

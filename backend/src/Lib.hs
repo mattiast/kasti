@@ -4,7 +4,6 @@ import Control.Lens((^?),(.~),(^.))
 import Control.Monad(join)
 import Data.Aeson((.=))
 import Data.Aeson.Lens
-import Data.ByteString.Lazy(ByteString)
 import Data.Function((&))
 import Data.Maybe(fromMaybe)
 import Network.HTTP.Types(ok200)
@@ -41,12 +40,12 @@ getToken conf session_code = do
     let mAT = r ^? W.responseBody . key "access_token" . _String
     return mAT
 
-userInfo :: S.Text -> IO ByteString
+userInfo :: S.Text -> IO (Maybe UserInfo)
 userInfo token = do
     let opts = W.defaults & W.param "access_token" .~ [ token ]
     r <- W.getWith opts "https://api.github.com/user"
     let x = r ^. W.responseBody
-    return x
+    return $ A.decode x
 
 getConf :: IO KastiConfig
 getConf = do
@@ -88,8 +87,7 @@ someFunc conf = do
             (code :: S.Text) <- param "code"
             mToken <- liftAndCatchIO $ getToken conf code
             mapM_ (mySessionInsert session "token") mToken
-            (mUserStr :: Maybe ByteString) <- liftAndCatchIO $ mapM userInfo mToken
-            let mUser = mUserStr >>= A.decode
+            (mUser :: Maybe UserInfo) <- liftAndCatchIO $ fmap join $ mapM userInfo mToken
             liftAndCatchIO $ print mUser
             mapM_ (mySessionInsert session "name") $ userName <$> mUser
             redirect "/browse"

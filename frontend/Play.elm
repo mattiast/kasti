@@ -1,7 +1,7 @@
 module Play exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a, h3, p)
-import Html.Attributes exposing (src, controls, style, id, href)
+import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a, h3, p, progress)
+import Html.Attributes exposing (src, controls, style, id, href, class)
 import Html.Events exposing (onClick, on)
 import Json.Decode as J
 import Json.Encode as JE
@@ -43,8 +43,18 @@ view state =
             ]
             []
         , br [] []
-        , a [ onClick (PostTime state) ] [ text "Save position" ]
-        , a [ onClick (AskTime state.episode) ] [ text "Get position" ]
+        , div [ class "field is-grouped" ]
+            [ p [ class "control" ]
+                [ a [ class "button is-primary", onClick (PostTime state) ]
+                    [ text "Save position"
+                    ]
+                ]
+            , p [ class "control" ]
+                [ a [ class "button is-primary", onClick (AskTime state.episode) ]
+                    [ text "Get position"
+                    ]
+                ]
+            ]
         ]
 
 

@@ -163,7 +163,8 @@ postProgress state =
 view : Model -> Html Msg
 view model =
     div []
-        [ RD.map P.view model.progress
+        [ navbar
+        , RD.map P.view model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
         , feedList model.feeds
@@ -174,6 +175,16 @@ view model =
         ]
 
 
+navbar : Html Msg
+navbar =
+    nav [ class "navbar" ]
+        [ div [ class "navbar-brand" ]
+            [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
+            , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
+            ]
+        ]
+
+
 feedList : RD.WebData (List Feed) -> Html Msg
 feedList feeds =
     case feeds of
@@ -181,13 +192,13 @@ feedList feeds =
             let
                 feedItem f =
                     tr []
-                        [ td [] [ a [ onClick (AskEpList f.id) ] [ text f.name ] ]
+                        [ td [ onClick (AskEpList f.id) ] [ a [] [ text f.name ] ]
                         , td [] [ syncButton f ]
                         ]
             in
                 fs
                     |> List.map feedItem
-                    |> table []
+                    |> table [ class "table is-narrow" ]
 
         _ ->
             text (toString feeds)
@@ -205,7 +216,7 @@ syncButton feed =
                     "button is-success"
 
                 RD.NotAsked ->
-                    "button"
+                    "button is-small"
 
                 RD.Failure e ->
                     "button is-danger"

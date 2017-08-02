@@ -19,6 +19,7 @@ import qualified Data.Vault.Lazy as Vault
 import qualified Network.Wreq as W
 import Web.Cookie
 import Web.Scotty
+import System.Remote.Monitoring
 import GetFeed
 import Types
 import EpisodeDb
@@ -75,6 +76,7 @@ someFunc :: KastiConfig -> IO ()
 someFunc conf = do
     (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
     (session :: MySession) <- Vault.newKey
+    forkServer "localhost" 3001
     scotty 3000 $ do
         middleware $ withSession sessionStore "kasti_token" def session
         get "/login" $ do

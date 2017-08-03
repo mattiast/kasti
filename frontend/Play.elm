@@ -1,6 +1,6 @@
 module Play exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a, h3, p, progress)
+import Html exposing (Html, Attribute, beginnerProgram, div, button, text, audio, br, a, h3, h4, p, progress)
 import Html.Attributes exposing (src, controls, style, id, href, class)
 import Html.Events exposing (onClick, on)
 import Json.Decode as J
@@ -61,14 +61,11 @@ view state =
 showState : State -> Html Msg
 showState state =
     div []
-        [ h3 [] [ text state.episode.title ]
-        , text ("id = " ++ toString state.episode.id)
-        , br [] []
-        , a [ href state.episode.url ] [ text "[mp3 link]" ]
-        , br [] []
-        , text (Date.toFormattedString "y/M/d" state.episode.date)
-        , br [] []
-        , text (toString state.time)
+        [ h4 [ class "title is-4" ] [ text state.episode.title ]
+        , p []
+            [ text (Date.toFormattedString "y/M/d" state.episode.date)
+            ]
+            , a [ href state.episode.url ] [ text "[mp3 link]" ]
         ]
 
 

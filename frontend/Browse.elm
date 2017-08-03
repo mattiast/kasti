@@ -233,16 +233,20 @@ navbar newFeed =
                 [ div [ class "navbar-item has-dropdown is-hoverable" ]
                     [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
                     , div [ class "navbar-dropdown" ]
-                        [ div
-                            [ class "navbar-item"
-                            , onInput (\v -> UpdateNewFeed { newFeed | name = v })
+                        [ div [ class "navbar-item" ]
+                            [ p []
+                                [ text "Name"
+                                , br [] []
+                                , input [ type_ "text", name "name", onInput (\v -> UpdateNewFeed { newFeed | name = v }) ] []
+                                ]
                             ]
-                            [ input [ type_ "text", name "name" ] [] ]
-                        , div
-                            [ class "navbar-item"
-                            , onInput (\v -> UpdateNewFeed { newFeed | url = v })
+                        , div [ class "navbar-item" ]
+                            [ p []
+                                [ text "Feed URL"
+                                , br [] []
+                                , input [ type_ "url", name "url", onInput (\v -> UpdateNewFeed { newFeed | url = v }) ] []
+                                ]
                             ]
-                            [ input [ type_ "url", name "url" ] [] ]
                         , a [ class "navbar-item", onClick PostNewFeed ] [ text "Add" ]
                         ]
                     ]

@@ -161,6 +161,7 @@ update msg model =
         PostNewFeed ->
             ( model, postNewFeed model.newFeed )
 
+
 postNewFeed : NewFeed -> Cmd Msg
 postNewFeed newFeed =
     Http.post "/feed"
@@ -168,6 +169,7 @@ postNewFeed newFeed =
         (D.succeed "")
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)
+
 
 port setCurrentTime : Float -> Cmd msg
 
@@ -178,6 +180,7 @@ encodeNewFeed newFeed =
         [ ( "name", JE.string newFeed.name )
         , ( "url", JE.string newFeed.url )
         ]
+
 
 syncFeed : FeedId -> Cmd Msg
 syncFeed fid =
@@ -202,11 +205,17 @@ view model =
         , RD.map P.view model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
-        , feedList model.feeds
-        , model.episodes
-            |> RD.map E.episodeList
-            |> RD.withDefault (text (toString model.episodes))
-            |> Html.map EpMsg
+        , div [ class "columns" ]
+            [ div [ class "column is-one-quarter" ]
+                [ feedList model.feeds
+                ]
+            , div [ class "column" ]
+                [ model.episodes
+                    |> RD.map E.episodeList
+                    |> RD.withDefault (text (toString model.episodes))
+                    |> Html.map EpMsg
+                ]
+            ]
         ]
 
 

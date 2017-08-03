@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, GeneralizedNewtypeDeriving #-}
 module GetFeed where
 import Control.Lens hiding ((.=))
+import Control.Monad(void)
 import Data.Aeson
 import Data.ByteString.Lazy(ByteString)
 import Data.Function((&))
@@ -32,10 +33,11 @@ fetchFeed url = do
     return feed
 
 syncFeed :: FeedId -> IO ()
-syncFeed fid = withConn $ \conn -> do
-    fi <- readFeed fid conn
-    eps <- fetchEpisodes fi
-    writeEpisodes conn fid eps
+syncFeed fid = withConn $ \conn ->
+    readFeed fid conn
+    >>= mapM fetchEpisodes
+    >>= mapM (writeEpisodes conn fid)
+    & void
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

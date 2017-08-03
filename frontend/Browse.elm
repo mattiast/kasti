@@ -1,9 +1,10 @@
 port module Browse exposing (..)
 
 import Html exposing (..)
-import Html.Events exposing (onClick, on)
-import Html.Attributes exposing (id, style, href, class)
+import Html.Events exposing (onClick, on, onInput)
+import Html.Attributes exposing (id, style, href, class, type_, name)
 import Json.Decode as D
+import Json.Encode as JE
 import Http
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
@@ -24,6 +25,7 @@ main =
 
 type alias Model =
     { feeds : RD.WebData (List Feed)
+    , newFeed : NewFeed
     , episodes : RD.WebData (List E.Episode)
     , progress : RD.WebData P.State
     }
@@ -39,6 +41,8 @@ type Msg
     | Nop
     | SyncFeedAsk FeedId
     | SyncFeedReceive FeedId (RD.WebData ())
+    | UpdateNewFeed NewFeed
+    | PostNewFeed
 
 
 type alias FeedId =
@@ -53,9 +57,20 @@ type alias Feed =
     }
 
 
+type alias NewFeed =
+    { name : String
+    , url : String
+    }
+
+
+emptyNewFeed : NewFeed
+emptyNewFeed =
+    NewFeed "" ""
+
+
 init : ( Model, Cmd Msg )
 init =
-    ( Model RD.NotAsked RD.NotAsked RD.NotAsked
+    ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked
     , Http.get "/feeds" (D.list decodeFeed)
         |> RD.sendRequest
         |> Cmd.map FeedsReceive
@@ -112,14 +127,14 @@ update msg model =
             )
 
         Nop ->
-            ( model, Cmd.none )
+            ( Debug.log "nop" model, Cmd.none )
 
         SyncFeedAsk fid ->
             let
                 upd : Feed -> Feed
                 upd feed =
                     if feed.id == fid then
-                        Debug.log "asked" { feed | syncState = RD.Loading }
+                        { feed | syncState = RD.Loading }
                     else
                         feed
             in
@@ -132,7 +147,7 @@ update msg model =
                 upd : Feed -> Feed
                 upd feed =
                     if feed.id == fid then
-                        Debug.log "received" { feed | syncState = state }
+                        { feed | syncState = state }
                     else
                         feed
             in
@@ -140,9 +155,29 @@ update msg model =
                 , Cmd.none
                 )
 
+        UpdateNewFeed newFeed ->
+            ( { model | newFeed = newFeed }, Cmd.none )
+
+        PostNewFeed ->
+            ( model, postNewFeed model.newFeed )
+
+postNewFeed : NewFeed -> Cmd Msg
+postNewFeed newFeed =
+    Http.post "/feed"
+        (Http.jsonBody <| Debug.log "posting" <| encodeNewFeed newFeed)
+        (D.succeed "")
+        |> RD.sendRequest
+        |> Cmd.map (\_ -> Nop)
 
 port setCurrentTime : Float -> Cmd msg
 
+
+encodeNewFeed : NewFeed -> JE.Value
+encodeNewFeed newFeed =
+    JE.object
+        [ ( "name", JE.string newFeed.name )
+        , ( "url", JE.string newFeed.url )
+        ]
 
 syncFeed : FeedId -> Cmd Msg
 syncFeed fid =
@@ -163,7 +198,7 @@ postProgress state =
 view : Model -> Html Msg
 view model =
     div []
-        [ navbar
+        [ navbar model.newFeed
         , RD.map P.view model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
@@ -175,12 +210,34 @@ view model =
         ]
 
 
-navbar : Html Msg
-navbar =
+navbar : NewFeed -> Html Msg
+navbar newFeed =
     nav [ class "navbar" ]
         [ div [ class "navbar-brand" ]
-            [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
-            , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
+            [ div [ class "navbar-item" ]
+                [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
+                , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
+                ]
+            ]
+        , div [ class "navbar-menu" ]
+            [ div [ class "navbar-start" ]
+                [ div [ class "navbar-item has-dropdown is-hoverable" ]
+                    [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
+                    , div [ class "navbar-dropdown" ]
+                        [ div
+                            [ class "navbar-item"
+                            , onInput (\v -> UpdateNewFeed { newFeed | name = v })
+                            ]
+                            [ input [ type_ "text", name "name" ] [] ]
+                        , div
+                            [ class "navbar-item"
+                            , onInput (\v -> UpdateNewFeed { newFeed | url = v })
+                            ]
+                            [ input [ type_ "url", name "url" ] [] ]
+                        , a [ class "navbar-item", onClick PostNewFeed ] [ text "Add" ]
+                        ]
+                    ]
+                ]
             ]
         ]
 

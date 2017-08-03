@@ -2,6 +2,7 @@
 module EpisodeDb where
 import Database.SQLite.Simple
 import Data.Function((&))
+import Data.Maybe(listToMaybe)
 import Types
 
 readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
@@ -12,11 +13,10 @@ readEpisodes :: FeedId -> Connection -> IO [(EpisodeId, Episode)]
 readEpisodes fid conn = query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
     & fmap (fmap $ \((Only eid) :. ep) -> (eid, ep))
 
-readFeed :: FeedId -> Connection -> IO FeedInfo
+readFeed :: FeedId -> Connection -> IO (Maybe FeedInfo)
 readFeed fid conn = do
-    -- TODO this is bad, fix the assumption
-    [fi :: FeedInfo] <- query conn "select name, url from feeds where id = ?" (Only fid)
-    return fi
+    (fis :: [FeedInfo]) <- query conn "select name, url from feeds where id = ?" (Only fid)
+    return $ listToMaybe $ fis
 
 readPosition :: EpisodeId -> Connection -> IO Double
 readPosition eid conn = do

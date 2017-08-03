@@ -99,6 +99,10 @@ someFunc conf = do
         get "/feeds" $ do
             fs <- liftAndCatchIO $ withConn readFeeds
             json fs
+        post "/feed" $ do
+            (fi :: FeedInfo) <- jsonData
+            liftAndCatchIO $ withConn $ \conn -> writeFeeds conn [fi]
+            json ("ok" :: String)
         get "/episodes/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             eps <- liftAndCatchIO $ withConn $ readEpisodes fid

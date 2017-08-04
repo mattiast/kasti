@@ -3,16 +3,16 @@ module GetFeed where
 import Control.Lens hiding ((.=))
 import Control.Monad(void)
 import Data.Aeson
-import Data.ByteString.Lazy(ByteString)
 import Data.Function((&))
 import Data.Maybe
-import Data.Text(pack)
+import qualified Data.Text.Encoding as T
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
 import Data.Foldable(traverse_)
 import Database.SQLite.Simple(Connection, withConnection)
 import Network.Wreq hiding ((:=))
-import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.ByteString.Char8 as B
 import Text.Feed.Import
 import Text.Feed.Query
 import Text.Feed.Types
@@ -22,7 +22,7 @@ import EpisodeDb
 
 getFeeds :: FilePath -> IO [FeedInfo]
 getFeeds path = do
-    (bs :: ByteString) <- B.readFile path
+    (bs :: BL.ByteString) <- BL.readFile path
     return $ decode bs
         & fromMaybe []
 
@@ -30,7 +30,7 @@ fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
     r <- get url
     let b = r ^. responseBody
-        feed = parseFeedString $ B.unpack $ b
+        feed = parseFeedString $ BL.unpack $ b
     return feed
 
 syncFeed :: FeedId -> Connection -> IO ()
@@ -57,7 +57,7 @@ itemEpisodeInfo item = do
         >>= parsePubDate
     return $ Episode
         (EpisodeUrl url)
-        (pack title)
+        (T.decodeUtf8 $ B.pack title)
         date
 
 populateDB :: IO ()

@@ -1,0 +1,42 @@
+- hosts: webservers
+  remote_user: root
+  tasks:
+  - name: Update apt
+    when: ansible_os_family == "Debian"
+    apt: update_cache=yes
+
+  - name: install stuff
+    when: ansible_os_family == "Debian"
+    apt:
+      name: "{{item}}"
+      state: latest
+    with_items:
+      - libgmp10
+      - tar
+
+  - name: copy and extract tarball
+    unarchive:
+      src: ../stuff.tar.gz
+      dest: /root
+    notify: restart kasti
+
+  - name: copy systemd service file to server
+    copy:
+      src: kasti.service
+      dest: /etc/systemd/system
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: start service
+    systemd:
+      daemon_reload: yes
+      name: kasti.service
+      state: started
+
+  handlers:
+  - name: restart kasti
+    systemd:
+      daemon_reload: yes
+      name: kasti.service
+      state: restarted

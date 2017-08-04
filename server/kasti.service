@@ -1,0 +1,11 @@
+[Unit]
+Description=Kasti server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/release
+ExecStart=/root/release/kasti-server /root/kasti-config.json
+
+[Install]
+WantedBy=default.target

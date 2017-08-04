@@ -2,7 +2,7 @@ all: stuff.tar.gz
 
 release/elm.js: frontend/*.elm
 	cd frontend ; elm-make Browse.elm --output elm.js
-	cp frontend/elm.js release
+	mv frontend/elm.js release
 
 release/browse.html: frontend/browse.html
 	cp frontend/browse.html release

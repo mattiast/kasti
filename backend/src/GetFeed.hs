@@ -10,6 +10,7 @@ import Data.Text(pack)
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
 import Data.Foldable(traverse_)
+import Database.SQLite.Simple(Connection, withConnection)
 import Network.Wreq hiding ((:=))
 import qualified Data.ByteString.Lazy.Char8 as B
 import Text.Feed.Import
@@ -32,8 +33,8 @@ fetchFeed url = do
         feed = parseFeedString $ B.unpack $ b
     return feed
 
-syncFeed :: FeedId -> IO ()
-syncFeed fid = withConn $ \conn ->
+syncFeed :: FeedId -> Connection -> IO ()
+syncFeed fid conn =
     readFeed fid conn
     >>= mapM fetchEpisodes
     >>= mapM (writeEpisodes conn fid)
@@ -62,7 +63,7 @@ itemEpisodeInfo item = do
 populateDB :: IO ()
 populateDB = do
     fs <- getFeeds "/home/matti/.vim/podcasts.json" 
-    withConn $ \conn -> do
+    withConnection "db.sqlite" $ \conn -> do
         writeFeeds conn fs
         readFeeds conn >>= (traverse_ $ \(fid, fi) -> do
             eps <- fetchEpisodes fi

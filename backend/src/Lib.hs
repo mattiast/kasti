@@ -2,10 +2,11 @@
 module Lib where
 import Control.Lens((^?),(.~),(^.))
 import Control.Monad(join)
-import Data.Aeson((.=))
+import Data.Aeson((.=),decodeStrict')
 import Data.Aeson.Lens
 import Data.Function((&))
 import Data.Maybe(fromMaybe)
+import Database.SQLite.Simple(withConnection)
 import Network.HTTP.Types(ok200)
 import Network.Wai.Session
 import Network.Wai.Session.Map(mapStore)
@@ -23,11 +24,6 @@ import System.Remote.Monitoring
 import GetFeed
 import Types
 import EpisodeDb
-
-data KastiConfig = KastiConfig {
-    clientId :: S.Text
-  , clientSecret :: S.Text
-} deriving Show
 
 
 getToken :: KastiConfig -> S.Text -> IO (Maybe S.Text)
@@ -53,9 +49,7 @@ getConf = do
     let args = argument str (metavar "CONFIGFILE")
     (confPath :: FilePath) <- execParser $ info args fullDesc
     bs <- B.readFile confPath
-    let mcId = bs ^? key "client_id" . _String
-        mcSecret = bs ^? key "client_secret" . _String
-        mConf = KastiConfig <$> mcId <*> mcSecret
+    let mConf = decodeStrict' bs :: Maybe KastiConfig
     maybe (fail "couldn't parse conf file") return mConf
 
 type MySession = Vault.Key (Session ActionM String S.Text)
@@ -76,6 +70,7 @@ someFunc :: KastiConfig -> IO ()
 someFunc conf = do
     (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
     (session :: MySession) <- Vault.newKey
+    let withConn = withConnection (dbString conf)
     forkServer "localhost" 3001
     scotty 3000 $ do
         middleware $ withSession sessionStore "kasti_token" def session
@@ -109,7 +104,7 @@ someFunc conf = do
             json eps
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
-            liftAndCatchIO $ syncFeed fid
+            liftAndCatchIO $ withConn $ syncFeed fid
             json ("ok" :: String)
         post "/progress" $ do
             (msg :: ProgressMsg) <- jsonData

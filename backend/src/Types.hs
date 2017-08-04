@@ -85,3 +85,16 @@ instance FromJSON UserInfo where
             <*> v .: "name"
             <*> v .: "login"
     parseJSON _ = mempty
+
+data KastiConfig = KastiConfig {
+    clientId :: Text
+  , clientSecret :: Text
+  , dbString :: String
+} deriving Show
+
+instance FromJSON KastiConfig where
+    parseJSON (Object v) = KastiConfig
+        <$> v .: "client_id"
+        <*> v .: "client_secret"
+        <*> v .: "db_string"
+    parseJSON _ = mempty

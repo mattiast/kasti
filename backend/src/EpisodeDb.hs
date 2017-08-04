@@ -41,6 +41,3 @@ writePosition :: ProgressMsg -> Connection -> IO ()
 writePosition msg conn = do
     execute conn "insert or ignore into progress(episode_id, position) values (?, ?)" msg
     execute conn "update progress set position = ? where episode_id = ?" (proPos msg, prEpId msg)
-
-withConn :: (Connection -> IO a) -> IO a
-withConn = withConnection "db.sqlite"

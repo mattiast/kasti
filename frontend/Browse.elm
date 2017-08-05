@@ -247,7 +247,7 @@ navbar newFeed =
                                 , input [ type_ "url", name "url", onInput (\v -> UpdateNewFeed { newFeed | url = v }) ] []
                                 ]
                             ]
-                        , a [ class "navbar-item", onClick PostNewFeed ] [ text "Add" ]
+                        , div [ class "navbar-item" ] [ a [ class "button is-primary", onClick PostNewFeed ] [ text "Add" ] ]
                         ]
                     ]
                 ]
@@ -280,16 +280,16 @@ syncButton feed =
         aClass =
             case feed.syncState of
                 RD.Loading ->
-                    "button is-loading"
+                    "button is-small is-loading"
 
                 RD.Success () ->
-                    "button is-success"
+                    "button is-small is-success"
 
                 RD.NotAsked ->
                     "button is-small"
 
                 RD.Failure e ->
-                    "button is-danger"
+                    "button is-small is-danger"
     in
         a [ class aClass, onClick (SyncFeedAsk feed.id) ]
             [ span [ class "icon is-small" ]

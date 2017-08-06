@@ -2,7 +2,7 @@ module Views exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (onClick, on, onInput)
-import Html.Attributes exposing (id, style, href, class, type_, name, placeholder)
+import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
 import RemoteData as RD
 import Play as P
@@ -13,7 +13,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ navbar model.newFeed
-        , RD.map P.view model.progress
+        , RD.map viewPlayer model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
         , div [ class "columns" ]
@@ -160,4 +160,44 @@ episodeRow ep =
     tr [ onClick (EpisodePick ep) ]
         [ td [] [ text (Date.toFormattedString "y/M/d" ep.date) ]
         , td [] [ text ep.title ]
+        ]
+
+
+viewPlayer : State -> Html MsgProg
+viewPlayer state =
+    div []
+        [ showState state
+        , br [] []
+        , audio
+            [ src state.episode.url
+            , controls True
+            , style [ ( "width", "1000px" ) ]
+            , id "audio-player"
+            , P.onTimeUpdate
+            ]
+            []
+        , br [] []
+        , div [ class "field is-grouped" ]
+            [ p [ class "control" ]
+                [ a [ class "button is-primary", onClick (PostTime state) ]
+                    [ text "Save position"
+                    ]
+                ]
+            , p [ class "control" ]
+                [ a [ class "button is-primary", onClick (AskTime state.episode) ]
+                    [ text "Get position"
+                    ]
+                ]
+            ]
+        ]
+
+
+showState : State -> Html msg
+showState state =
+    div []
+        [ h4 [ class "title is-4" ] [ text state.episode.title ]
+        , p []
+            [ text (Date.toFormattedString "y/M/d" state.episode.date)
+            ]
+            , a [ href state.episode.url ] [ text "[mp3 link]" ]
         ]

@@ -1,11 +1,7 @@
 module Episode exposing (..)
 
-import Html exposing (Html, Attribute, beginnerProgram, program, div, button, text, audio, br, ul, li, a, tr, td, th, table)
-import Html.Attributes exposing (href, class)
-import Html.Events exposing (onClick, on)
 import Json.Decode as D
 import Date exposing (Date)
-import Date.Extra as Date
 import Types exposing (..)
 
 

@@ -36,11 +36,11 @@ emptyNewFeed =
     NewFeed "" "" RD.NotAsked
 
 
-
 type alias State =
     { episode : Episode
     , time : Float
     }
+
 
 type alias Model =
     { feeds : RD.WebData (List Feed)
@@ -50,11 +50,11 @@ type alias Model =
     }
 
 
-
 type MsgProg
     = TimeUpdate Float
     | PostTime State
     | AskTime Episode
+
 
 type Msg
     = FeedsReceive (RD.WebData (List Feed))

@@ -18,46 +18,6 @@ encodeProgress state =
         ]
 
 
-view : State -> Html MsgProg
-view state =
-    div []
-        [ showState state
-        , br [] []
-        , audio
-            [ src state.episode.url
-            , controls True
-            , style [ ( "width", "1000px" ) ]
-            , id "audio-player"
-            , onTimeUpdate
-            ]
-            []
-        , br [] []
-        , div [ class "field is-grouped" ]
-            [ p [ class "control" ]
-                [ a [ class "button is-primary", onClick (PostTime state) ]
-                    [ text "Save position"
-                    ]
-                ]
-            , p [ class "control" ]
-                [ a [ class "button is-primary", onClick (AskTime state.episode) ]
-                    [ text "Get position"
-                    ]
-                ]
-            ]
-        ]
-
-
-showState : State -> Html MsgProg
-showState state =
-    div []
-        [ h4 [ class "title is-4" ] [ text state.episode.title ]
-        , p []
-            [ text (Date.toFormattedString "y/M/d" state.episode.date)
-            ]
-            , a [ href state.episode.url ] [ text "[mp3 link]" ]
-        ]
-
-
 update : MsgProg -> State -> State
 update msg state =
     case msg of

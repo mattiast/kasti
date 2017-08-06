@@ -2,7 +2,7 @@ port module Browse exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (onClick, on, onInput)
-import Html.Attributes exposing (id, style, href, class, type_, name)
+import Html.Attributes exposing (id, style, href, class, type_, name, placeholder)
 import Json.Decode as D
 import Json.Encode as JE
 import Http
@@ -234,20 +234,41 @@ navbar newFeed =
                     [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
                     , div [ class "navbar-dropdown" ]
                         [ div [ class "navbar-item" ]
-                            [ p []
-                                [ text "Name"
-                                , br [] []
-                                , input [ type_ "text", name "name", onInput (\v -> UpdateNewFeed { newFeed | name = v }) ] []
+                            [ div [ class "field" ]
+                                [ label [ class "label" ] [ text "Name" ]
+                                , div [ class "control" ]
+                                    [ input
+                                        [ type_ "text"
+                                        , name "name"
+                                        , placeholder "Feed title"
+                                        , onInput (\v -> UpdateNewFeed { newFeed | name = v })
+                                        ]
+                                        []
+                                    ]
                                 ]
                             ]
                         , div [ class "navbar-item" ]
-                            [ p []
-                                [ text "Feed URL"
-                                , br [] []
-                                , input [ type_ "url", name "url", onInput (\v -> UpdateNewFeed { newFeed | url = v }) ] []
+                            [ div [ class "field" ]
+                                [ label [ class "label" ] [ text "Feed URL" ]
+                                , div [ class "control" ]
+                                    [ input
+                                        [ type_ "url"
+                                        , name "url"
+                                        , placeholder "http://"
+                                        , onInput (\v -> UpdateNewFeed { newFeed | url = v })
+                                        ]
+                                        []
+                                    ]
                                 ]
                             ]
-                        , div [ class "navbar-item" ] [ a [ class "button is-primary", onClick PostNewFeed ] [ text "Add" ] ]
+                        , div [ class "navbar-item" ]
+                            [ div [ class "field" ]
+                                [ div [ class "control" ]
+                                    [ button [ class "button is-primary", onClick PostNewFeed ]
+                                        [ text "Add" ]
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ]
@@ -278,18 +299,19 @@ syncButton : Feed -> Html Msg
 syncButton feed =
     let
         aClass =
-            case feed.syncState of
-                RD.Loading ->
-                    "button is-small is-loading"
+            "button is-small"
+                ++ case feed.syncState of
+                    RD.NotAsked ->
+                        ""
 
-                RD.Success () ->
-                    "button is-small is-success"
+                    RD.Loading ->
+                        " is-loading"
 
-                RD.NotAsked ->
-                    "button is-small"
+                    RD.Success () ->
+                        " is-success"
 
-                RD.Failure e ->
-                    "button is-small is-danger"
+                    RD.Failure e ->
+                        " is-danger"
     in
         a [ class aClass, onClick (SyncFeedAsk feed.id) ]
             [ span [ class "icon is-small" ]

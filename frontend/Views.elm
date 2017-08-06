@@ -5,8 +5,9 @@ import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, type_, name, placeholder)
 import Types exposing (..)
 import RemoteData as RD
-import Episode as E
 import Play as P
+import Date.Extra as Date
+
 
 view : Model -> Html Msg
 view model =
@@ -21,9 +22,8 @@ view model =
                 ]
             , div [ class "column" ]
                 [ model.episodes
-                    |> RD.map E.episodeList
+                    |> RD.map episodeList
                     |> RD.withDefault (text (toString model.episodes))
-                    |> Html.map EpMsg
                 ]
             ]
         ]
@@ -144,3 +144,20 @@ syncButton feed =
                 [ i [ class "fa fa-refresh" ] []
                 ]
             ]
+
+
+episodeList : List Episode -> Html Msg
+episodeList eps =
+    eps
+        |> List.sortWith (\x y -> Date.compare y.date x.date)
+        |> List.map episodeRow
+        |> (\rows -> [ tr [] [ th [] [ text "Date" ], th [] [ text "Title" ] ] ] ++ rows)
+        |> table [ class "table is-narrow" ]
+
+
+episodeRow : Episode -> Html Msg
+episodeRow ep =
+    tr [ onClick (EpisodePick ep) ]
+        [ td [] [ text (Date.toFormattedString "y/M/d" ep.date) ]
+        , td [] [ text ep.title ]
+        ]

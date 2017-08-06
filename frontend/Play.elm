@@ -7,18 +7,7 @@ import Json.Decode as J
 import Json.Encode as JE
 import Date.Extra as Date
 import Episode as E
-
-
-type Msg
-    = TimeUpdate Float
-    | PostTime State
-    | AskTime E.Episode
-
-
-type alias State =
-    { episode : E.Episode
-    , time : Float
-    }
+import Types exposing (..)
 
 
 encodeProgress : State -> JE.Value
@@ -29,7 +18,7 @@ encodeProgress state =
         ]
 
 
-view : State -> Html Msg
+view : State -> Html MsgProg
 view state =
     div []
         [ showState state
@@ -58,7 +47,7 @@ view state =
         ]
 
 
-showState : State -> Html Msg
+showState : State -> Html MsgProg
 showState state =
     div []
         [ h4 [ class "title is-4" ] [ text state.episode.title ]
@@ -69,7 +58,7 @@ showState state =
         ]
 
 
-update : Msg -> State -> State
+update : MsgProg -> State -> State
 update msg state =
     case msg of
         TimeUpdate t ->
@@ -82,9 +71,9 @@ update msg state =
             state
 
 
-onTimeUpdate : Attribute Msg
+onTimeUpdate : Attribute MsgProg
 onTimeUpdate =
-    on "timeupdate" (J.map TimeUpdate targetCurrentTime)
+    on "timeupdate" (J.map (TimeUpdate) targetCurrentTime)
 
 
 targetCurrentTime : J.Decoder Float

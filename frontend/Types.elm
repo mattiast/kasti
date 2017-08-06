@@ -1,8 +1,7 @@
 module Types exposing (..)
 
 import RemoteData as RD
-import Episode as E
-import Play as P
+import Date exposing (Date)
 
 
 type alias FeedId =
@@ -24,26 +23,46 @@ type alias NewFeed =
     }
 
 
+type alias Episode =
+    { id : Int
+    , title : String
+    , url : String
+    , date : Date
+    }
+
+
 emptyNewFeed : NewFeed
 emptyNewFeed =
     NewFeed "" "" RD.NotAsked
 
 
+
+type alias State =
+    { episode : Episode
+    , time : Float
+    }
+
 type alias Model =
     { feeds : RD.WebData (List Feed)
     , newFeed : NewFeed
-    , episodes : RD.WebData (List E.Episode)
-    , progress : RD.WebData P.State
+    , episodes : RD.WebData (List Episode)
+    , progress : RD.WebData State
     }
 
 
+
+type MsgProg
+    = TimeUpdate Float
+    | PostTime State
+    | AskTime Episode
+
 type Msg
     = FeedsReceive (RD.WebData (List Feed))
-    | EpMsg E.Msg
+    | EpisodePick Episode
     | AskEpList Int
-    | ReceiveEpList (RD.WebData (List E.Episode))
-    | ReceiveProgress (RD.WebData P.State)
-    | ProgMsg P.Msg
+    | ReceiveEpList (RD.WebData (List Episode))
+    | ReceiveProgress (RD.WebData State)
+    | ProgMsg MsgProg
     | Nop
     | SyncFeedAsk FeedId
     | SyncFeedReceive FeedId (RD.WebData ())

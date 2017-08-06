@@ -40,9 +40,9 @@ update msg model =
             , Cmd.none
             )
 
-        EpMsg (E.Pick ep) ->
+        EpisodePick ep ->
             ( model
-            , Http.get ("/progress/" ++ toString ep.id) (D.map (P.State ep) D.float)
+            , Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
                 |> RD.sendRequest
                 |> Cmd.map ReceiveProgress
             )
@@ -63,14 +63,14 @@ update msg model =
                 |> RD.withDefault Cmd.none
             )
 
-        ProgMsg (P.AskTime ep) ->
+        ProgMsg (AskTime ep) ->
             ( model
-            , Http.get ("/progress/" ++ toString ep.id) (D.map (P.State ep) D.float)
+            , Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
                 |> RD.sendRequest
                 |> Cmd.map ReceiveProgress
             )
 
-        ProgMsg (P.PostTime s) ->
+        ProgMsg (PostTime s) ->
             ( model, postProgress s )
 
         ProgMsg m ->
@@ -151,7 +151,7 @@ syncFeed fid =
         |> Cmd.map (SyncFeedReceive fid)
 
 
-postProgress : P.State -> Cmd Msg
+postProgress : State -> Cmd Msg
 postProgress state =
     Http.post "/progress"
         (Http.jsonBody <| Debug.log "posting" <| P.encodeProgress state)

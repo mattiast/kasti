@@ -5,7 +5,7 @@ import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
 import RemoteData as RD
-import Play as P
+import Helpers as H
 import Date.Extra as Date
 
 
@@ -173,7 +173,7 @@ viewPlayer state =
             , controls True
             , style [ ( "width", "1000px" ) ]
             , id "audio-player"
-            , P.onTimeUpdate
+            , H.onTimeUpdate
             ]
             []
         , br [] []

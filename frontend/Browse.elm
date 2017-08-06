@@ -7,8 +7,7 @@ import Http
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
 import RemoteData as RD
-import Episode as E
-import Play as P
+import Helpers as H
 import Types exposing (..)
 import Views
 
@@ -49,7 +48,7 @@ update msg model =
 
         AskEpList feed_id ->
             ( { model | episodes = RD.Loading }
-            , Http.get ("/episodes/" ++ toString feed_id) (D.list E.decodeEpisode)
+            , Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
                 |> RD.sendRequest
                 |> Cmd.map ReceiveEpList
             )
@@ -76,7 +75,7 @@ update msg model =
         ProgMsg m ->
             ( { model
                 | progress =
-                    RD.map (P.update m) model.progress
+                    RD.map (H.update m) model.progress
               }
             , Cmd.none
             )
@@ -154,7 +153,7 @@ syncFeed fid =
 postProgress : State -> Cmd Msg
 postProgress state =
     Http.post "/progress"
-        (Http.jsonBody <| Debug.log "posting" <| P.encodeProgress state)
+        (Http.jsonBody <| Debug.log "posting" <| H.encodeProgress state)
         (D.succeed "")
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)

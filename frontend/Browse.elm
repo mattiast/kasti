@@ -42,7 +42,8 @@ type Msg
     | SyncFeedAsk FeedId
     | SyncFeedReceive FeedId (RD.WebData ())
     | UpdateNewFeed NewFeed
-    | PostNewFeed
+    | NewFeedPost
+    | NewFeedReceive (RD.WebData ())
 
 
 type alias FeedId =
@@ -60,12 +61,13 @@ type alias Feed =
 type alias NewFeed =
     { name : String
     , url : String
+    , postStatus : RD.WebData ()
     }
 
 
 emptyNewFeed : NewFeed
 emptyNewFeed =
-    NewFeed "" ""
+    NewFeed "" "" RD.NotAsked
 
 
 init : ( Model, Cmd Msg )
@@ -158,8 +160,15 @@ update msg model =
         UpdateNewFeed newFeed ->
             ( { model | newFeed = newFeed }, Cmd.none )
 
-        PostNewFeed ->
+        NewFeedPost ->
             ( model, postNewFeed model.newFeed )
+
+        NewFeedReceive postStatus ->
+            let
+                oldNewFeed =
+                    model.newFeed
+            in
+                ( { model | newFeed = { oldNewFeed | postStatus = postStatus } }, Cmd.none )
 
 
 postNewFeed : NewFeed -> Cmd Msg
@@ -168,7 +177,7 @@ postNewFeed newFeed =
         (Http.jsonBody <| Debug.log "posting" <| encodeNewFeed newFeed)
         (D.succeed "")
         |> RD.sendRequest
-        |> Cmd.map (\_ -> Nop)
+        |> Cmd.map (RD.map (\_ -> ()) >> NewFeedReceive)
 
 
 port setCurrentTime : Float -> Cmd msg
@@ -264,7 +273,7 @@ navbar newFeed =
                         , div [ class "navbar-item" ]
                             [ div [ class "field" ]
                                 [ div [ class "control" ]
-                                    [ button [ class "button is-primary", onClick PostNewFeed ]
+                                    [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]
                                         [ text "Add" ]
                                     ]
                                 ]
@@ -274,6 +283,22 @@ navbar newFeed =
                 ]
             ]
         ]
+
+
+addFeedButtonClass : NewFeed -> String
+addFeedButtonClass newFeed =
+    case newFeed.postStatus of
+        RD.NotAsked ->
+            "button is-primary"
+
+        RD.Loading ->
+            "button is-primary is-loading"
+
+        RD.Success _ ->
+            "button is-success"
+
+        RD.Failure _ ->
+            "button is-danger"
 
 
 feedList : RD.WebData (List Feed) -> Html Msg

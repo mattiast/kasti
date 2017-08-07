@@ -59,6 +59,7 @@ decodeFeed =
         (J.index 1 <| J.field "url" (J.string))
         (J.succeed RD.NotAsked)
 
+
 onTimeUpdate : Attribute MsgProg
 onTimeUpdate =
     on "timeupdate" (J.map (TimeUpdate) targetCurrentTime)
@@ -67,3 +68,16 @@ onTimeUpdate =
 targetCurrentTime : J.Decoder Float
 targetCurrentTime =
     J.at [ "target", "currentTime" ] J.float
+
+
+modifyFeedAtId : FeedId -> (Feed -> Feed) -> Model -> Model
+modifyFeedAtId fid upd model =
+    let
+        updAt : Feed -> Feed
+        updAt feed =
+            if feed.id == fid then
+                upd feed
+            else
+                feed
+    in
+        { model | feeds = RD.map (List.map updAt) model.feeds }

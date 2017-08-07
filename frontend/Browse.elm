@@ -31,18 +31,6 @@ init =
     )
 
 
-getProgress : Episode -> Cmd (RD.WebData State)
-getProgress ep =
-    Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
-        |> RD.sendRequest
-
-
-getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
-getEpisodes feed_id =
-    Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
-        |> RD.sendRequest
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -94,14 +82,14 @@ update msg model =
         SyncFeedAsk fid ->
             let
                 newModel =
-                    modifyFeedAtId fid (\feed -> { feed | syncState = RD.Loading }) model
+                    H.modifyFeedAtId fid (\feed -> { feed | syncState = RD.Loading }) model
             in
                 ( newModel, syncFeed fid )
 
         SyncFeedReceive fid state ->
             let
                 newModel =
-                    modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
+                    H.modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
             in
                 ( newModel, Cmd.none )
 
@@ -117,19 +105,6 @@ update msg model =
                     model.newFeed
             in
                 ( { model | newFeed = { oldNewFeed | postStatus = postStatus } }, Cmd.none )
-
-
-modifyFeedAtId : FeedId -> (Feed -> Feed) -> Model -> Model
-modifyFeedAtId fid upd model =
-    let
-        updAt : Feed -> Feed
-        updAt feed =
-            if feed.id == fid then
-                upd feed
-            else
-                feed
-    in
-        { model | feeds = RD.map (List.map updAt) model.feeds }
 
 
 postNewFeed : NewFeed -> Cmd Msg
@@ -159,3 +134,14 @@ postProgress state =
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)
 
+
+getProgress : Episode -> Cmd (RD.WebData State)
+getProgress ep =
+    Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
+        |> RD.sendRequest
+
+
+getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
+getEpisodes feed_id =
+    Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
+        |> RD.sendRequest

@@ -31,25 +31,33 @@ init =
     )
 
 
+getProgress : Episode -> Cmd (RD.WebData State)
+getProgress ep =
+    Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
+        |> RD.sendRequest
+
+
+getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
+getEpisodes feed_id =
+    Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
+        |> RD.sendRequest
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FeedsReceive stuff ->
-            ( { model | feeds = stuff }
-            , Cmd.none
-            )
+            ( { model | feeds = stuff }, Cmd.none )
 
         EpisodePick ep ->
             ( model
-            , Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
-                |> RD.sendRequest
+            , getProgress ep
                 |> Cmd.map ReceiveProgress
             )
 
         AskEpList feed_id ->
             ( { model | episodes = RD.Loading }
-            , Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
-                |> RD.sendRequest
+            , getEpisodes feed_id
                 |> Cmd.map ReceiveEpList
             )
 
@@ -58,14 +66,14 @@ update msg model =
 
         ReceiveProgress stuff ->
             ( { model | progress = stuff |> Debug.log "rec prog" }
-            , RD.map (\s -> setCurrentTime s.time) stuff
+            , stuff
+                |> RD.map (\s -> setCurrentTime s.time)
                 |> RD.withDefault Cmd.none
             )
 
         ProgMsg (AskTime ep) ->
             ( model
-            , Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
-                |> RD.sendRequest
+            , getProgress ep
                 |> Cmd.map ReceiveProgress
             )
 

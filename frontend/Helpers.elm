@@ -6,6 +6,7 @@ import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as J
 import Json.Encode as JE
+import RemoteData as RD
 import Date.Extra as Date
 import Types exposing (..)
 
@@ -42,18 +43,21 @@ encodeProgress state =
         ]
 
 
-update : MsgProg -> State -> State
-update msg state =
-    case msg of
-        TimeUpdate t ->
-            { state | time = t }
+encodeNewFeed : NewFeed -> JE.Value
+encodeNewFeed newFeed =
+    JE.object
+        [ ( "name", JE.string newFeed.name )
+        , ( "url", JE.string newFeed.url )
+        ]
 
-        AskTime e ->
-            state
 
-        PostTime s ->
-            state
-
+decodeFeed : J.Decoder Feed
+decodeFeed =
+    J.map4 Feed
+        (J.index 0 J.int)
+        (J.index 1 <| J.field "name" (J.string))
+        (J.index 1 <| J.field "url" (J.string))
+        (J.succeed RD.NotAsked)
 
 onTimeUpdate : Attribute MsgProg
 onTimeUpdate =

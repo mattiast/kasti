@@ -25,7 +25,7 @@ main =
 init : ( Model, Cmd Msg )
 init =
     ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked
-    , Http.get "/feeds" (D.list decodeFeed)
+    , Http.get "/feeds" (D.list H.decodeFeed)
         |> RD.sendRequest
         |> Cmd.map FeedsReceive
     )
@@ -80,10 +80,10 @@ update msg model =
         ProgMsg (PostTime s) ->
             ( model, postProgress s )
 
-        ProgMsg m ->
+        ProgMsg (TimeUpdate t) ->
             ( { model
                 | progress =
-                    RD.map (H.update m) model.progress
+                    RD.map (\state -> { state | time = t }) model.progress
               }
             , Cmd.none
             )
@@ -93,29 +93,17 @@ update msg model =
 
         SyncFeedAsk fid ->
             let
-                upd : Feed -> Feed
-                upd feed =
-                    if feed.id == fid then
-                        { feed | syncState = RD.Loading }
-                    else
-                        feed
+                newModel =
+                    modifyFeedAtId fid (\feed -> { feed | syncState = RD.Loading }) model
             in
-                ( { model | feeds = RD.map (List.map upd) model.feeds }
-                , syncFeed fid
-                )
+                ( newModel, syncFeed fid )
 
         SyncFeedReceive fid state ->
             let
-                upd : Feed -> Feed
-                upd feed =
-                    if feed.id == fid then
-                        { feed | syncState = state }
-                    else
-                        feed
+                newModel =
+                    modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
             in
-                ( { model | feeds = RD.map (List.map upd) model.feeds }
-                , Cmd.none
-                )
+                ( newModel, Cmd.none )
 
         UpdateNewFeed newFeed ->
             ( { model | newFeed = newFeed }, Cmd.none )
@@ -131,24 +119,29 @@ update msg model =
                 ( { model | newFeed = { oldNewFeed | postStatus = postStatus } }, Cmd.none )
 
 
+modifyFeedAtId : FeedId -> (Feed -> Feed) -> Model -> Model
+modifyFeedAtId fid upd model =
+    let
+        updAt : Feed -> Feed
+        updAt feed =
+            if feed.id == fid then
+                upd feed
+            else
+                feed
+    in
+        { model | feeds = RD.map (List.map updAt) model.feeds }
+
+
 postNewFeed : NewFeed -> Cmd Msg
 postNewFeed newFeed =
     Http.post "/feed"
-        (Http.jsonBody <| Debug.log "posting" <| encodeNewFeed newFeed)
+        (Http.jsonBody <| Debug.log "posting" <| H.encodeNewFeed newFeed)
         (D.succeed "")
         |> RD.sendRequest
         |> Cmd.map (RD.map (\_ -> ()) >> NewFeedReceive)
 
 
 port setCurrentTime : Float -> Cmd msg
-
-
-encodeNewFeed : NewFeed -> JE.Value
-encodeNewFeed newFeed =
-    JE.object
-        [ ( "name", JE.string newFeed.name )
-        , ( "url", JE.string newFeed.url )
-        ]
 
 
 syncFeed : FeedId -> Cmd Msg
@@ -166,11 +159,3 @@ postProgress state =
         |> RD.sendRequest
         |> Cmd.map (\_ -> Nop)
 
-
-decodeFeed : D.Decoder Feed
-decodeFeed =
-    D.map4 Feed
-        (D.index 0 D.int)
-        (D.index 1 <| D.field "name" (D.string))
-        (D.index 1 <| D.field "url" (D.string))
-        (D.succeed RD.NotAsked)

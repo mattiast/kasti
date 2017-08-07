@@ -36,9 +36,10 @@ emptyNewFeed =
     NewFeed "" "" RD.NotAsked
 
 
-type alias State =
+type alias PlayerState =
     { episode : Episode
     , time : Float
+    , duration : Float
     }
 
 
@@ -46,13 +47,13 @@ type alias Model =
     { feeds : RD.WebData (List Feed)
     , newFeed : NewFeed
     , episodes : RD.WebData (List Episode)
-    , progress : RD.WebData State
+    , progress : RD.WebData PlayerState
     }
 
 
 type MsgProg
-    = TimeUpdate Float
-    | PostTime State
+    = TimeUpdate Float Float
+    | PostTime PlayerState
     | AskTime Episode
 
 
@@ -61,7 +62,7 @@ type Msg
     | EpisodePick Episode
     | AskEpList Int
     | ReceiveEpList (RD.WebData (List Episode))
-    | ReceiveProgress (RD.WebData State)
+    | ReceiveProgress (RD.WebData PlayerState)
     | ProgMsg MsgProg
     | Nop
     | SyncFeedAsk FeedId

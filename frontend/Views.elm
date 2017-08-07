@@ -163,7 +163,7 @@ episodeRow ep =
         ]
 
 
-viewPlayer : State -> Html MsgProg
+viewPlayer : PlayerState -> Html MsgProg
 viewPlayer state =
     div []
         [ showState state
@@ -192,7 +192,7 @@ viewPlayer state =
         ]
 
 
-showState : State -> Html msg
+showState : PlayerState -> Html msg
 showState state =
     div []
         [ h4 [ class "title is-4" ] [ text state.episode.title ]

@@ -1,13 +1,11 @@
 module Helpers exposing (..)
 
 import Date exposing (Date)
-import Types exposing (..)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as J
 import Json.Encode as JE
 import RemoteData as RD
-import Date.Extra as Date
 import Types exposing (..)
 
 
@@ -35,12 +33,21 @@ decodeDate =
         J.andThen helper J.string
 
 
-encodeProgress : State -> JE.Value
+encodeProgress : PlayerState -> JE.Value
 encodeProgress state =
-    JE.object
-        [ ( "episode_id", JE.int state.episode.id )
-        , ( "position", JE.float state.time )
-        ]
+    Debug.log "progress encode" <|
+        JE.object
+            [ ( "episode_id", JE.int state.episode.id )
+            , ( "position", JE.float state.time )
+            , ( "duration", JE.float state.duration )
+            ]
+
+
+decodePosDur : J.Decoder ( Float, Float )
+decodePosDur =
+    J.map2 (\x y -> ( x, y ))
+        (J.field "position" J.float)
+        (J.field "duration" J.float)
 
 
 encodeNewFeed : NewFeed -> JE.Value
@@ -62,12 +69,17 @@ decodeFeed =
 
 onTimeUpdate : Attribute MsgProg
 onTimeUpdate =
-    on "timeupdate" (J.map (TimeUpdate) targetCurrentTime)
+    on "timeupdate" (J.map2 TimeUpdate targetCurrentTime targetDuration)
 
 
 targetCurrentTime : J.Decoder Float
 targetCurrentTime =
     J.at [ "target", "currentTime" ] J.float
+
+
+targetDuration : J.Decoder Float
+targetDuration =
+    J.at [ "target", "duration" ] J.float
 
 
 modifyFeedAtId : FeedId -> (Feed -> Feed) -> Model -> Model

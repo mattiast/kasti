@@ -35,20 +35,27 @@ instance ToJSON Episode where
 data ProgressMsg = ProgressMsg {
     prEpId :: EpisodeId
   , proPos :: Double
+  , prDuration :: Double
 } deriving Show
 
 instance FromJSON ProgressMsg where
     parseJSON (Object v) = ProgressMsg
                             <$> v .: "episode_id"
                             <*> v .: "position"
+                            <*> v .: "duration"
     parseJSON _ = mempty
+
+instance ToJSON ProgressMsg where
+    toJSON (ProgressMsg eid pos dur) =
+        object ["episode_id" .= eid, "position" .= pos, "duration" .= dur]
+
 -- items have state: New, Done, Not Started, In Progress (how much)
 --
 instance ToRow ProgressMsg where
-    toRow msg = toRow (prEpId msg, proPos msg)
+    toRow (ProgressMsg eid pos dur) = toRow (eid, pos, dur)
 
 instance FromRow ProgressMsg where
-    fromRow = ProgressMsg <$> field <*> field
+    fromRow = ProgressMsg <$> field <*> field <*> field
 
 data FeedInfo = FeedInfo {
     fname :: Text

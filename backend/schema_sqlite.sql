@@ -17,5 +17,6 @@ CREATE TABLE IF NOT EXISTS progress (
     id INTEGER PRIMARY KEY
   , episode_id INTEGER NOT NULL UNIQUE
   , position DOUBLE PRECISION NOT NULL
+  , duration DOUBLE PRECISION NOT NULL
   , FOREIGN KEY (episode_id) REFERENCES episodes(id)
 );

@@ -113,7 +113,7 @@ someFunc conf = do
             status ok200
         get "/progress/:episode_id" $ do
             eid <- EpisodeId <$> param "episode_id"
-            (pos :: Double) <- liftAndCatchIO $ withConn $ readPosition eid
+            (pos :: ProgressMsg) <- liftAndCatchIO $ withConn $ readPosition eid
             json pos
         get "/browse" $ do
             setHeader "Content-Type" "text/html; charset=utf-8"

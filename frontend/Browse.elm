@@ -68,10 +68,10 @@ update msg model =
         ProgMsg (PostTime s) ->
             ( model, postProgress s )
 
-        ProgMsg (TimeUpdate t) ->
+        ProgMsg (TimeUpdate pos dur) ->
             ( { model
                 | progress =
-                    RD.map (\state -> { state | time = t }) model.progress
+                    RD.map (\state -> { state | time = pos, duration = dur }) model.progress
               }
             , Cmd.none
             )
@@ -126,7 +126,7 @@ syncFeed fid =
         |> Cmd.map (SyncFeedReceive fid)
 
 
-postProgress : State -> Cmd Msg
+postProgress : PlayerState -> Cmd Msg
 postProgress state =
     Http.post "/progress"
         (Http.jsonBody <| Debug.log "posting" <| H.encodeProgress state)
@@ -135,9 +135,9 @@ postProgress state =
         |> Cmd.map (\_ -> Nop)
 
 
-getProgress : Episode -> Cmd (RD.WebData State)
+getProgress : Episode -> Cmd (RD.WebData PlayerState)
 getProgress ep =
-    Http.get ("/progress/" ++ toString ep.id) (D.map (State ep) D.float)
+    Http.get ("/progress/" ++ toString ep.id) (D.map (\(pos,dur) -> PlayerState ep pos dur) H.decodePosDur)
         |> RD.sendRequest
 
 

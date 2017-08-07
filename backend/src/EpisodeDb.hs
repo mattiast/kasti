@@ -18,13 +18,12 @@ readFeed fid conn = do
     (fis :: [FeedInfo]) <- query conn "select name, url from feeds where id = ?" (Only fid)
     return $ listToMaybe $ fis
 
-readPosition :: EpisodeId -> Connection -> IO Double
+readPosition :: EpisodeId -> Connection -> IO ProgressMsg
 readPosition eid conn = do
-    (poss :: [Double]) <- query conn "select position from progress where episode_id = ?" (Only eid)
-        & fmap (map fromOnly)
+    (poss :: [ProgressMsg]) <- query conn "select episode_id, position, duration from progress where episode_id = ?" (Only eid)
 
     case poss of
-        [] -> return 0
+        [] -> return $ ProgressMsg eid 0 0
         [pos] -> return pos
         _ -> fail $ "weird, position not unique for" ++ show eid
 
@@ -39,5 +38,5 @@ writeFeeds conn fis =
 
 writePosition :: ProgressMsg -> Connection -> IO ()
 writePosition msg conn = do
-    execute conn "insert or ignore into progress(episode_id, position) values (?, ?)" msg
-    execute conn "update progress set position = ? where episode_id = ?" (proPos msg, prEpId msg)
+    execute conn "insert or ignore into progress(episode_id, position, duration) values (?, ?, ?)" msg
+    execute conn "update progress set position = ?, duration = ? where episode_id = ?" (proPos msg, prDuration msg, prEpId msg)

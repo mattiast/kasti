@@ -160,8 +160,8 @@ getPositions =
                 D.map4 (\a b c d -> ( a, b, c, d ))
                     (D.index 0 D.int)
                     (D.index 1 <| D.field "episode_id" D.int)
-                    (D.index 1 <| D.field "duration" D.float)
                     (D.index 1 <| D.field "position" D.float)
+                    (D.index 1 <| D.field "duration" D.float)
     in
         Http.get "/progress/all" decodeStuff
             |> RD.sendRequest

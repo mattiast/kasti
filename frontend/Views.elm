@@ -17,17 +17,26 @@ view model =
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
         , viewSelector model
-        , table []
-            [ tr []
-                [ td []
-                    [ model.positions
-                        |> RD.map List.length
-                        |> toString
-                        |> text
-                    ]
-                ]
-            ]
+        , RD.map viewPositions model.positions
+            |> RD.withDefault (text (toString model.positions))
         ]
+
+
+viewPositions : List ProgressInfo -> Html Msg
+viewPositions prog =
+    table [ class "table" ] <|
+        List.map
+            (\( fid, eid, pos, dur ) ->
+                tr []
+                    (List.map (td [] << List.singleton)
+                        [ text (toString fid)
+                        , text (toString eid)
+                        , text (toString pos)
+                        , text (toString dur)
+                        ]
+                    )
+            )
+            prog
 
 
 viewSelector : Model -> Html Msg

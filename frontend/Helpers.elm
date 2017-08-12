@@ -7,6 +7,7 @@ import Json.Decode as J
 import Json.Encode as JE
 import RemoteData as RD
 import Types exposing (..)
+import Time.DateTime as T
 
 
 decodeEpisode : J.Decoder Episode
@@ -93,3 +94,15 @@ modifyFeedAtId fid upd model =
                 feed
     in
         { model | feeds = RD.map (List.map updAt) model.feeds }
+
+
+renderSeconds : Float -> String
+renderSeconds sec =
+    let
+        z =
+            T.dateTime T.zero
+
+        x =
+            T.addSeconds 6832 z
+    in
+        toString (T.hour x) ++ ":" ++ toString (T.minute x) ++ ":" ++ toString (T.second x)

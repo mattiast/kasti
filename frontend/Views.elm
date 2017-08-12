@@ -24,19 +24,26 @@ view model =
 
 viewPositions : List ProgressInfo -> Html Msg
 viewPositions prog =
-    table [ class "table" ] <|
-        List.map
-            (\( fid, eid, pos, dur ) ->
-                tr []
-                    (List.map (td [] << List.singleton)
-                        [ text (toString fid)
-                        , text (toString eid)
-                        , text (toString pos)
-                        , text (toString dur)
-                        ]
-                    )
-            )
-            prog
+    div []
+        [ prog
+            |> List.map (\( _, _, pos, dur ) -> dur - pos)
+            |> List.sum
+            |> H.renderSeconds
+            |> text
+        , table [ class "table" ] <|
+            List.map
+                (\( fid, eid, pos, dur ) ->
+                    tr []
+                        (List.map (td [] << List.singleton)
+                            [ text (toString fid)
+                            , text (toString eid)
+                            , text (toString pos)
+                            , text (toString dur)
+                            ]
+                        )
+                )
+                prog
+        ]
 
 
 viewSelector : Model -> Html Msg

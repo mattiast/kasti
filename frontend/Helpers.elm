@@ -103,6 +103,6 @@ renderSeconds sec =
             T.dateTime T.zero
 
         x =
-            T.addSeconds 6832 z
+            T.addSeconds (floor sec) z
     in
         toString (T.hour x) ++ ":" ++ toString (T.minute x) ++ ":" ++ toString (T.second x)

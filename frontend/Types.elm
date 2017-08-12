@@ -8,6 +8,10 @@ type alias FeedId =
     Int
 
 
+type alias EpisodeId =
+    Int
+
+
 type alias Feed =
     { id : FeedId
     , name : String
@@ -24,7 +28,7 @@ type alias NewFeed =
 
 
 type alias Episode =
-    { id : Int
+    { id : EpisodeId
     , title : String
     , url : String
     , date : Date
@@ -48,8 +52,10 @@ type alias Model =
     , newFeed : NewFeed
     , episodes : RD.WebData (List Episode)
     , progress : RD.WebData PlayerState
+    , positions : RD.WebData (List ProgressInfo)
     }
 
+type alias ProgressInfo = ( FeedId, EpisodeId, Float, Float )
 
 type MsgProg
     = TimeUpdate Float Float

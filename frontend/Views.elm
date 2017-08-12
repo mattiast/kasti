@@ -16,15 +16,30 @@ view model =
         , RD.map viewPlayer model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
-        , div [ class "columns" ]
-            [ div [ class "column is-one-quarter" ]
-                [ feedList model.feeds
+        , viewSelector model
+        , table []
+            [ tr []
+                [ td []
+                    [ model.positions
+                        |> RD.map List.length
+                        |> toString
+                        |> text
+                    ]
                 ]
-            , div [ class "column" ]
-                [ model.episodes
-                    |> RD.map episodeList
-                    |> RD.withDefault (text (toString model.episodes))
-                ]
+            ]
+        ]
+
+
+viewSelector : Model -> Html Msg
+viewSelector model =
+    div [ class "columns" ]
+        [ div [ class "column is-one-quarter" ]
+            [ feedList model.feeds
+            ]
+        , div [ class "column" ]
+            [ model.episodes
+                |> RD.map episodeList
+                |> RD.withDefault (text (toString model.episodes))
             ]
         ]
 
@@ -199,5 +214,5 @@ showState state =
         , p []
             [ text (Date.toFormattedString "y/M/d" state.episode.date)
             ]
-            , a [ href state.episode.url ] [ text "[mp3 link]" ]
+        , a [ href state.episode.url ] [ text "[mp3 link]" ]
         ]

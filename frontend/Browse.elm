@@ -2,7 +2,6 @@ port module Browse exposing (..)
 
 import Html exposing (program)
 import Json.Decode as D
-import Json.Encode as JE
 import Http
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
@@ -24,9 +23,8 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked
-    , Http.get "/feeds" (D.list H.decodeFeed)
-        |> RD.sendRequest
+    ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked
+    , getFeeds
         |> Cmd.map FeedsReceive
     )
 
@@ -135,10 +133,31 @@ postProgress state =
         |> Cmd.map (\_ -> Nop)
 
 
+getFeeds : Cmd (RD.WebData (List Feed))
+getFeeds =
+    Http.get "/feeds" (D.list H.decodeFeed)
+        |> RD.sendRequest
+
+
 getProgress : Episode -> Cmd (RD.WebData PlayerState)
 getProgress ep =
-    Http.get ("/progress/" ++ toString ep.id) (D.map (\(pos,dur) -> PlayerState ep pos dur) H.decodePosDur)
+    Http.get ("/progress/" ++ toString ep.id) (D.map (\( pos, dur ) -> PlayerState ep pos dur) H.decodePosDur)
         |> RD.sendRequest
+
+
+getPositions : Cmd (RD.WebData (List ( FeedId, EpisodeId, Float, Float )))
+getPositions =
+    let
+        decodeStuff =
+            D.list <|
+                D.map4 (\a b c d -> ( a, b, c, d ))
+                    (D.index 0 D.int)
+                    (D.index 1 <| D.field "episode_id" D.int)
+                    (D.index 1 <| D.field "duration" D.float)
+                    (D.index 1 <| D.field "position" D.float)
+    in
+        Http.get "/progress/all" decodeStuff
+            |> RD.sendRequest
 
 
 getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))

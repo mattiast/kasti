@@ -76,3 +76,4 @@ type Msg
     | UpdateNewFeed NewFeed
     | NewFeedPost
     | NewFeedReceive (RD.WebData ())
+    | PositionsReceive (RD.WebData (List ProgressInfo))

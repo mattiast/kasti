@@ -24,8 +24,12 @@ main =
 init : ( Model, Cmd Msg )
 init =
     ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked
-    , getFeeds
-        |> Cmd.map FeedsReceive
+    , Cmd.batch
+        [ getFeeds
+            |> Cmd.map FeedsReceive
+        , getPositions
+            |> Cmd.map PositionsReceive
+        ]
     )
 
 
@@ -104,6 +108,9 @@ update msg model =
             in
                 ( { model | newFeed = { oldNewFeed | postStatus = postStatus } }, Cmd.none )
 
+        PositionsReceive positions ->
+            ( { model | positions = positions }, Cmd.none )
+
 
 postNewFeed : NewFeed -> Cmd Msg
 postNewFeed newFeed =
@@ -145,7 +152,7 @@ getProgress ep =
         |> RD.sendRequest
 
 
-getPositions : Cmd (RD.WebData (List ( FeedId, EpisodeId, Float, Float )))
+getPositions : Cmd (RD.WebData (List ProgressInfo))
 getPositions =
     let
         decodeStuff =

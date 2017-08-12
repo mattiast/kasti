@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module EpisodeDb where
 import Database.SQLite.Simple
@@ -26,6 +27,14 @@ readPosition eid conn = do
         [] -> return $ ProgressMsg eid 0 0
         [pos] -> return pos
         _ -> fail $ "weird, position not unique for" ++ show eid
+
+readPositions :: Connection -> IO [(FeedId, ProgressMsg)]
+readPositions conn = do
+    (rows :: [Only FeedId :. ProgressMsg]) <- query_ conn
+      "select episodes.feed_id, progress.episode_id, progress.position, progress.duration \
+      \ from progress left join episodes \
+      \ on progress.episode_id = episodes.id"
+    return [(fid, msg) | Only fid :. msg <- rows ]
 
 writeEpisodes :: Connection -> FeedId -> [Episode] -> IO ()
 writeEpisodes conn fid eps =

@@ -111,6 +111,9 @@ someFunc conf = do
             liftAndCatchIO $ print msg
             liftAndCatchIO $ withConn $ writePosition msg
             status ok200
+        get "/progress/all" $ do
+            poss <- liftAndCatchIO $ withConn $ readPositions
+            json poss
         get "/progress/:episode_id" $ do
             eid <- EpisodeId <$> param "episode_id"
             (pos :: ProgressMsg) <- liftAndCatchIO $ withConn $ readPosition eid

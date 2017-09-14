@@ -33,7 +33,8 @@ readPositions conn = do
     (rows :: [Only FeedId :. ProgressMsg]) <- query_ conn
       "select episodes.feed_id, progress.episode_id, progress.position, progress.duration \
       \ from progress left join episodes \
-      \ on progress.episode_id = episodes.id"
+      \ on progress.episode_id = episodes.id \
+      \ where progress.position < progress.duration"
     return [(fid, msg) | Only fid :. msg <- rows ]
 
 writeEpisodes :: Connection -> FeedId -> [Episode] -> IO ()

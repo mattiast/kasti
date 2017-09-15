@@ -6,7 +6,6 @@ import Data.Aeson((.=),decodeStrict')
 import Data.Aeson.Lens
 import Data.Function((&))
 import Data.Maybe(fromMaybe)
-import Database.SQLite.Simple(withConnection)
 import Network.HTTP.Types(ok200)
 import Network.Wai.Session
 import Network.Wai.Session.Map(mapStore)

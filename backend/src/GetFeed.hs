@@ -2,6 +2,7 @@
 module GetFeed where
 import Control.Lens hiding ((.=))
 import Control.Monad(void)
+import Control.Exception(bracket)
 import Data.Aeson
 import Data.Function((&))
 import Data.Maybe
@@ -9,7 +10,7 @@ import qualified Data.Text.Encoding as T
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
 import Data.Foldable(traverse_)
-import Database.SQLite.Simple(Connection, withConnection)
+import Database.PostgreSQL.Simple(Connection, connectPostgreSQL, close)
 import Network.Wreq hiding ((:=))
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.ByteString.Char8 as B
@@ -59,6 +60,9 @@ itemEpisodeInfo item = do
         (EpisodeUrl url)
         (T.decodeUtf8 $ B.pack title)
         date
+
+withConnection :: String -> (Connection -> IO a) -> IO a
+withConnection dbstring action = bracket (connectPostgreSQL $ B.pack dbstring) close action
 
 populateDB :: IO ()
 populateDB = do

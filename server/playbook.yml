@@ -13,12 +13,43 @@
     with_items:
       - libgmp10
       - tar
+      - cron
+      - libpq5
+      - python3-pip
+      - qt5-default
+      - libqt5webkit5-dev
+      - build-essential
+      - xvfb
+
+  - name: install python stuff
+    pip:
+      name: "{{item}}"
+    with_items:
+      - lxml
+      - dryscrape
+      - PyRSS2Gen
+      - boto3
+      - psycopg2
 
   - name: copy and extract tarball
     unarchive:
       src: ../stuff.tar.gz
       dest: /root
     notify: restart kasti
+
+  - name: crontab
+    cron:
+      name: "update thf rss file"
+      minute: "0"
+      hour: "18,19"
+      job: "python3 release/scripts/update_rss.py thf release/kasti-config.json"
+
+  - name: crontab
+    cron:
+      name: "update korp rss file"
+      minute: "0"
+      hour: "10,11,12"
+      job: "python3 release/scripts/update_rss.py korp release/kasti-config.json"
 
   - name: copy systemd service file to server
     copy:

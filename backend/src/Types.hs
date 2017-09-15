@@ -2,9 +2,11 @@
 module Types where
 import Data.Aeson
 import Data.Aeson.Types(typeMismatch)
-import Database.SQLite.Simple hiding ((:=))
-import Database.SQLite.Simple.FromField
-import Database.SQLite.Simple.ToField
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromField
+import Database.PostgreSQL.Simple.ToField
+import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple.ToRow
 import Data.String
 import Data.Text(Text)
 import Data.Time.Clock(UTCTime)
@@ -103,5 +105,5 @@ instance FromJSON KastiConfig where
     parseJSON (Object v) = KastiConfig
         <$> v .: "client_id"
         <*> v .: "client_secret"
-        <*> v .: "db_string"
+        <*> v .: "postgres_string"
     parseJSON _ = mempty

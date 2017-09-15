@@ -1,7 +1,8 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module EpisodeDb where
-import Database.SQLite.Simple
+import Control.Monad(void)
+import Database.PostgreSQL.Simple
 import Data.Function((&))
 import Data.Maybe(listToMaybe)
 import Types
@@ -39,14 +40,19 @@ readPositions conn = do
 
 writeEpisodes :: Connection -> FeedId -> [Episode] -> IO ()
 writeEpisodes conn fid eps =
-    executeMany conn "insert or ignore into episodes(feed_id, url, title, date) values (?,?,?,?)"
+    executeMany conn "insert into episodes(feed_id, url, title, date) values (?,?,?,?) on conflict do nothing"
             [ Only fid :. ep | ep <- eps ]
+    & withTransaction conn
+    & void
 
 writeFeeds :: Connection -> [FeedInfo] -> IO ()
 writeFeeds conn fis =
-    executeMany conn "insert or ignore into feeds(name, url) values (?,?)" fis
+    executeMany conn "insert into feeds(name, url) values (?,?) on conflict do nothing" fis
+    & withTransaction conn
+    & void
 
 writePosition :: ProgressMsg -> Connection -> IO ()
-writePosition msg conn = do
-    execute conn "insert or ignore into progress(episode_id, position, duration) values (?, ?, ?)" msg
-    execute conn "update progress set position = ?, duration = ? where episode_id = ?" (proPos msg, prDuration msg, prEpId msg)
+writePosition msg conn = withTransaction conn $ do
+    execute conn "insert into progress(episode_id, position, duration) values (?, ?, ?)\
+        \ on conflict(episode_id) do update set position = ?, duration = ?" (msg :. (proPos msg, prDuration msg))
+    return ()

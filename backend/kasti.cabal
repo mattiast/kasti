@@ -47,7 +47,7 @@ library
                      , async
                      , process
 
-                     , sqlite-simple
+                     , postgresql-simple
                      , filepath
                      , directory
 

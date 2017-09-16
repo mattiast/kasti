@@ -55,7 +55,15 @@ type alias Model =
     , positions : RD.WebData (List ProgressInfo)
     }
 
-type alias ProgressInfo = ( FeedId, EpisodeId, Float, Float )
+
+type alias ProgressInfo =
+    { fid : FeedId
+    , eid : EpisodeId
+    , position : Float
+    , duration : Float
+    , etitle : String
+    }
+
 
 type MsgProg
     = TimeUpdate Float Float

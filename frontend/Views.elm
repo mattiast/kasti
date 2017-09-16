@@ -26,19 +26,19 @@ viewPositions : List ProgressInfo -> Html Msg
 viewPositions prog =
     div []
         [ prog
-            |> List.map (\( _, _, pos, dur ) -> dur - pos)
+            |> List.map (\pi -> pi.duration - pi.position)
             |> List.sum
             |> H.renderSeconds
             |> text
         , table [ class "table" ] <|
             List.map
-                (\( fid, eid, pos, dur ) ->
+                (\pi ->
                     tr []
                         (List.map (td [] << List.singleton)
-                            [ text (toString fid)
-                            , text (toString eid)
-                            , text (toString pos)
-                            , text (toString dur)
+                            [ text (toString pi.fid)
+                            , text (toString pi.eid)
+                            , text pi.etitle
+                            , text (H.renderSeconds (pi.duration - pi.position))
                             ]
                         )
                 )

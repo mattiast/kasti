@@ -41,7 +41,7 @@
     cron:
       name: "update thf rss file"
       minute: "0"
-      hour: "18,19"
+      hour: "16,17,18,19"
       job: "python3 release/scripts/update_rss.py thf release/kasti-config.json"
 
   - name: crontab

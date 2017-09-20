@@ -2,6 +2,7 @@
 module Lib where
 import Control.Lens((^?),(.~),(^.))
 import Control.Monad(join)
+import Control.Concurrent.Async(forConcurrently_)
 import Data.Aeson((.=),decodeStrict')
 import Data.Aeson.Lens
 import Data.Function((&))
@@ -101,6 +102,9 @@ someFunc conf = do
             fid <- FeedId <$> param "feed_id"
             eps <- liftAndCatchIO $ withConn $ readEpisodes fid
             json eps
+        get "/syncfeed/all" $ liftAndCatchIO $ withConn $ \conn -> do
+            (fids :: [FeedId]) <- fmap (map fst) $ readFeeds conn
+            forConcurrently_ fids (\fid -> syncFeed fid conn)
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             liftAndCatchIO $ withConn $ syncFeed fid

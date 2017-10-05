@@ -60,9 +60,9 @@ def push_to_s3(conf, key, data):
             aws_secret_access_key=conf['s3_secret'],
             config=Config(s3={'addressing_style': 'virtual'}))
 
-    datab = bytes(data, encoding='utf-8')
+    data_obj = io.BytesIO(bytes(data, encoding='utf-8'))
     client.upload_fileobj(
-            io.BytesIO(datab),
+            data_obj,
             conf['s3_bucket'],
             key,
             ExtraArgs={ 'ACL': 'public-read', 'ContentType': 'application/xml'})

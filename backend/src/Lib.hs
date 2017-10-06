@@ -48,7 +48,11 @@ getConf :: IO KastiConfig
 getConf = do
     let args = argument str (metavar "CONFIGFILE")
     (confPath :: FilePath) <- execParser $ info args fullDesc
-    bs <- B.readFile confPath
+    readConf confPath
+
+readConf :: FilePath -> IO KastiConfig
+readConf path = do
+    bs <- B.readFile path
     let mConf = decodeStrict' bs :: Maybe KastiConfig
     maybe (fail "couldn't parse conf file") return mConf
 
@@ -102,9 +106,9 @@ someFunc conf = do
             fid <- FeedId <$> param "feed_id"
             eps <- liftAndCatchIO $ withConn $ readEpisodes fid
             json eps
-        get "/syncfeed/all" $ liftAndCatchIO $ withConn $ \conn -> do
-            (fids :: [FeedId]) <- fmap (map fst) $ readFeeds conn
-            forConcurrently_ fids (\fid -> syncFeed fid conn)
+        get "/syncfeed/all" $ liftAndCatchIO $ do
+            (fids :: [FeedId]) <- fmap (map fst) $ withConn readFeeds
+            forConcurrently_ fids (\fid -> withConn (syncFeed fid))
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             liftAndCatchIO $ withConn $ syncFeed fid

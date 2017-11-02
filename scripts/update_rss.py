@@ -14,10 +14,12 @@ import radiorock
 programs = {
     'thf' : {
         'name' : 'Total Hockey Forever',
+        'query' : 'Total Hockey Forever',
         'feedname' : 'thf.xml',
         }
   , 'korp' : {
         'name' : 'Radio Rockin Korporaatio',
+        'query' : 'Korporaatio',
         'feedname' : 'korp.xml',
         }
     }
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     with open(confpath) as f:
         conf = json.load(f)
 
-    n = radiorock.fetch_and_write(info['name'], conf['postgres_string'])
+    n = radiorock.fetch_and_write(info['name'], conf['postgres_string'], query=info['query'])
     print("%d new episodes" % n)
 
     if n > 0:

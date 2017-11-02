@@ -1,6 +1,6 @@
-def write_db(conn, data):
+def write_db(conn, data, showname):
     c = conn.cursor()
-    tuples = [ (s['audio_url'], s['title'], s['description'], s['show'], s['date']) for s in data ]
+    tuples = [ (s['audio_url'], s['title'], s['description'], showname, s['date']) for s in data ]
     numchange = 0
     for t in tuples:
         c.execute( u'select count(*) from rrepisodes where audio_url = %s', (t[0],) )

@@ -10,6 +10,7 @@ import Database.PostgreSQL.Simple.ToRow
 import Data.String
 import Data.Text(Text)
 import Data.Time.Clock(UTCTime)
+import Data.Pool
 
 data Episode = Episode {
     epUrl :: EpisodeUrl
@@ -100,6 +101,11 @@ data KastiConfig = KastiConfig {
   , clientSecret :: Text
   , dbString :: String
 } deriving Show
+
+data KastiContext = KastiContext {
+    cConfig :: KastiConfig
+  , cPool :: Pool Connection
+}
 
 instance FromJSON KastiConfig where
     parseJSON (Object v) = KastiConfig

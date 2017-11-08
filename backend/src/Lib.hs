@@ -24,6 +24,7 @@ import System.Remote.Monitoring
 import GetFeed
 import Types
 import EpisodeDb
+import Data.Pool(withResource)
 
 
 getToken :: KastiConfig -> S.Text -> IO (Maybe S.Text)
@@ -70,23 +71,23 @@ mySessionInsert session k val = do
     let Just sessionInsert = snd <$> Vault.lookup session v
     sessionInsert k val
 
-someFunc :: KastiConfig -> IO ()
-someFunc conf = do
+someFunc :: KastiContext -> IO ()
+someFunc context = do
     (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
     (session :: MySession) <- Vault.newKey
-    let withConn = withConnection (dbString conf)
+    let withConn = withResource (cPool context)
     forkServer "localhost" 3001
     scotty 3000 $ do
         middleware $ withSession sessionStore "kasti_token" def session
         get "/login" $ do
             html $ mconcat
                 [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
-                , L.fromStrict (clientId conf)
+                , L.fromStrict (clientId (cConfig context))
                 , "\">Click here</a>"
                 ]
         get "/callback" $ do
             (code :: S.Text) <- param "code"
-            mToken <- liftAndCatchIO $ getToken conf code
+            mToken <- liftAndCatchIO $ getToken (cConfig context) code
             mapM_ (mySessionInsert session "token") mToken
             (mUser :: Maybe UserInfo) <- liftAndCatchIO $ fmap join $ mapM userInfo mToken
             liftAndCatchIO $ print mUser

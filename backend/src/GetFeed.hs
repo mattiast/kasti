@@ -63,12 +63,3 @@ itemEpisodeInfo item = do
 
 withConnection :: String -> (Connection -> IO a) -> IO a
 withConnection dbstring action = bracket (connectPostgreSQL $ B.pack dbstring) close action
-
-populateDB :: IO ()
-populateDB = do
-    fs <- getFeeds "/home/matti/.vim/podcasts.json" 
-    withConnection "db.sqlite" $ \conn -> do
-        writeFeeds conn fs
-        readFeeds conn >>= (traverse_ $ \(fid, fi) -> do
-            eps <- fetchEpisodes fi
-            writeEpisodes conn fid eps)

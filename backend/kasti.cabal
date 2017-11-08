@@ -46,6 +46,7 @@ library
                      , parallel
                      , async
                      , process
+                     , resource-pool
 
                      , postgresql-simple
                      , filepath

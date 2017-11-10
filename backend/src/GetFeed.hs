@@ -2,18 +2,15 @@
 module GetFeed where
 import Control.Lens hiding ((.=))
 import Control.Monad(void)
-import Control.Exception(bracket)
 import Data.Aeson
 import Data.Function((&))
 import Data.Maybe
-import qualified Data.Text.Encoding as T
+import qualified Data.Text as T
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
-import Data.Foldable(traverse_)
-import Database.PostgreSQL.Simple(Connection, connectPostgreSQL, close)
+import Database.PostgreSQL.Simple(Connection)
 import Network.Wreq hiding ((:=))
 import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.ByteString.Char8 as B
 import Text.Feed.Import
 import Text.Feed.Query
 import Text.Feed.Types
@@ -48,7 +45,7 @@ fetchEpisodes fi = do
     return $ mapMaybe itemEpisodeInfo items
 
 parsePubDate :: DateString -> Maybe UTCTime
-parsePubDate = parseTimeM True defaultTimeLocale rfc822DateFormat
+parsePubDate = parseTimeM True defaultTimeLocale rfc822DateFormat . T.unpack
 
 itemEpisodeInfo :: Item -> Maybe Episode
 itemEpisodeInfo item = do
@@ -58,8 +55,5 @@ itemEpisodeInfo item = do
         >>= parsePubDate
     return $ Episode
         (EpisodeUrl url)
-        (T.decodeUtf8 $ B.pack title)
+        title
         date
-
-withConnection :: String -> (Connection -> IO a) -> IO a
-withConnection dbstring action = bracket (connectPostgreSQL $ B.pack dbstring) close action

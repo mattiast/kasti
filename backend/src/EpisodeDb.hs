@@ -11,7 +11,7 @@ import qualified Data.ByteString.Char8 as B
 
 initPool :: String -> IO (Pool Connection)
 initPool connString =
-    createPool (connectPostgreSQL $ B.pack connString) close 1 30 10
+    createPool (connectPostgreSQL $ B.pack connString) close 30 1 10
 
 readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
 readFeeds conn = query_ conn "select id, name, url from feeds"

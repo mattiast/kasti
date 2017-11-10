@@ -19,7 +19,7 @@ data Episode = Episode {
 } deriving Show
 
 newtype EpisodeUrl = EpisodeUrl {
-    fromEpUrl :: String
+    fromEpUrl :: Text
 } deriving (Eq, Ord, Show, IsString, ToField, FromField, ToJSON)
 
 newtype EpisodeId = EpisodeId { fromEpisodeId :: Int }

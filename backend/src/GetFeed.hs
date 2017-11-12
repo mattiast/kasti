@@ -27,9 +27,8 @@ getFeeds path = do
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
     r <- get url
-    let b = r ^. responseBody
-        feed = parseFeedString $ BL.unpack $ b
-    return feed
+    let body = r ^. responseBody
+    return $ parseFeedSource body
 
 syncFeed :: FeedId -> Connection -> IO ()
 syncFeed fid conn =
@@ -40,8 +39,8 @@ syncFeed fid conn =
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do
-    Just feed <- fetchFeed (furl fi)
-    let items = feedItems feed
+    feed <- fetchFeed (furl fi)
+    let items = maybe [] feedItems feed
     return $ mapMaybe itemEpisodeInfo items
 
 parsePubDate :: DateString -> Maybe UTCTime

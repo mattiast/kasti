@@ -85,5 +85,5 @@ if __name__ == '__main__':
         conn.close()
 
         rss = create_rss(info, stuff)
-        data = rss.to_xml()
+        data = rss.to_xml(encoding='utf-8')
         push_to_s3(conf, info['feedname'], data)

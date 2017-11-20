@@ -140,13 +140,13 @@ someFunc context = do
             json pos
         get "/browse" $ do
             setHeader "Content-Type" "text/html; charset=utf-8"
-            file "browse.html"
+            file "/root/static/browse.html"
         get "/continue" $ do
             setHeader "Content-Type" "text/html; charset=utf-8"
-            file "browse.html"
+            file "/root/static/browse.html"
         get "/new" $ do
             setHeader "Content-Type" "text/html; charset=utf-8"
-            file "browse.html"
+            file "/root/static/browse.html"
         get "/elm.js" $ do
             setHeader "Content-Type" "application/javascript"
-            file "elm.js"
+            file "/root/static/elm.js"

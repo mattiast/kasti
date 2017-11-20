@@ -11,3 +11,11 @@ flags: {}
 
 # Extra package databases containing global packages
 extra-package-dbs: []
+
+image:
+  containers:
+    -
+      base: "8b4c49b3cf53"
+      # Optionally add a directory to a path inside the docker image.
+      add:
+        ../static/: /root/static/

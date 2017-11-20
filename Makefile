@@ -1,24 +1,16 @@
-all: stuff.tar.gz
+all: image
 
-release/elm.js: frontend/*.elm
-	cd frontend ; elm-make Browse.elm --output elm.js --yes
-	mkdir -p release
-	mv frontend/elm.js release
+static/elm.js: frontend/*.elm
+	cd frontend ; elm-make Browse.elm --output elm.js
+	mv frontend/elm.js static
 
-release/browse.html: frontend/browse.html
-	mkdir -p release
-	cp frontend/browse.html release
+static/browse.html: frontend/browse.html
+	cp frontend/browse.html static
 
-release/kasti-server: FORCE
-	cd backend ; stack build
-	mkdir -p release
-	cp backend/.stack-work/dist/x86_64-linux/Cabal-2.0.1.0/build/kasti-server/kasti-server release
+image: static/elm.js static/browse.html FORCE
+	cd backend ; stack image container
 
-release/scripts: FORCE
-	mkdir -p release
-	cp -R scripts release
-
-stuff.tar.gz: release/elm.js release/browse.html release/kasti-server release/scripts
-	tar -czf stuff.tar.gz release
+stuff.tar.gz: FORCE
+	tar -czf stuff.tar.gz scripts
 
 FORCE:

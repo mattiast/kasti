@@ -15,7 +15,7 @@ extra-package-dbs: []
 image:
   containers:
     -
-      base: "8b4c49b3cf53"
+      base: "ec89195f436e"
       # Optionally add a directory to a path inside the docker image.
       add:
         ../static/: /root/static/

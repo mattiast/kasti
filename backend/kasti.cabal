@@ -19,7 +19,6 @@ library
                      , Types
                      , EpisodeDb
   build-depends:       base >= 4.7 && < 5
-                     , attoparsec
                      , bytestring
                      , vector
                      , containers
@@ -32,11 +31,6 @@ library
                      , text-format
                      , scotty
                      , http-types
-                     , wai-extra
-                     , wai-session
-                     , wai
-                     , cookie
-                     , vault
                      , feed
                      , wreq
                      , ekg

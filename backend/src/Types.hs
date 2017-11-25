@@ -73,8 +73,7 @@ instance FromJSON FeedInfo where
     parseJSON wat = typeMismatch "FeedInfo" wat
 
 instance ToJSON FeedInfo where
-    toJSON fi =
-        object ["name" .= fname fi, "url" .= furl fi]
+    toJSON fi = object ["name" .= fname fi, "url" .= furl fi]
 
 instance ToRow FeedInfo where
     toRow fi = toRow (fname fi, furl fi)

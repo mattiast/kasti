@@ -1,25 +1,17 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Lib where
 import Control.Lens((^?),(.~),(^.))
-import Control.Monad(join, void)
+import Control.Monad(void)
 import Control.Concurrent.Async(forConcurrently_)
 import Data.Aeson((.=),decodeStrict')
 import Data.Aeson.Lens
 import Data.Function((&))
-import Data.Maybe(fromMaybe)
-import Data.Foldable(traverse_)
 import Network.HTTP.Types(ok200)
-import Network.Wai.Session
-import Network.Wai.Session.Map(mapStore)
-import Network.Wai(vault)
 import Options.Applicative hiding (header)
 import qualified Data.Aeson as A
 import qualified Data.ByteString as B
 import qualified Data.Text as S
-import qualified Data.Text.Lazy as L
-import qualified Data.Vault.Lazy as Vault
 import qualified Network.Wreq as W
-import Web.Cookie
 import Web.Scotty
 import System.Remote.Monitoring
 import GetFeed
@@ -58,48 +50,15 @@ readConf path = do
     let mConf = decodeStrict' bs :: Maybe KastiConfig
     maybe (fail "couldn't parse conf file") return mConf
 
-type MySession = Vault.Key (Session ActionM String S.Text)
-
-mySessionLookup :: MySession -> String -> ActionM (Maybe S.Text)
-mySessionLookup session k = do
-    v <- vault <$> request
-    let mLookup = fst <$> Vault.lookup session v
-    fmap join $ sequence $ mLookup <*> pure k
-
-mySessionInsert :: MySession -> String -> S.Text -> ActionM ()
-mySessionInsert session k val = do
-    v <- vault <$> request
-    Vault.lookup session v
-        & traverse_ (\sess -> snd sess k val)
-
 noCache :: ActionM ()
 noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
 
 someFunc :: KastiContext -> IO ()
 someFunc context = do
-    (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
-    (session :: MySession) <- Vault.newKey
     let withConn = withResource (cPool context)
+
     void $ forkServer "localhost" 3001
     scotty 3000 $ do
-        middleware $ withSession sessionStore "kasti_token" def session
-        get "/login" $
-            html $ mconcat
-                [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
-                , L.fromStrict (clientId (cConfig context))
-                , "\">Click here</a>"
-                ]
-        get "/callback" $ do
-            (code :: S.Text) <- param "code"
-            mToken <- liftAndCatchIO $ getToken (cConfig context) code
-            mapM_ (mySessionInsert session "token") mToken
-            (mUser :: Maybe UserInfo) <- liftAndCatchIO $ join <$> mapM userInfo mToken
-            liftAndCatchIO $ print mUser
-            mapM_ (mySessionInsert session "name") $ userName <$> mUser
-            redirect "/browse"
-        get "/checkuser" $ do
-            mUser <- mySessionLookup session "name"
-            text $ L.fromStrict $ fromMaybe "not found" mUser
         get "/feeds" $ do
             noCache
             fs <- liftAndCatchIO $ withConn readFeeds

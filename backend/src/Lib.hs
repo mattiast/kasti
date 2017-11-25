@@ -56,7 +56,6 @@ noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
 someFunc :: KastiContext -> IO ()
 someFunc context = do
     let withConn = withResource (cPool context)
-
     void $ forkServer "localhost" 3001
     scotty 3000 $ do
         get "/feeds" $ do

@@ -18,6 +18,7 @@ library
                      , GetFeed
                      , Types
                      , EpisodeDb
+                     , PodEff
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , vector
@@ -45,6 +46,7 @@ library
                      , postgresql-simple
                      , filepath
                      , directory
+                     , extensible-effects
 
   default-language:    Haskell2010
 

@@ -37,6 +37,7 @@ library
                      , ekg
 
                      , mtl
+                     , transformers
                      , random
                      , parallel
                      , async

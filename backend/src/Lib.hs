@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, DataKinds, GeneralizedNewtypeDeriving, ScopedTypeVariables #-}
 module Lib where
 import Control.Lens((^?),(.~),(^.))
 import Control.Monad(void)
@@ -11,14 +11,22 @@ import Options.Applicative hiding (header)
 import qualified Data.Aeson as A
 import qualified Data.ByteString as B
 import qualified Data.Text as S
+import qualified Data.Text.Lazy as L
 import qualified Network.Wreq as W
-import Web.Scotty
+import Web.Scotty.Trans
 import System.Remote.Monitoring
-import GetFeed
+import GetFeed(syncFeed)
 import Types
 import EpisodeDb
+import PodEff
 import Data.Pool(withResource)
+import Control.Eff
+import Control.Eff.Lift(Lift, runLift)
+import Control.Monad.IO.Class
+import Control.Monad.Trans.Class(lift)
 
+newtype MyMonad a = MyMonad (Eff '[PodEff, Lift IO] a)
+    deriving (Functor, Applicative, Monad, MonadIO)
 
 getToken :: KastiConfig -> S.Text -> IO (Maybe S.Text)
 getToken conf session_code = do
@@ -50,17 +58,20 @@ readConf path = do
     let mConf = decodeStrict' bs :: Maybe KastiConfig
     maybe (fail "couldn't parse conf file") return mConf
 
-noCache :: ActionM ()
+noCache :: (Monad m) => ActionT e m ()
 noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
+
+handleStuff :: KastiContext -> MyMonad a -> IO a
+handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> runLift $ runPod conn x)
 
 someFunc :: KastiContext -> IO ()
 someFunc context = do
     let withConn = withResource (cPool context)
     void $ forkServer "localhost" 3001
-    scotty 3000 $ do
+    scottyT 3000 (handleStuff context) $ (id :: ScottyT L.Text MyMonad () -> ScottyT L.Text MyMonad ()) $ do
         get "/feeds" $ do
             noCache
-            fs <- liftAndCatchIO $ withConn readFeeds
+            fs <- lift $ MyMonad $ getFeeds
             json fs
         post "/feed" $ do
             (fi :: FeedInfo) <- jsonData

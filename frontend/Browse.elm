@@ -157,14 +157,14 @@ getPositions =
     let
         decodeStuff =
             D.list <|
-                D.map5 (\a aa b c d -> ProgressInfo a b c d aa)
-                    (D.index 0 D.int)
-                    (D.index 1 D.string)
-                    (D.index 2 <| D.field "episode_id" D.int)
+                D.map4 ProgressInfo
+                    (D.index 0 D.string)
+                    (D.index 1 H.decodeEpisode)
                     (D.index 2 <| D.field "position" D.float)
                     (D.index 2 <| D.field "duration" D.float)
     in
-        Http.get "/progress/all" decodeStuff
+        Http.get "/progress/all"
+            decodeStuff
             |> RD.sendRequest
 
 

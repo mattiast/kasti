@@ -35,14 +35,15 @@ readPosition eid conn = do
         [pos] -> return pos
         _ -> fail $ "weird, position not unique for" ++ show eid
 
-readPositions :: Connection -> IO [(FeedId, String, ProgressMsg)]
+readPositions :: Connection -> IO [(String, (EpisodeId, Episode), ProgressMsg)]
 readPositions conn = do
-    (rows :: [(FeedId, String) :. ProgressMsg]) <- query_ conn
-      "select episodes.feed_id, episodes.title, progress.episode_id, progress.position, progress.duration \
-      \ from progress left join episodes \
-      \ on progress.episode_id = episodes.id \
-      \ where progress.position < progress.duration"
-    return [(fid, title, msg) | (fid, title) :. msg <- rows ]
+    (rows :: [(String, EpisodeId) :. Episode :. ProgressMsg]) <- query_ conn
+      "select f.name, e.id, e.url, e.title, e.date, p.episode_id, p.position, p.duration \
+      \ from progress as p \
+      \ join episodes as e on p.episode_id = e.id \
+      \ join feeds as f on e.feed_id = f.id \
+      \ where p.position < p.duration"
+    return [(ftitle, (eid, ep), msg) | (ftitle, eid) :. ep :. msg <- rows ]
 
 writeEpisodes :: Connection -> FeedId -> [Episode] -> IO ()
 writeEpisodes conn fid eps =

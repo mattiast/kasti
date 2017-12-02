@@ -33,11 +33,10 @@ viewPositions prog =
         , table [ class "table" ] <|
             List.map
                 (\pi ->
-                    tr []
+                    tr [ onClick (EpisodePick pi.episode) ]
                         (List.map (td [] << List.singleton)
-                            [ text (toString pi.fid)
-                            , text (toString pi.eid)
-                            , text pi.etitle
+                            [ text pi.ftitle
+                            , text pi.episode.title
                             , text (H.renderSeconds (pi.duration - pi.position))
                             ]
                         )

@@ -57,11 +57,10 @@ type alias Model =
 
 
 type alias ProgressInfo =
-    { fid : FeedId
-    , eid : EpisodeId
+    { ftitle : String
+    , episode : Episode
     , position : Float
     , duration : Float
-    , etitle : String
     }
 
 

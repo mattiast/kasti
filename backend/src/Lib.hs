@@ -71,6 +71,9 @@ mySessionInsert session k val = do
     let Just sessionInsert = snd <$> Vault.lookup session v
     sessionInsert k val
 
+noCache :: ActionM ()
+noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
+
 someFunc :: KastiContext -> IO ()
 someFunc context = do
     (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
@@ -97,6 +100,7 @@ someFunc context = do
             mUser <- mySessionLookup session "name"
             text $ L.fromStrict $ fromMaybe "not found" $ mUser
         get "/feeds" $ do
+            noCache
             fs <- liftAndCatchIO $ withConn readFeeds
             json fs
         post "/feed" $ do
@@ -104,6 +108,7 @@ someFunc context = do
             liftAndCatchIO $ withConn $ \conn -> writeFeeds conn [fi]
             json ("ok" :: String)
         get "/episodes/:feed_id" $ do
+            noCache
             fid <- FeedId <$> param "feed_id"
             eps <- liftAndCatchIO $ withConn $ readEpisodes fid
             json eps
@@ -120,9 +125,11 @@ someFunc context = do
             liftAndCatchIO $ withConn $ writePosition msg
             status ok200
         get "/progress/all" $ do
+            noCache
             poss <- liftAndCatchIO $ withConn $ readPositions
             json poss
         get "/progress/:episode_id" $ do
+            noCache
             eid <- EpisodeId <$> param "episode_id"
             (pos :: ProgressMsg) <- liftAndCatchIO $ withConn $ readPosition eid
             json pos

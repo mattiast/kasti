@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import RemoteData as RD
 import Date exposing (Date)
+import Navigation as N
 
 
 type alias FeedId =
@@ -53,6 +54,7 @@ type alias Model =
     , episodes : RD.WebData (List Episode)
     , progress : RD.WebData PlayerState
     , positions : RD.WebData (List ProgressInfo)
+    , view : WhichView
     }
 
 
@@ -70,6 +72,11 @@ type MsgProg
     | AskTime Episode
 
 
+type WhichView
+    = Browse
+    | Continue
+
+
 type Msg
     = FeedsReceive (RD.WebData (List Feed))
     | EpisodePick Episode
@@ -84,3 +91,5 @@ type Msg
     | NewFeedPost
     | NewFeedReceive (RD.WebData ())
     | PositionsReceive (RD.WebData (List ProgressInfo))
+    | UrlChange N.Location
+    | ClickUrl String

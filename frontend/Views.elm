@@ -7,18 +7,28 @@ import Types exposing (..)
 import RemoteData as RD
 import Helpers as H
 import Date.Extra as Date
+import Navigation as N
 
 
 view : Model -> Html Msg
 view model =
     div []
         [ navbar model.newFeed
+        , ul []
+            [ li [ onClick (ClickUrl "browse") ] [ text "browse" ]
+            , li [ onClick (ClickUrl "continue") ] [ text "continue" ]
+            , li [ onClick (ClickUrl "new") ] [ text "new" ]
+            ]
         , RD.map viewPlayer model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
-        , viewSelector model
-        , RD.map viewPositions model.positions
-            |> RD.withDefault (text (toString model.positions))
+        , case model.view of
+            Browse ->
+                viewSelector model
+
+            Continue ->
+                RD.map viewPositions model.positions
+                    |> RD.withDefault (text (toString model.positions))
         ]
 
 

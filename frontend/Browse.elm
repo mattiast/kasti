@@ -9,11 +9,12 @@ import RemoteData as RD
 import Helpers as H
 import Types exposing (..)
 import Views
+import Navigation as N
 
 
 main : Program Never Model Msg
 main =
-    program
+    N.program UrlChange
         { init = init
         , view = Views.view
         , update = update
@@ -21,9 +22,9 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked
+init : N.Location -> ( Model, Cmd Msg )
+init loc =
+    ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked Browse
     , Cmd.batch
         [ getFeeds
             |> Cmd.map FeedsReceive
@@ -110,6 +111,31 @@ update msg model =
 
         PositionsReceive positions ->
             ( { model | positions = positions }, Cmd.none )
+
+        UrlChange loc ->
+            ( { model
+                | view =
+                    parseView (loc.pathname)
+                        |> Maybe.withDefault model.view
+              }
+            , Cmd.none
+            )
+
+        ClickUrl url ->
+            ( model, N.newUrl url )
+
+
+parseView : String -> Maybe WhichView
+parseView url =
+    case url of
+        "/browse" ->
+            Just Browse
+
+        "/continue" ->
+            Just Continue
+
+        _ ->
+            Nothing
 
 
 postNewFeed : NewFeed -> Cmd Msg

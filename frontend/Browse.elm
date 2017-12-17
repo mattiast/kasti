@@ -1,6 +1,5 @@
 port module Browse exposing (..)
 
-import Html exposing (program)
 import Json.Decode as D
 import Http
 import Platform.Cmd as Cmd
@@ -29,12 +28,20 @@ init loc =
             parseView loc.pathname
                 |> Maybe.withDefault Browse
     in
-        ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked firstView
+        ( Model RD.NotAsked
+            emptyNewFeed
+            RD.NotAsked
+            RD.NotAsked
+            RD.NotAsked
+            firstView
+            RD.NotAsked
         , Cmd.batch
             [ getFeeds
                 |> Cmd.map FeedsReceive
             , getPositions
                 |> Cmd.map PositionsReceive
+            , getNewEpisodes
+                |> Cmd.map NewEpisodesReceive
             ]
         )
 
@@ -132,6 +139,9 @@ update msg model =
         ClickUrl url ->
             ( model, N.newUrl url )
 
+        NewEpisodesReceive stuff ->
+            ( { model | newEpisodes = stuff }, Cmd.none )
+
 
 parseView : String -> Maybe WhichView
 parseView url =
@@ -141,6 +151,9 @@ parseView url =
 
         "/continue" ->
             Just Continue
+
+        "/new" ->
+            Just New
 
         _ ->
             Nothing
@@ -206,3 +219,16 @@ getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
 getEpisodes feed_id =
     Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
         |> RD.sendRequest
+
+
+getNewEpisodes : Cmd (RD.WebData (List NewEpisode))
+getNewEpisodes =
+    let
+        decodeStuff =
+            D.list <|
+                D.map2 NewEpisode
+                    (D.index 0 D.string)
+                    (D.index 1 H.decodeEpisode)
+    in
+        Http.get ("/episodes/new") decodeStuff
+            |> RD.sendRequest

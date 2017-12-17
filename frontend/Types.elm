@@ -55,6 +55,13 @@ type alias Model =
     , progress : RD.WebData PlayerState
     , positions : RD.WebData (List ProgressInfo)
     , view : WhichView
+    , newEpisodes : RD.WebData (List NewEpisode)
+    }
+
+
+type alias NewEpisode =
+    { ftitle : String
+    , episode : Episode
     }
 
 
@@ -75,6 +82,7 @@ type MsgProg
 type WhichView
     = Browse
     | Continue
+    | New
 
 
 type Msg
@@ -94,3 +102,4 @@ type Msg
     | PositionsAsk
     | UrlChange N.Location
     | ClickUrl String
+    | NewEpisodesReceive (RD.WebData (List NewEpisode))

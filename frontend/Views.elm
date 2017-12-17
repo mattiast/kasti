@@ -25,6 +25,10 @@ view model =
             Continue ->
                 RD.map viewPositions model.positions
                     |> RD.withDefault (text (toString model.positions))
+
+            New ->
+                RD.map viewNewEpisodes model.newEpisodes
+                    |> RD.withDefault (text (toString model.newEpisodes))
         ]
 
 
@@ -44,8 +48,26 @@ viewChooser model =
             [ ul []
                 [ item Browse "browse" "Browse"
                 , item Continue "continue" "Continue"
+                , item New "new" "New"
                 ]
             ]
+
+
+viewNewEpisodes : List NewEpisode -> Html Msg
+viewNewEpisodes newEpisodes =
+    div []
+        [ table [ class "table" ] <|
+            List.map
+                (\ne ->
+                    tr [ onClick (EpisodePick ne.episode) ]
+                        (List.map (td [] << List.singleton)
+                            [ text ne.ftitle
+                            , text ne.episode.title
+                            ]
+                        )
+                )
+                newEpisodes
+        ]
 
 
 viewPositions : List ProgressInfo -> Html Msg

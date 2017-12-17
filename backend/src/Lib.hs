@@ -136,6 +136,9 @@ someFunc context = do
         get "/browse" $ do
             setHeader "Content-Type" "text/html; charset=utf-8"
             file "browse.html"
+        get "/continue" $ do
+            setHeader "Content-Type" "text/html; charset=utf-8"
+            file "browse.html"
         get "/elm.js" $ do
             setHeader "Content-Type" "application/javascript"
             file "elm.js"

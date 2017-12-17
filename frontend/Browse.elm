@@ -24,14 +24,19 @@ main =
 
 init : N.Location -> ( Model, Cmd Msg )
 init loc =
-    ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked Browse
-    , Cmd.batch
-        [ getFeeds
-            |> Cmd.map FeedsReceive
-        , getPositions
-            |> Cmd.map PositionsReceive
-        ]
-    )
+    let
+        firstView =
+            parseView loc.pathname
+                |> Maybe.withDefault Browse
+    in
+        ( Model RD.NotAsked emptyNewFeed RD.NotAsked RD.NotAsked RD.NotAsked firstView
+        , Cmd.batch
+            [ getFeeds
+                |> Cmd.map FeedsReceive
+            , getPositions
+                |> Cmd.map PositionsReceive
+            ]
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -109,6 +114,9 @@ update msg model =
             in
                 ( { model | newFeed = { oldNewFeed | postStatus = postStatus } }, Cmd.none )
 
+        PositionsAsk ->
+            ( model, Cmd.map PositionsReceive getPositions )
+
         PositionsReceive positions ->
             ( { model | positions = positions }, Cmd.none )
 
@@ -163,7 +171,7 @@ postProgress state =
         (Http.jsonBody <| Debug.log "posting" <| H.encodeProgress state)
         (D.succeed "")
         |> RD.sendRequest
-        |> Cmd.map (\_ -> Nop)
+        |> Cmd.map (\_ -> PositionsAsk)
 
 
 getFeeds : Cmd (RD.WebData (List Feed))

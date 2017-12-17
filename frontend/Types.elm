@@ -91,5 +91,6 @@ type Msg
     | NewFeedPost
     | NewFeedReceive (RD.WebData ())
     | PositionsReceive (RD.WebData (List ProgressInfo))
+    | PositionsAsk
     | UrlChange N.Location
     | ClickUrl String

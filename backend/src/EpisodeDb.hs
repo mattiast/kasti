@@ -15,16 +15,16 @@ initPool connString =
 
 readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
 readFeeds conn = query_ conn "select id, name, url from feeds"
-    & fmap (fmap $ \((Only fid) :. fi) -> (fid, fi))
+    & fmap (fmap $ \(Only fid :. fi) -> (fid, fi))
 
 readEpisodes :: FeedId -> Connection -> IO [(EpisodeId, Episode)]
 readEpisodes fid conn = query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
-    & fmap (fmap $ \((Only eid) :. ep) -> (eid, ep))
+    & fmap (fmap $ \(Only eid :. ep) -> (eid, ep))
 
 readFeed :: FeedId -> Connection -> IO (Maybe FeedInfo)
 readFeed fid conn = do
     (fis :: [FeedInfo]) <- query conn "select name, url from feeds where id = ?" (Only fid)
-    return $ listToMaybe $ fis
+    return $ listToMaybe fis
 
 readPosition :: EpisodeId -> Connection -> IO ProgressMsg
 readPosition eid conn = do
@@ -44,6 +44,18 @@ readPositions conn = do
       \ join feeds as f on e.feed_id = f.id \
       \ where p.position < p.duration"
     return [(ftitle, (eid, ep), msg) | (ftitle, eid) :. ep :. msg <- rows ]
+
+readNewEpisodes :: Int -> Connection -> IO [(String, EpisodeId, Episode)]
+readNewEpisodes n conn = do
+    (rows :: [(String, EpisodeId) :. Episode]) <- query conn
+        "select f.name, e.id, e.url, e.title, e.date \
+        \ from (select * \
+               \ from episodes \
+               \ order by id desc \
+               \ limit ?) as e \
+        \ join feeds as f on e.feed_id = f.id" (Only n)
+    return [(ftitle, eid, ep) | (ftitle, eid) :. ep <- rows ]
+
 
 writeEpisodes :: Connection -> FeedId -> [Episode] -> IO ()
 writeEpisodes conn fid eps =

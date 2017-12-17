@@ -107,6 +107,10 @@ someFunc context = do
             (fi :: FeedInfo) <- jsonData
             liftAndCatchIO $ withConn $ \conn -> writeFeeds conn [fi]
             json ("ok" :: String)
+        get "/episodes/new" $ do
+            noCache
+            stuff <- liftAndCatchIO $ withConn $ readNewEpisodes 15
+            json stuff
         get "/episodes/:feed_id" $ do
             noCache
             fid <- FeedId <$> param "feed_id"

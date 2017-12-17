@@ -14,11 +14,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ navbar model.newFeed
-        , ul []
-            [ li [ onClick (ClickUrl "browse") ] [ text "browse" ]
-            , li [ onClick (ClickUrl "continue") ] [ text "continue" ]
-            , li [ onClick (ClickUrl "new") ] [ text "new" ]
-            ]
+        , viewChooser model
         , RD.map viewPlayer model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
@@ -30,6 +26,26 @@ view model =
                 RD.map viewPositions model.positions
                     |> RD.withDefault (text (toString model.positions))
         ]
+
+
+viewChooser : Model -> Html Msg
+viewChooser model =
+    let
+        item view path txt =
+            li
+                (if model.view == view then
+                    [ class "is-active" ]
+                 else
+                    []
+                )
+                [ a [ onClick (ClickUrl path) ] [ text txt ] ]
+    in
+        nav [ class "breadcrumb is-medium" ]
+            [ ul []
+                [ item Browse "browse" "Browse"
+                , item Continue "continue" "Continue"
+                ]
+            ]
 
 
 viewPositions : List ProgressInfo -> Html Msg

@@ -8,6 +8,8 @@ import Json.Encode as JE
 import RemoteData as RD
 import Types exposing (..)
 import Time.DateTime as T
+import Formatting as F
+import Formatting exposing ((<>))
 
 
 decodeEpisode : J.Decoder Episode
@@ -104,5 +106,11 @@ renderSeconds sec =
 
         x =
             T.addSeconds (floor sec) z
+
+        pad2 =
+            F.padLeft 2 '0' F.int
+
+        fmt =
+            F.int <> F.s ":" <> pad2 <> F.s ":" <> pad2
     in
-        toString (T.hour x) ++ ":" ++ toString (T.minute x) ++ ":" ++ toString (T.second x)
+        F.print fmt (T.hour x) (T.minute x) (T.second x)

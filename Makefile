@@ -9,7 +9,7 @@ release/browse.html: frontend/browse.html
 
 release/kasti-server: FORCE
 	cd backend ; stack build
-	cp backend/.stack-work/dist/x86_64-linux/Cabal-2.0.0.2/build/kasti-server/kasti-server release
+	cp backend/.stack-work/dist/x86_64-linux/Cabal-2.0.1.0/build/kasti-server/kasti-server release
 
 release/scripts: FORCE
 	cp -R scripts release

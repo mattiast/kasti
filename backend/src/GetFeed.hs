@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module GetFeed where
 import Control.Lens hiding ((.=))
 import Control.Monad(void)

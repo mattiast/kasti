@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Lib where
 import Control.Lens((^?),(.~),(^.))
-import Control.Monad(join)
+import Control.Monad(join, void)
 import Control.Concurrent.Async(forConcurrently_)
 import Data.Aeson((.=),decodeStrict')
 import Data.Aeson.Lens
 import Data.Function((&))
 import Data.Maybe(fromMaybe)
+import Data.Foldable(traverse_)
 import Network.HTTP.Types(ok200)
 import Network.Wai.Session
 import Network.Wai.Session.Map(mapStore)
@@ -68,8 +69,8 @@ mySessionLookup session k = do
 mySessionInsert :: MySession -> String -> S.Text -> ActionM ()
 mySessionInsert session k val = do
     v <- vault <$> request
-    let Just sessionInsert = snd <$> Vault.lookup session v
-    sessionInsert k val
+    Vault.lookup session v
+        & traverse_ (\sess -> snd sess k val)
 
 noCache :: ActionM ()
 noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
@@ -79,10 +80,10 @@ someFunc context = do
     (sessionStore :: SessionStore ActionM String S.Text) <- mapStore genSessionId
     (session :: MySession) <- Vault.newKey
     let withConn = withResource (cPool context)
-    forkServer "localhost" 3001
+    void $ forkServer "localhost" 3001
     scotty 3000 $ do
         middleware $ withSession sessionStore "kasti_token" def session
-        get "/login" $ do
+        get "/login" $
             html $ mconcat
                 [ "<a href=\"https://github.com/login/oauth/authorize?scope=user:email&client_id="
                 , L.fromStrict (clientId (cConfig context))
@@ -92,13 +93,13 @@ someFunc context = do
             (code :: S.Text) <- param "code"
             mToken <- liftAndCatchIO $ getToken (cConfig context) code
             mapM_ (mySessionInsert session "token") mToken
-            (mUser :: Maybe UserInfo) <- liftAndCatchIO $ fmap join $ mapM userInfo mToken
+            (mUser :: Maybe UserInfo) <- liftAndCatchIO $ join <$> mapM userInfo mToken
             liftAndCatchIO $ print mUser
             mapM_ (mySessionInsert session "name") $ userName <$> mUser
             redirect "/browse"
         get "/checkuser" $ do
             mUser <- mySessionLookup session "name"
-            text $ L.fromStrict $ fromMaybe "not found" $ mUser
+            text $ L.fromStrict $ fromMaybe "not found" mUser
         get "/feeds" $ do
             noCache
             fs <- liftAndCatchIO $ withConn readFeeds
@@ -117,8 +118,8 @@ someFunc context = do
             eps <- liftAndCatchIO $ withConn $ readEpisodes fid
             json eps
         get "/syncfeed/all" $ liftAndCatchIO $ do
-            (fids :: [FeedId]) <- fmap (map fst) $ withConn readFeeds
-            forConcurrently_ fids (\fid -> withConn (syncFeed fid))
+            (fids :: [FeedId]) <- map fst <$> withConn readFeeds
+            forConcurrently_ fids (withConn . syncFeed)
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             liftAndCatchIO $ withConn $ syncFeed fid
@@ -130,7 +131,7 @@ someFunc context = do
             status ok200
         get "/progress/all" $ do
             noCache
-            poss <- liftAndCatchIO $ withConn $ readPositions
+            poss <- liftAndCatchIO $ withConn readPositions
             json poss
         get "/progress/:episode_id" $ do
             noCache

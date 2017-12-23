@@ -7,6 +7,7 @@ import Types exposing (..)
 import RemoteData as RD
 import Helpers as H
 import Date.Extra as Date
+import Date
 import Navigation as N
 
 
@@ -66,8 +67,13 @@ viewNewEpisodes newEpisodes =
                             ]
                         )
                 )
-                newEpisodes
+                (sortEpisodes newEpisodes)
         ]
+
+
+sortEpisodes : List NewEpisode -> List NewEpisode
+sortEpisodes es =
+    List.sortBy (\e -> -(Date.toTime e.episode.date)) es
 
 
 viewPositions : List ProgressInfo -> Html Msg

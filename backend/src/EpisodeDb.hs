@@ -53,7 +53,8 @@ readNewEpisodes n conn = do
                \ from episodes \
                \ order by id desc \
                \ limit ?) as e \
-        \ join feeds as f on e.feed_id = f.id" (Only n)
+        \ join feeds as f on e.feed_id = f.id \
+        \ order by e.id desc" (Only n)
     return [(ftitle, (eid, ep)) | (ftitle, eid) :. ep <- rows ]
 
 
@@ -71,7 +72,6 @@ writeFeeds conn fis =
     & void
 
 writePosition :: ProgressMsg -> Connection -> IO ()
-writePosition msg conn = withTransaction conn $ do
+writePosition msg conn = withTransaction conn $ void $
     execute conn "insert into progress(episode_id, position, duration) values (?, ?, ?)\
         \ on conflict(episode_id) do update set position = ?, duration = ?" (msg :. (proPos msg, prDuration msg))
-    return ()

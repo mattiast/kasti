@@ -1,18 +1,13 @@
 {-# LANGUAGE OverloadedStrings, DataKinds, GeneralizedNewtypeDeriving, ScopedTypeVariables #-}
 module Lib where
-import Control.Lens((^?),(.~),(^.))
 import Control.Monad(void)
 import Control.Concurrent.Async(forConcurrently_)
-import Data.Aeson((.=),decodeStrict')
-import Data.Aeson.Lens
+import Data.Aeson(decodeStrict')
 import Data.Function((&))
 import Network.HTTP.Types(ok200)
 import Options.Applicative hiding (header)
-import qualified Data.Aeson as A
 import qualified Data.ByteString as B
-import qualified Data.Text as S
 import qualified Data.Text.Lazy as L
-import qualified Network.Wreq as W
 import Web.Scotty.Trans
 import System.Remote.Monitoring
 import GetFeed(syncFeed)
@@ -28,24 +23,6 @@ import Control.Monad.Trans.Class(lift)
 newtype MyMonad a = MyMonad (Eff '[PodEff, Lift IO] a)
     deriving (Functor, Applicative, Monad, MonadIO)
 
-getToken :: KastiConfig -> S.Text -> IO (Maybe S.Text)
-getToken conf session_code = do
-    let (opts :: W.Options) = W.defaults & W.header "Accept" .~ ["application/json"]
-    r <- W.postWith opts "https://github.com/login/oauth/access_token"
-                (A.object [ "client_id" .= clientId conf
-                          , "client_secret" .= clientSecret conf
-                          , "code" .= session_code
-                          ])
-    let mAT = r ^? W.responseBody . key "access_token" . _String
-    return mAT
-
-userInfo :: S.Text -> IO (Maybe UserInfo)
-userInfo token = do
-    let opts = W.defaults & W.param "access_token" .~ [ token ]
-    r <- W.getWith opts "https://api.github.com/user"
-    let x = r ^. W.responseBody
-    return $ A.decode x
-
 getConf :: IO KastiConfig
 getConf = do
     let args = argument str (metavar "CONFIGFILE")
@@ -55,8 +32,8 @@ getConf = do
 readConf :: FilePath -> IO KastiConfig
 readConf path = do
     bs <- B.readFile path
-    let mConf = decodeStrict' bs :: Maybe KastiConfig
-    maybe (fail "couldn't parse conf file") return mConf
+    decodeStrict' bs
+        & maybe (fail "couldn't parse conf file") return
 
 noCache :: (Monad m) => ActionT e m ()
 noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"

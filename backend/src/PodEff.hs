@@ -36,8 +36,12 @@ runPod :: (SetMember Lift (Lift IO) r) => Connection -> Eff (PodEff ': r) w -> E
 runPod conn = handle_relay return (oneQ conn)
 
 oneQ :: (SetMember Lift (Lift IO) r) => Connection -> PodEff v -> Arr r v a -> Eff r a
-oneQ conn (PodGetFeedInfo fid) f = lift (readFeed fid conn) >>= f
-oneQ conn PodGetFeeds f = lift (readFeeds conn) >>= f
+oneQ conn x f = lift (query x conn) >>= f
+
+query :: PodEff a -> Connection -> IO a
+query x = case x of
+    PodGetFeeds -> readFeeds
+    PodGetFeedInfo fid -> readFeed fid
 
 instance (SetMember Lift (Lift IO) r) => MonadIO (Eff r) where
     liftIO = lift

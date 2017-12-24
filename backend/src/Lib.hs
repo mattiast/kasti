@@ -71,7 +71,7 @@ someFunc context = do
     scottyT 3000 (handleStuff context) $ (id :: ScottyT L.Text MyMonad () -> ScottyT L.Text MyMonad ()) $ do
         get "/feeds" $ do
             noCache
-            fs <- lift $ MyMonad $ getFeeds
+            fs <- lift $ MyMonad getFeeds
             json fs
         post "/feed" $ do
             (fi :: FeedInfo) <- jsonData

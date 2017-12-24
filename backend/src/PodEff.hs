@@ -33,7 +33,7 @@ getFeeds :: (Member PodEff e) => Eff e [(FeedId, FeedInfo)]
 getFeeds = send PodGetFeeds
 
 runPod :: (SetMember Lift (Lift IO) r) => Connection -> Eff (PodEff ': r) w -> Eff r w
-runPod conn s = handle_relay return (\(x :: PodEff v) (f :: Arr r v w) -> oneQ conn x f) s
+runPod conn = handle_relay return (oneQ conn)
 
 oneQ :: (SetMember Lift (Lift IO) r) => Connection -> PodEff v -> Arr r v a -> Eff r a
 oneQ conn (PodGetFeedInfo fid) f = lift (readFeed fid conn) >>= f

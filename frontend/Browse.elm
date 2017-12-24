@@ -35,6 +35,7 @@ init loc =
             RD.NotAsked
             firstView
             RD.NotAsked
+            False
         , Cmd.batch
             [ getFeeds
                 |> Cmd.map FeedsReceive
@@ -141,6 +142,9 @@ update msg model =
 
         NewEpisodesReceive stuff ->
             ( { model | newEpisodes = stuff }, Cmd.none )
+
+        NavbarToggle ->
+            ( { model | navbarActive = not model.navbarActive }, Cmd.none )
 
 
 parseView : String -> Maybe WhichView

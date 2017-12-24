@@ -56,6 +56,7 @@ type alias Model =
     , positions : RD.WebData (List ProgressInfo)
     , view : WhichView
     , newEpisodes : RD.WebData (List NewEpisode)
+    , navbarActive : Bool
     }
 
 
@@ -103,3 +104,4 @@ type Msg
     | UrlChange N.Location
     | ClickUrl String
     | NewEpisodesReceive (RD.WebData (List NewEpisode))
+    | NavbarToggle

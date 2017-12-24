@@ -14,7 +14,7 @@ import Navigation as N
 view : Model -> Html Msg
 view model =
     div []
-        [ navbar model.newFeed
+        [ navbar model.newFeed model.navbarActive
         , viewChooser model
         , RD.map viewPlayer model.progress
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
@@ -113,53 +113,69 @@ viewSelector model =
         ]
 
 
-navbar : NewFeed -> Html Msg
-navbar newFeed =
-    nav [ class "navbar" ]
-        [ div [ class "navbar-brand" ]
-            [ div [ class "navbar-item" ]
-                [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
-                , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
+navbar : NewFeed -> Bool -> Html Msg
+navbar newFeed nbActive =
+    let
+        activeString =
+            if nbActive then
+                " is-active"
+            else
+                ""
+    in
+        nav [ class "navbar" ]
+            [ div [ class "navbar-brand" ]
+                [ div [ class "navbar-item" ]
+                    [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
+                    , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
+                    ]
+                , button
+                    [ class ("button navbar-burger" ++ activeString)
+                    , onClick NavbarToggle
+                    ]
+                    [ span [] []
+                    , span [] []
+                    , span [] []
+                    ]
                 ]
-            ]
-        , div [ class "navbar-menu" ]
-            [ div [ class "navbar-start" ]
-                [ div [ class "navbar-item has-dropdown is-hoverable" ]
-                    [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
-                    , div [ class "navbar-dropdown" ]
-                        [ div [ class "navbar-item" ]
-                            [ div [ class "field" ]
-                                [ label [ class "label" ] [ text "Name" ]
-                                , div [ class "control" ]
-                                    [ input
-                                        [ type_ "text"
-                                        , name "name"
-                                        , placeholder "Feed title"
-                                        , onInput (\v -> UpdateNewFeed { newFeed | name = v })
+            , div [ class ("navbar-menu" ++ activeString) ]
+                [ div [ class "navbar-start" ]
+                    [ div [ class "navbar-item has-dropdown is-hoverable" ]
+                        [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
+                        , div [ class "navbar-dropdown" ]
+                            [ div [ class "navbar-item" ]
+                                [ div [ class "field" ]
+                                    [ label [ class "label" ] [ text "Name" ]
+                                    , div [ class "control" ]
+                                        [ input
+                                            [ type_ "text"
+                                            , name "name"
+                                            , placeholder "Feed title"
+                                            , onInput (\v -> UpdateNewFeed { newFeed | name = v })
+                                            ]
+                                            []
                                         ]
-                                        []
                                     ]
                                 ]
-                            ]
-                        , div [ class "navbar-item" ]
-                            [ div [ class "field" ]
-                                [ label [ class "label" ] [ text "Feed URL" ]
-                                , div [ class "control" ]
-                                    [ input
-                                        [ type_ "url"
-                                        , name "url"
-                                        , placeholder "http://"
-                                        , onInput (\v -> UpdateNewFeed { newFeed | url = v })
+                            , div [ class "navbar-item" ]
+                                [ div [ class "field" ]
+                                    [ label [ class "label" ] [ text "Feed URL" ]
+                                    , div [ class "control" ]
+                                        [ input
+                                            [ type_ "url"
+                                            , name "url"
+                                            , placeholder "http://"
+                                            , onInput (\v -> UpdateNewFeed { newFeed | url = v })
+                                            ]
+                                            []
                                         ]
-                                        []
                                     ]
                                 ]
-                            ]
-                        , div [ class "navbar-item" ]
-                            [ div [ class "field" ]
-                                [ div [ class "control" ]
-                                    [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]
-                                        [ text "Add" ]
+                            , div [ class "navbar-item" ]
+                                [ div [ class "field" ]
+                                    [ div [ class "control" ]
+                                        [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]
+                                            [ text "Add" ]
+                                        ]
                                     ]
                                 ]
                             ]
@@ -167,7 +183,6 @@ navbar newFeed =
                     ]
                 ]
             ]
-        ]
 
 
 addFeedButtonClass : NewFeed -> String

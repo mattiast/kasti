@@ -13,4 +13,4 @@ jobs:
           command: date
       - run:
           name: Build stuff
-          command: make
+          command: make release/kasti-server

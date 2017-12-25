@@ -122,9 +122,25 @@ viewMenu state =
             else
                 ""
 
-        -- this is stupid
-        newFeed =
-            state.newFeed
+        syncAllButton =
+            div [ class "navbar-item" ]
+                [ div [ class "field" ]
+                    [ div [ class "control" ]
+                        [ button [ class ("button " ++ syncStateClass state.syncAllState), onClick (SyncFeedAsk SyncAll) ]
+                            [ text "Sync all feeds" ]
+                        ]
+                    ]
+                ]
+
+        hamburgerButton =
+            button
+                [ class ("button navbar-burger" ++ activeString)
+                , onClick NavbarToggle
+                ]
+                [ span [] []
+                , span [] []
+                , span [] []
+                ]
     in
         nav [ class "navbar" ]
             [ div [ class "navbar-brand" ]
@@ -132,70 +148,62 @@ viewMenu state =
                     [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
                     , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
                     ]
-                , button
-                    [ class ("button navbar-burger" ++ activeString)
-                    , onClick NavbarToggle
-                    ]
-                    [ span [] []
-                    , span [] []
-                    , span [] []
-                    ]
+                , hamburgerButton
                 ]
             , div [ class ("navbar-menu" ++ activeString) ]
                 [ div [ class "navbar-start" ]
                     [ div [ class "navbar-item has-dropdown is-hoverable" ]
                         [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
                         , div [ class "navbar-dropdown" ]
-                            [ div [ class "navbar-item" ]
-                                [ div [ class "field" ]
-                                    [ div [ class "control" ]
-                                        [ button [ class ("button " ++ syncStateClass state.syncAllState), onClick (SyncFeedAsk SyncAll) ]
-                                            [ text "Sync all feeds" ]
-                                        ]
-                                    ]
-                                ]
-                            , div
-                                [ class "navbar-item" ]
-                                [ div [ class "field" ]
-                                    [ label [ class "label" ] [ text "Name" ]
-                                    , div [ class "control" ]
-                                        [ input
-                                            [ type_ "text"
-                                            , name "name"
-                                            , placeholder "Feed title"
-                                            , onInput (\v -> UpdateNewFeed { newFeed | name = v })
-                                            ]
-                                            []
-                                        ]
-                                    ]
-                                ]
-                            , div [ class "navbar-item" ]
-                                [ div [ class "field" ]
-                                    [ label [ class "label" ] [ text "Feed URL" ]
-                                    , div [ class "control" ]
-                                        [ input
-                                            [ type_ "url"
-                                            , name "url"
-                                            , placeholder "http://"
-                                            , onInput (\v -> UpdateNewFeed { newFeed | url = v })
-                                            ]
-                                            []
-                                        ]
-                                    ]
-                                ]
-                            , div [ class "navbar-item" ]
-                                [ div [ class "field" ]
-                                    [ div [ class "control" ]
-                                        [ button [ class (addFeedButtonClass state.newFeed), onClick NewFeedPost ]
-                                            [ text "Add" ]
-                                        ]
-                                    ]
-                                ]
-                            ]
+                            ([ syncAllButton
+                             ]
+                                ++ viewNewFeedForm state.newFeed
+                            )
                         ]
                     ]
                 ]
             ]
+
+
+viewNewFeedForm : NewFeed -> List (Html Msg)
+viewNewFeedForm newFeed =
+    [ div [ class "navbar-item" ]
+        [ div [ class "field" ]
+            [ label [ class "label" ] [ text "Name" ]
+            , div [ class "control" ]
+                [ input
+                    [ type_ "text"
+                    , name "name"
+                    , placeholder "Feed title"
+                    , onInput (\v -> UpdateNewFeed { newFeed | name = v })
+                    ]
+                    []
+                ]
+            ]
+        ]
+    , div [ class "navbar-item" ]
+        [ div [ class "field" ]
+            [ label [ class "label" ] [ text "Feed URL" ]
+            , div [ class "control" ]
+                [ input
+                    [ type_ "url"
+                    , name "url"
+                    , placeholder "http://"
+                    , onInput (\v -> UpdateNewFeed { newFeed | url = v })
+                    ]
+                    []
+                ]
+            ]
+        ]
+    , div [ class "navbar-item" ]
+        [ div [ class "field" ]
+            [ div [ class "control" ]
+                [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]
+                    [ text "Add" ]
+                ]
+            ]
+        ]
+    ]
 
 
 addFeedButtonClass : NewFeed -> String

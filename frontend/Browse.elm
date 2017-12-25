@@ -28,14 +28,18 @@ init loc =
             parseView loc.pathname
                 |> Maybe.withDefault Browse
     in
-        ( Model RD.NotAsked
-            emptyNewFeed
-            RD.NotAsked
-            RD.NotAsked
-            RD.NotAsked
-            firstView
-            RD.NotAsked
-            False
+        ( { feeds = RD.NotAsked
+          , episodes = RD.NotAsked
+          , playerState = RD.NotAsked
+          , menuState =
+                { newFeed = emptyNewFeed
+                , syncAllState = RD.NotAsked
+                , navbarActive = False
+                }
+          , view = firstView
+          , positions = RD.NotAsked
+          , newEpisodes = RD.NotAsked
+          }
         , Cmd.batch
             [ getFeeds
                 |> Cmd.map FeedsReceive
@@ -69,7 +73,7 @@ update msg model =
             ( { model | episodes = stuff }, Cmd.none )
 
         ReceiveProgress stuff ->
-            ( { model | progress = stuff |> Debug.log "rec prog" }
+            ( { model | playerState = stuff |> Debug.log "rec prog" }
             , stuff
                 |> RD.map (\s -> setCurrentTime s.time)
                 |> RD.withDefault Cmd.none
@@ -86,8 +90,8 @@ update msg model =
 
         ProgMsg (TimeUpdate pos dur) ->
             ( { model
-                | progress =
-                    RD.map (\state -> { state | time = pos, duration = dur }) model.progress
+                | playerState =
+                    RD.map (\state -> { state | time = pos, duration = dur }) model.playerState
               }
             , Cmd.none
             )
@@ -95,32 +99,49 @@ update msg model =
         Nop ->
             ( Debug.log "nop" model, Cmd.none )
 
-        SyncFeedAsk fid ->
+        SyncFeedAsk sfid ->
             let
                 newModel =
-                    H.modifyFeedAtId fid (\feed -> { feed | syncState = RD.Loading }) model
-            in
-                ( newModel, syncFeed fid )
+                    case sfid of
+                        SyncSingle fid ->
+                            H.modifyFeedAtId fid (\feed -> { feed | syncState = RD.Loading }) model
 
-        SyncFeedReceive fid state ->
+                        SyncAll ->
+                            H.modifyMenuState (\state -> { state | syncAllState = RD.Loading }) model
+            in
+                ( newModel, syncFeed sfid )
+
+        SyncFeedReceive sfid state ->
             let
                 newModel =
-                    H.modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
+                    case sfid of
+                        SyncSingle fid ->
+                            H.modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
+
+                        SyncAll ->
+                            H.modifyMenuState (\ms -> { ms | syncAllState = state }) model
             in
                 ( newModel, Cmd.none )
 
         UpdateNewFeed newFeed ->
-            ( { model | newFeed = newFeed }, Cmd.none )
+            ( H.modifyMenuState (\state -> { state | newFeed = newFeed }) model
+            , Cmd.none
+            )
 
         NewFeedPost ->
-            ( model, postNewFeed model.newFeed )
+            ( model, postNewFeed model.menuState.newFeed )
 
         NewFeedReceive postStatus ->
             let
                 oldNewFeed =
-                    model.newFeed
+                    model.menuState.newFeed
+
+                upd ms =
+                    { ms | newFeed = { oldNewFeed | postStatus = postStatus } }
             in
-                ( { model | newFeed = { oldNewFeed | postStatus = postStatus } }, Cmd.none )
+                ( H.modifyMenuState upd model
+                , Cmd.none
+                )
 
         PositionsAsk ->
             ( model, Cmd.map PositionsReceive getPositions )
@@ -144,7 +165,13 @@ update msg model =
             ( { model | newEpisodes = stuff }, Cmd.none )
 
         NavbarToggle ->
-            ( { model | navbarActive = not model.navbarActive }, Cmd.none )
+            let
+                upd ms =
+                    { ms | navbarActive = not ms.navbarActive }
+            in
+                ( H.modifyMenuState upd model
+                , Cmd.none
+                )
 
 
 parseView : String -> Maybe WhichView
@@ -175,11 +202,20 @@ postNewFeed newFeed =
 port setCurrentTime : Float -> Cmd msg
 
 
-syncFeed : FeedId -> Cmd Msg
-syncFeed fid =
-    Http.get ("/syncfeed/" ++ toString fid) (D.succeed ())
-        |> RD.sendRequest
-        |> Cmd.map (SyncFeedReceive fid)
+syncFeed : SyncFeedId -> Cmd Msg
+syncFeed sfid =
+    let
+        url =
+            case sfid of
+                SyncSingle fid ->
+                    "/syncfeed/" ++ toString fid
+
+                SyncAll ->
+                    "/syncfeed/all"
+    in
+        Http.get url (D.succeed ())
+            |> RD.sendRequest
+            |> Cmd.map (SyncFeedReceive sfid)
 
 
 postProgress : PlayerState -> Cmd Msg

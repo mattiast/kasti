@@ -14,9 +14,9 @@ import Navigation as N
 view : Model -> Html Msg
 view model =
     div []
-        [ navbar model.newFeed model.navbarActive
+        [ viewMenu model.menuState
         , viewChooser model
-        , RD.map viewPlayer model.progress
+        , RD.map viewPlayer model.playerState
             |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
             |> Html.map ProgMsg
         , case model.view of
@@ -45,7 +45,7 @@ viewChooser model =
                 )
                 [ a [ onClick (ClickUrl path) ] [ text txt ] ]
     in
-        nav [ class "breadcrumb is-medium" ]
+        div [ class "tabs is-boxed is-medium" ]
             [ ul []
                 [ item Browse "browse" "Browse"
                 , item Continue "continue" "Continue"
@@ -67,7 +67,7 @@ viewNewEpisodes newEpisodes =
                             ]
                         )
                 )
-                (sortEpisodes newEpisodes)
+                newEpisodes
         ]
 
 
@@ -113,14 +113,19 @@ viewSelector model =
         ]
 
 
-navbar : NewFeed -> Bool -> Html Msg
-navbar newFeed nbActive =
+viewMenu : MenuState -> Html Msg
+viewMenu state =
     let
         activeString =
-            if nbActive then
+            if state.navbarActive then
                 " is-active"
             else
                 ""
+
+        newFeed =
+            state.newFeed
+
+        -- this is stupid
     in
         nav [ class "navbar" ]
             [ div [ class "navbar-brand" ]
@@ -173,7 +178,7 @@ navbar newFeed nbActive =
                             , div [ class "navbar-item" ]
                                 [ div [ class "field" ]
                                     [ div [ class "control" ]
-                                        [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]
+                                        [ button [ class (addFeedButtonClass state.newFeed), onClick NewFeedPost ]
                                             [ text "Add" ]
                                         ]
                                     ]
@@ -238,7 +243,7 @@ syncButton feed =
                     RD.Failure e ->
                         " is-danger"
     in
-        a [ class aClass, onClick (SyncFeedAsk feed.id) ]
+        a [ class aClass, onClick (SyncFeedAsk (SyncSingle feed.id)) ]
             [ span [ class "icon is-small" ]
                 [ i [ class "fa fa-refresh" ] []
                 ]

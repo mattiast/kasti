@@ -50,12 +50,18 @@ type alias PlayerState =
 
 type alias Model =
     { feeds : RD.WebData (List Feed)
-    , newFeed : NewFeed
     , episodes : RD.WebData (List Episode)
-    , progress : RD.WebData PlayerState
-    , positions : RD.WebData (List ProgressInfo)
+    , playerState : RD.WebData PlayerState
+    , menuState : MenuState
     , view : WhichView
+    , positions : RD.WebData (List ProgressInfo)
     , newEpisodes : RD.WebData (List NewEpisode)
+    }
+
+
+type alias MenuState =
+    { newFeed : NewFeed
+    , syncAllState : RD.WebData ()
     , navbarActive : Bool
     }
 
@@ -86,6 +92,11 @@ type WhichView
     | New
 
 
+type SyncFeedId
+    = SyncSingle FeedId
+    | SyncAll
+
+
 type Msg
     = FeedsReceive (RD.WebData (List Feed))
     | EpisodePick Episode
@@ -94,8 +105,8 @@ type Msg
     | ReceiveProgress (RD.WebData PlayerState)
     | ProgMsg MsgProg
     | Nop
-    | SyncFeedAsk FeedId
-    | SyncFeedReceive FeedId (RD.WebData ())
+    | SyncFeedAsk SyncFeedId
+    | SyncFeedReceive SyncFeedId (RD.WebData ())
     | UpdateNewFeed NewFeed
     | NewFeedPost
     | NewFeedReceive (RD.WebData ())

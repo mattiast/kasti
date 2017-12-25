@@ -98,6 +98,11 @@ modifyFeedAtId fid upd model =
         { model | feeds = RD.map (List.map updAt) model.feeds }
 
 
+modifyMenuState : (MenuState -> MenuState) -> Model -> Model
+modifyMenuState upd model =
+    { model | menuState = upd model.menuState }
+
+
 renderSeconds : Float -> String
 renderSeconds sec =
     let

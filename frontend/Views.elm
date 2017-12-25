@@ -122,10 +122,9 @@ viewMenu state =
             else
                 ""
 
+        -- this is stupid
         newFeed =
             state.newFeed
-
-        -- this is stupid
     in
         nav [ class "navbar" ]
             [ div [ class "navbar-brand" ]
@@ -148,6 +147,15 @@ viewMenu state =
                         [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
                         , div [ class "navbar-dropdown" ]
                             [ div [ class "navbar-item" ]
+                                [ div [ class "field" ]
+                                    [ div [ class "control" ]
+                                        [ button [ class ("button " ++ syncStateClass state.syncAllState), onClick (SyncFeedAsk SyncAll) ]
+                                            [ text "Sync all feeds" ]
+                                        ]
+                                    ]
+                                ]
+                            , div
+                                [ class "navbar-item" ]
                                 [ div [ class "field" ]
                                     [ label [ class "label" ] [ text "Name" ]
                                     , div [ class "control" ]
@@ -192,18 +200,23 @@ viewMenu state =
 
 addFeedButtonClass : NewFeed -> String
 addFeedButtonClass newFeed =
-    case newFeed.postStatus of
+    "button " ++ syncStateClass newFeed.postStatus
+
+
+syncStateClass : RD.WebData a -> String
+syncStateClass state =
+    case state of
         RD.NotAsked ->
-            "button is-primary"
+            "is-primary"
 
         RD.Loading ->
-            "button is-primary is-loading"
+            "is-primary is-loading"
 
         RD.Success _ ->
-            "button is-success"
+            "is-success"
 
         RD.Failure _ ->
-            "button is-danger"
+            "is-danger"
 
 
 feedList : RD.WebData (List Feed) -> Html Msg

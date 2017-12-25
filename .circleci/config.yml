@@ -43,3 +43,9 @@ jobs:
           key: elm-stuff-{{ epoch }}
       - store_artifacts:
           path: release/elm.js
+workflows:
+  version: 2
+  build_both:
+    jobs:
+      - build
+      - buildjs

@@ -5,12 +5,14 @@ jobs:
       - image: fpco/stack-build:lts-10.0
     steps:
       - checkout
-      - run:
-          name: Greeting
-          command: echo Hello, world.
-      - run:
-          name: Print the Current Time
-          command: date
+      - restore_cache:
+          key: stack_dir
       - run:
           name: Build stuff
           command: make release/kasti-server
+      - save_cache:
+          paths:
+            - /root/.stack
+          key: stack_dir-{{ epoch }}
+      - store_artifacts:
+          path: release/kasti-server

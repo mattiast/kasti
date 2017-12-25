@@ -16,3 +16,30 @@ jobs:
           key: stack_dir-{{ epoch }}
       - store_artifacts:
           path: release/kasti-server
+  buildjs:
+    docker:
+      - image: circleci/node
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: node_modules
+      - run:
+          name: Install elm
+          command: npm install elm
+      - save_cache:
+          paths:
+            - node_modules
+          key: node_modules-{{ epoch }}
+
+      - restore_cache:
+          key: elm-stuff
+      - run:
+          name: Build elm.js
+          command: make release/elm.js
+      - save_cache:
+          paths:
+            - frontend/elm-stuff
+          key: elm-stuff-{{ epoch }}
+      - store_artifacts:
+          path: release/elm.js

@@ -156,6 +156,7 @@ viewMenu state =
                         [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
                         , div [ class "navbar-dropdown" ]
                             ([ syncAllButton
+                             , hr [ class "navbar-divider" ] []
                              ]
                                 ++ viewNewFeedForm state.newFeed
                             )

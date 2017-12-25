@@ -1,7 +1,7 @@
 all: stuff.tar.gz
 
 release/elm.js: frontend/*.elm
-	cd frontend ; elm-make Browse.elm --output elm.js
+	cd frontend ; elm-make Browse.elm --output elm.js --yes
 	mkdir -p release
 	mv frontend/elm.js release
 

@@ -18,19 +18,9 @@ jobs:
           path: release/kasti-server
   buildjs:
     docker:
-      - image: circleci/node
+      - image: codesimple/elm:0.18
     steps:
       - checkout
-
-      - restore_cache:
-          key: node_modules
-      - run:
-          name: Install elm
-          command: npm install elm
-      - save_cache:
-          paths:
-            - node_modules
-          key: node_modules-{{ epoch }}
 
       - restore_cache:
           key: elm-stuff

@@ -121,7 +121,15 @@ update msg model =
                         SyncAll ->
                             H.modifyMenuState (\ms -> { ms | syncAllState = state }) model
             in
-                ( newModel, Cmd.none )
+                ( newModel
+                , case sfid of
+                    SyncSingle fid ->
+                        getEpisodes fid
+                            |> Cmd.map ReceiveEpList
+
+                    SyncAll ->
+                        Cmd.none
+                )
 
         UpdateNewFeed newFeed ->
             ( H.modifyMenuState (\state -> { state | newFeed = newFeed }) model

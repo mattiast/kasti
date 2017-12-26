@@ -21,4 +21,4 @@ jobs:
             - frontend/elm-stuff
           key: elm-stuff2-{{ epoch }}
       - store_artifacts:
-          path: release/kasti-server
+          path: stuff.tar.gz

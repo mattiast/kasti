@@ -1,11 +1,17 @@
 FROM ubuntu:16.04
 
 RUN apt update && apt install -y \
+    apt-transport-https \
+    ca-certificates \
     curl \
+    iptables \
     libpq-dev \
+    lxc \
     nodejs-legacy \
     npm \
     sudo
+
+RUN curl -sSL https://get.docker.com/ | sh
 RUN curl -sSL https://get.haskellstack.org/ | sh
 RUN npm install -g elm@0.18
 RUN adduser circleci

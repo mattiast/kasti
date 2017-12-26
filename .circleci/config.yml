@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mattiast/kasti-build:latest
+      - image: mattiast/kasti-build:0.0.4
     steps:
       - checkout
       - restore_cache:

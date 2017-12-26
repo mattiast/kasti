@@ -14,7 +14,7 @@ jobs:
           command: make
       - save_cache:
           paths:
-            - /root/.stack
+            - /home/circleci/.stack
           key: stack_dir-{{ epoch }}
       - save_cache:
           paths:

@@ -2,40 +2,23 @@ version: 2
 jobs:
   build:
     docker:
-      - image: fpco/stack-build:lts-10.0
+      - image: mattiast/kasti-build:latest
     steps:
       - checkout
       - restore_cache:
           key: stack_dir
+      - restore_cache:
+          key: elm-stuff
       - run:
           name: Build stuff
-          command: make release/kasti-server
+          command: make
       - save_cache:
           paths:
             - /root/.stack
           key: stack_dir-{{ epoch }}
-      - store_artifacts:
-          path: release/kasti-server
-  buildjs:
-    docker:
-      - image: codesimple/elm:0.18
-    steps:
-      - checkout
-
-      - restore_cache:
-          key: elm-stuff
-      - run:
-          name: Build elm.js
-          command: make release/elm.js
       - save_cache:
           paths:
             - frontend/elm-stuff
           key: elm-stuff-{{ epoch }}
       - store_artifacts:
-          path: release/elm.js
-workflows:
-  version: 2
-  build_both:
-    jobs:
-      - build
-      - buildjs
+          path: release/kasti-server

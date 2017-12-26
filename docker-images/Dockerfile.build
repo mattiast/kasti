@@ -1,0 +1,14 @@
+FROM ubuntu:16.04
+
+RUN apt update
+RUN apt install -y npm nodejs-legacy curl
+RUN curl -sSL https://get.haskellstack.org/ | sh
+RUN npm install -g elm@0.18
+RUN adduser circleci
+
+USER circleci
+WORKDIR /home/circleci
+
+RUN stack setup --resolver lts-10.0
+RUN echo 1 + 1 | stack ghci
+

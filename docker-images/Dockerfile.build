@@ -1,7 +1,11 @@
 FROM ubuntu:16.04
 
-RUN apt update
-RUN apt install -y npm nodejs-legacy curl sudo libpq-dev
+RUN apt update && apt install -y \
+    curl \
+    libpq-dev \
+    nodejs-legacy \
+    npm \
+    sudo
 RUN curl -sSL https://get.haskellstack.org/ | sh
 RUN npm install -g elm@0.18
 RUN adduser circleci

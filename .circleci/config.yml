@@ -5,6 +5,7 @@ jobs:
       - image: mattiast/kasti-build:0.0.4
     steps:
       - checkout
+      - setup_remote_docker
       - restore_cache:
           key: stack_dir2
       - restore_cache:

@@ -23,7 +23,7 @@ jobs:
           key: elm-stuff2-{{ epoch }}
       - run:
           name: Login to AWS ECR
-          command: eval $(aws ecr get-login)
+          command: eval $(aws ecr get-login --no-include-email)
       - run:
           name: Push docker image to ECR
           command: |

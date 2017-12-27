@@ -15,7 +15,7 @@ extra-package-dbs: []
 image:
   containers:
     - base: mattiast/kasti-run:0.0.3
-      name: mattiast/kasti-backend
+      name: kasti-backend
       # Optionally add a directory to a path inside the docker image.
       add:
         ../static/: /root/static/

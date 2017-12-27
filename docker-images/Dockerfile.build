@@ -9,11 +9,13 @@ RUN apt update && apt install -y \
     lxc \
     nodejs-legacy \
     npm \
+    python-pip \
     sudo
 
 RUN curl -sSL https://get.docker.com/ | sh
 RUN curl -sSL https://get.haskellstack.org/ | sh
 RUN npm install -g elm@0.18
+RUN pip install awscli
 RUN adduser circleci
 
 USER circleci

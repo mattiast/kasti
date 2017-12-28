@@ -111,25 +111,23 @@ update msg model =
             in
                 ( newModel, syncFeed sfid )
 
-        SyncFeedReceive sfid state ->
+        SyncFeedReceive (SyncSingle fid) state ->
             let
                 newModel =
-                    case sfid of
-                        SyncSingle fid ->
-                            H.modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
+                    H.modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
 
-                        SyncAll ->
-                            H.modifyMenuState (\ms -> { ms | syncAllState = state }) model
+                nextCmd =
+                    getEpisodes fid
+                        |> Cmd.map ReceiveEpList
             in
-                ( newModel
-                , case sfid of
-                    SyncSingle fid ->
-                        getEpisodes fid
-                            |> Cmd.map ReceiveEpList
+                ( newModel, nextCmd )
 
-                    SyncAll ->
-                        Cmd.none
-                )
+        SyncFeedReceive SyncAll state ->
+            let
+                newModel =
+                    H.modifyMenuState (\ms -> { ms | syncAllState = state }) model
+            in
+                ( newModel, Cmd.none )
 
         UpdateNewFeed newFeed ->
             ( H.modifyMenuState (\state -> { state | newFeed = newFeed }) model

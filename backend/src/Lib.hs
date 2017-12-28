@@ -63,9 +63,11 @@ someFunc context = do
             fid <- FeedId <$> param "feed_id"
             eps <- liftAndCatchIO $ withConn $ readEpisodes fid
             json eps
-        get "/syncfeed/all" $ liftAndCatchIO $ do
-            (fids :: [FeedId]) <- map fst <$> withConn readFeeds
-            forConcurrently_ fids (withConn . syncFeed)
+        get "/syncfeed/all" $ do
+            fs <- lift $ MyMonad getFeeds
+            let fids = map fst fs
+            liftAndCatchIO $ forConcurrently_ fids (withConn . syncFeed)
+            json ("ok" :: String)
         get "/syncfeed/:feed_id" $ do
             fid <- FeedId <$> param "feed_id"
             liftAndCatchIO $ withConn $ syncFeed fid

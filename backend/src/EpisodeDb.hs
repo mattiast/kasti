@@ -7,11 +7,17 @@ import Data.Function((&))
 import Data.Maybe(listToMaybe)
 import Types
 import Data.Pool
+import Data.Time.Clock(NominalDiffTime)
 import qualified Data.ByteString.Char8 as B
 
 initPool :: String -> IO (Pool Connection)
 initPool connString =
-    createPool (connectPostgreSQL $ B.pack connString) close 30 1 10
+    createPool
+        (connectPostgreSQL $ B.pack connString)
+        (close :: Connection -> IO ())
+        1  -- num of stripes in the pool
+        (30 :: NominalDiffTime)
+        5  -- num of connections per stripe
 
 readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
 readFeeds conn = query_ conn "select id, name, url from feeds"

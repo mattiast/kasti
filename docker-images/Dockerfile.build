@@ -9,14 +9,17 @@ RUN apt update && apt install -y \
     lxc \
     nodejs-legacy \
     npm \
-    python-pip \
     sudo
+
+RUN export CLOUD_SDK_REPO="cloud-sdk-xenial" && \
+    echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    apt update && apt install -y google-cloud-sdk
 
 RUN curl -sSL https://get.docker.com/ | sh
 RUN curl -sSL https://get.haskellstack.org/ | sh
 RUN npm install -g elm@0.18
-RUN pip install awscli
-RUN adduser circleci
+RUN adduser --disabled-password --gecos '' circleci
 
 USER circleci
 WORKDIR /home/circleci

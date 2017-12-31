@@ -11,13 +11,19 @@ import Data.Time.Clock(NominalDiffTime)
 import qualified Data.ByteString.Char8 as B
 
 initPool :: String -> IO (Pool Connection)
-initPool connString =
+initPool connString = do
+    putStrLn "Initiating DB connection pool"
     createPool
         (connectPostgreSQL $ B.pack connString)
         (close :: Connection -> IO ())
         1  -- num of stripes in the pool
         (30 :: NominalDiffTime)
         5  -- num of connections per stripe
+
+closePool :: Pool Connection -> IO ()
+closePool pool = do
+    destroyAllResources pool
+    putStrLn "DB connection pool closed"
 
 readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
 readFeeds conn = query_ conn "select id, name, url from feeds"

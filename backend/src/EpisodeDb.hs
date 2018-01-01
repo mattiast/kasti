@@ -70,8 +70,8 @@ readNewEpisodes n conn = do
     return [(ftitle, (eid, ep)) | (ftitle, eid) :. ep <- rows ]
 
 
-writeEpisodes :: Connection -> FeedId -> [Episode] -> IO ()
-writeEpisodes conn fid eps =
+writeEpisodes :: FeedId -> [Episode] -> Connection -> IO ()
+writeEpisodes fid eps conn =
     executeMany conn "insert into episodes(feed_id, url, title, date) values (?,?,?,?) on conflict do nothing"
             [ Only fid :. ep | ep <- eps ]
     & withTransaction conn

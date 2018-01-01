@@ -1,10 +1,10 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, Rank2Types #-}
 module GetFeed where
 import Control.Lens hiding ((.=))
-import Control.Monad(void)
 import Data.Aeson
 import Data.Function((&))
 import Data.Maybe
+import Data.Foldable(traverse_)
 import qualified Data.Text as T
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
@@ -30,12 +30,13 @@ fetchFeed url = do
     let body = r ^. responseBody
     return $ parseFeedSource body
 
-syncFeed :: FeedId -> Connection -> IO ()
-syncFeed fid conn =
-    readFeed fid conn
-    >>= mapM fetchEpisodes
-    >>= mapM (writeEpisodes conn fid)
-    & void
+type ContIO a = forall b . (a -> IO b) -> IO b
+
+syncFeed :: FeedId -> ContIO Connection -> IO ()
+syncFeed fid conn = do
+    x <- conn $ readFeed fid
+    esm <- mapM fetchEpisodes x
+    traverse_ (\es -> conn $ writeEpisodes fid es) esm
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

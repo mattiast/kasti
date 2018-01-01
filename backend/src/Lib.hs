@@ -92,11 +92,11 @@ jutska context = do
     get "/syncfeed/all" $ do
         fs <- lift $ MyMonad getFeeds
         let fids = map fst fs
-        liftAndCatchIO $ forConcurrently_ fids (withConn . syncFeed)
+        liftAndCatchIO $ forConcurrently_ fids (\fid -> syncFeed fid withConn)
         json ("ok" :: String)
     get "/syncfeed/:feed_id" $ do
         fid <- FeedId <$> param "feed_id"
-        liftAndCatchIO $ withConn $ syncFeed fid
+        liftAndCatchIO $ syncFeed fid withConn
         json ("ok" :: String)
     post "/progress" $ do
         (msg :: ProgressMsg) <- jsonData

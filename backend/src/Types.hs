@@ -97,6 +97,9 @@ instance FromJSON UserInfo where
 
 data KastiConfig = KastiConfig {
     dbString :: String
+  , staticPath :: FilePath
+  , tlsCertPath :: FilePath
+  , tlsKeyPath :: FilePath
 } deriving Show
 
 data KastiContext = KastiContext {
@@ -105,5 +108,9 @@ data KastiContext = KastiContext {
 }
 
 instance FromJSON KastiConfig where
-    parseJSON (Object v) = KastiConfig <$> v .: "postgres_string"
+    parseJSON (Object v) = KastiConfig
+        <$> v .: "postgres_string"
+        <*> v .: "static_path"
+        <*> v .: "tls_cert_path"
+        <*> v .: "tls_key_path"
     parseJSON _ = mempty

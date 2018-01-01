@@ -22,6 +22,7 @@ import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
 import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
 import Network.Wai.Handler.Warp (defaultSettings, setPort)
+import System.FilePath((</>))
 
 newtype MyMonad a = MyMonad (Eff '[PodEff, Lift IO] a)
     deriving (Functor, Applicative, Monad, MonadIO)
@@ -42,7 +43,7 @@ start :: KastiConfig -> IO Handler
 start config = do
     pool <- initPool (dbString config)
     let context = KastiContext config pool
-        tlsConfig = tlsSettings "/root/static/certificate.pem" "/root/static/key.pem"
+        tlsConfig = tlsSettings (tlsCertPath config) (tlsKeyPath config)
         warpConfig = setPort 3000 defaultSettings
     server <- forkServer "localhost" 3001
     app <- scottyAppT (handleStuff context) $ jutska context
@@ -62,6 +63,15 @@ stop h = do
 jutska :: KastiContext -> ScottyT L.Text MyMonad ()
 jutska context = do
     let withConn = withResource (cPool context)
+        servePage = do
+            setHeader "Content-Type" "text/html; charset=utf-8"
+            file $ (staticPath $ cConfig context) </> "browse.html"
+    get "/browse" servePage
+    get "/continue" servePage
+    get "/new" servePage
+    get "/elm.js" $ do
+        setHeader "Content-Type" "application/javascript"
+        file $ (staticPath $ cConfig context) </> "elm.js"
     get "/feeds" $ do
         noCache
         fs <- lift $ MyMonad getFeeds
@@ -102,15 +112,3 @@ jutska context = do
         eid <- EpisodeId <$> param "episode_id"
         (pos :: ProgressMsg) <- liftAndCatchIO $ withConn $ readPosition eid
         json pos
-    get "/browse" $ do
-        setHeader "Content-Type" "text/html; charset=utf-8"
-        file "/root/static/browse.html"
-    get "/continue" $ do
-        setHeader "Content-Type" "text/html; charset=utf-8"
-        file "/root/static/browse.html"
-    get "/new" $ do
-        setHeader "Content-Type" "text/html; charset=utf-8"
-        file "/root/static/browse.html"
-    get "/elm.js" $ do
-        setHeader "Content-Type" "application/javascript"
-        file "/root/static/elm.js"

@@ -16,7 +16,8 @@ main = do
     h <- Kasti.start conf
 
     v <- newEmptyMVar
-    _ <- Sig.installHandler Sig.sigTERM (termHandler v h) Nothing
+    let otherSigs = Sig.addSignal Sig.sigINT Sig.emptySignalSet
+    _ <- Sig.installHandler Sig.sigTERM (termHandler v h) (Just otherSigs)
     _ <- readMVar v
     return ()
 

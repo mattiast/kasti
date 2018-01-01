@@ -20,6 +20,8 @@ import Control.Eff.Lift(Lift, runLift)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
+import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
+import Network.Wai.Handler.Warp (defaultSettings, setPort)
 
 newtype MyMonad a = MyMonad (Eff '[PodEff, Lift IO] a)
     deriving (Functor, Applicative, Monad, MonadIO)
@@ -40,8 +42,11 @@ start :: KastiConfig -> IO Handler
 start config = do
     pool <- initPool (dbString config)
     let context = KastiContext config pool
+        tlsConfig = tlsSettings "/root/static/certificate.pem" "/root/static/key.pem"
+        warpConfig = setPort 3000 defaultSettings
     server <- forkServer "localhost" 3001
-    mainThread <- forkIO $ scottyT 3000 (handleStuff context) $ jutska context
+    app <- scottyAppT (handleStuff context) $ jutska context
+    mainThread <- forkIO $ runTLS tlsConfig warpConfig app
     return Handler
         { mainTid = mainThread
         , ekg = server
@@ -50,8 +55,8 @@ start config = do
 
 stop :: Handler -> IO ()
 stop h = do
-    closePool $ cPool $ ctx h
     throwTo (mainTid h) (UserInterrupt :: AsyncException)
+    closePool $ cPool $ ctx h
     throwTo (serverThreadId $ ekg h) (UserInterrupt :: AsyncException)
 
 jutska :: KastiContext -> ScottyT L.Text MyMonad ()

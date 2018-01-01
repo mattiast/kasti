@@ -30,6 +30,8 @@ library
                      , time
                      , text-format
                      , scotty
+                     , warp-tls
+                     , warp
                      , http-types
                      , feed
                      , wreq

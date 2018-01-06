@@ -4,7 +4,6 @@ import Control.Lens hiding ((.=))
 import Data.Aeson
 import Data.Function((&))
 import Data.Maybe
-import Data.Foldable(traverse_)
 import qualified Data.Text as T
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
@@ -17,6 +16,8 @@ import Text.Feed.Types
 import Text.RSS.Syntax(DateString)
 import Types
 import EpisodeDb
+import Data.Pool
+import Control.Concurrent.Async(forConcurrently_)
 
 getFeeds :: FilePath -> IO [FeedInfo]
 getFeeds path = do
@@ -32,11 +33,13 @@ fetchFeed url = do
 
 type ContIO a = forall b . (a -> IO b) -> IO b
 
-syncFeed :: FeedId -> ContIO Connection -> IO ()
-syncFeed fid conn = do
-    x <- conn $ readFeed fid
-    esm <- mapM fetchEpisodes x
-    traverse_ (\es -> conn $ writeEpisodes fid es) esm
+syncFeeds :: (Foldable t) => t (FeedId, FeedInfo) -> ContIO Connection -> IO ()
+syncFeeds fs conn = do
+    let parallelDownloads = 5
+    dlPool <- createPool (return ()) (\() -> return ()) 1 1.234 parallelDownloads
+    forConcurrently_ fs $ \(fid, fi) -> do
+        es <- withResource dlPool $ const $ fetchEpisodes fi
+        conn $ writeEpisodes fid es
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

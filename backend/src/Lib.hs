@@ -1,16 +1,15 @@
-{-# LANGUAGE OverloadedStrings, DataKinds, GeneralizedNewtypeDeriving, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, TupleSections, DataKinds, GeneralizedNewtypeDeriving, ScopedTypeVariables #-}
 module Lib
     ( Handler
     , start
     , stop
     ) where
-import Control.Concurrent.Async(forConcurrently_)
 import Control.Concurrent(ThreadId, forkIO, throwTo)
 import Network.HTTP.Types(ok200)
 import qualified Data.Text.Lazy as L
 import Web.Scotty.Trans
 import System.Remote.Monitoring
-import GetFeed(syncFeed)
+import GetFeed(syncFeeds)
 import Types
 import EpisodeDb
 import PodEff
@@ -91,12 +90,13 @@ jutska context = do
         json eps
     get "/syncfeed/all" $ do
         fs <- lift $ MyMonad getFeeds
-        let fids = map fst fs
-        liftAndCatchIO $ forConcurrently_ fids (\fid -> syncFeed fid withConn)
+        liftAndCatchIO $ syncFeeds fs withConn
         json ("ok" :: String)
     get "/syncfeed/:feed_id" $ do
         fid <- FeedId <$> param "feed_id"
-        liftAndCatchIO $ syncFeed fid withConn
+        mfi <- lift $ MyMonad (getFeedInfo fid)
+        let fs = fmap (fid,) mfi
+        liftAndCatchIO $ syncFeeds fs withConn
         json ("ok" :: String)
     post "/progress" $ do
         (msg :: ProgressMsg) <- jsonData

@@ -78,25 +78,32 @@ sortEpisodes es =
 
 viewPositions : List ProgressInfo -> Html Msg
 viewPositions prog =
-    div []
-        [ prog
-            |> List.map (\pi -> pi.duration - pi.position)
-            |> List.sum
-            |> H.renderSeconds
-            |> text
-        , table [ class "table" ] <|
-            List.map
-                (\pi ->
-                    tr [ onClick (EpisodePick pi.episode) ]
-                        (List.map (td [] << List.singleton)
-                            [ text pi.ftitle
-                            , text pi.episode.title
-                            , text (H.renderSeconds (pi.duration - pi.position))
-                            ]
-                        )
-                )
-                prog
-        ]
+    let
+        sec =
+            prog
+                |> List.map (\pi -> pi.duration - pi.position)
+                |> List.sum
+                |> H.renderSeconds
+
+        num =
+            List.length prog
+                |> toString
+    in
+        div []
+            [ text <| sec ++ " (" ++ num ++ " episodes)"
+            , table [ class "table" ] <|
+                List.map
+                    (\pi ->
+                        tr [ onClick (EpisodePick pi.episode) ]
+                            (List.map (td [] << List.singleton)
+                                [ text pi.ftitle
+                                , text pi.episode.title
+                                , text (H.renderSeconds (pi.duration - pi.position))
+                                ]
+                            )
+                    )
+                    prog
+            ]
 
 
 viewSelector : Model -> Html Msg

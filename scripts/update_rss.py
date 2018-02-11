@@ -8,8 +8,12 @@ from botocore.client import Config
 import boto3
 import io
 import json
+import logging
+import sys
 
 import radiorock
+
+log = logging.getLogger(__name__)
 
 programs = {
     'thf' : {
@@ -70,14 +74,17 @@ def push_to_s3(conf, key, data):
             ExtraArgs={ 'ACL': 'public-read', 'ContentType': 'application/xml'})
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
     info = programs[argv[1]]
     confpath = argv[2]
+    log.info("Starting update process for %s", info['name'])
 
     with open(confpath) as f:
         conf = json.load(f)
 
     n = radiorock.fetch_and_write(info['name'], conf['postgres_string'], query=info['query'])
-    print("%d new episodes" % n)
+    log.info("%d new episodes", n)
 
     if n > 0:
         conn = psycopg2.connect(conf['postgres_string'])

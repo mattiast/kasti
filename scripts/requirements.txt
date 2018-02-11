@@ -1,0 +1,7 @@
+lxml
+dryscrape
+PyRSS2Gen
+boto3
+psycopg2-binary
+xvfbwrapper
+dateparser

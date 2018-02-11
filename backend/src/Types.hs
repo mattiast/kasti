@@ -10,7 +10,6 @@ import Database.PostgreSQL.Simple.ToRow
 import Data.String
 import Data.Text(Text)
 import Data.Time.Clock(UTCTime)
-import Data.Pool
 
 data Episode = Episode {
     epUrl :: EpisodeUrl
@@ -93,24 +92,4 @@ instance FromJSON UserInfo where
             <$> v .: "id"
             <*> v .: "name"
             <*> v .: "login"
-    parseJSON _ = mempty
-
-data KastiConfig = KastiConfig {
-    dbString :: String
-  , staticPath :: FilePath
-  , tlsCertPath :: FilePath
-  , tlsKeyPath :: FilePath
-} deriving Show
-
-data KastiContext = KastiContext {
-    cConfig :: KastiConfig
-  , cPool :: Pool Connection
-}
-
-instance FromJSON KastiConfig where
-    parseJSON (Object v) = KastiConfig
-        <$> v .: "postgres_string"
-        <*> v .: "static_path"
-        <*> v .: "tls_cert_path"
-        <*> v .: "tls_key_path"
     parseJSON _ = mempty

@@ -3,6 +3,7 @@ module Lib
     ( Handler
     , start
     , stop
+    , Config
     ) where
 import Control.Concurrent(ThreadId, forkIO, throwTo)
 import Network.HTTP.Types(ok200)
@@ -13,7 +14,9 @@ import GetFeed(syncFeeds)
 import Types
 import EpisodeDb
 import PodEff
-import Data.Pool(withResource)
+import Data.Pool
+import Database.PostgreSQL.Simple
+import Data.Aeson hiding (json)
 import Control.Eff
 import Control.Eff.Lift(Lift, runLift)
 import Control.Monad.IO.Class
@@ -23,25 +26,45 @@ import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
 import Network.Wai.Handler.Warp (defaultSettings, setPort)
 import System.FilePath((</>))
 
+data Config = Config {
+    dbString :: String
+  , staticPath :: FilePath
+  , tlsCertPath :: FilePath
+  , tlsKeyPath :: FilePath
+} deriving Show
+
+data Context = Context {
+    cConfig :: Config
+  , cPool :: Pool Connection
+}
+
+instance FromJSON Config where
+    parseJSON (Object v) = Config
+        <$> v .: "postgres_string"
+        <*> v .: "static_path"
+        <*> v .: "tls_cert_path"
+        <*> v .: "tls_key_path"
+    parseJSON _ = mempty
+
 newtype MyMonad a = MyMonad (Eff '[PodEff, Lift IO] a)
     deriving (Functor, Applicative, Monad, MonadIO)
 
 noCache :: (Monad m) => ActionT e m ()
 noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
 
-handleStuff :: KastiContext -> MyMonad a -> IO a
+handleStuff :: Context -> MyMonad a -> IO a
 handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> runLift $ runPod conn x)
 
 data Handler = Handler
     { mainTid :: ThreadId
     , ekg :: Server
-    , ctx :: KastiContext
+    , ctx :: Context
     }
 
-start :: KastiConfig -> IO Handler
+start :: Config -> IO Handler
 start config = do
     pool <- initPool (dbString config)
-    let context = KastiContext config pool
+    let context = Context config pool
         tlsConfig = tlsSettings (tlsCertPath config) (tlsKeyPath config)
         warpConfig = setPort 3000 defaultSettings
     server <- forkServer "localhost" 3001
@@ -59,7 +82,7 @@ stop h = do
     closePool $ cPool $ ctx h
     throwTo (serverThreadId $ ekg h) (UserInterrupt :: AsyncException)
 
-jutska :: KastiContext -> ScottyT L.Text MyMonad ()
+jutska :: Context -> ScottyT L.Text MyMonad ()
 jutska context = do
     let withConn = withResource (cPool context)
         servePage = do

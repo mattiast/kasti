@@ -8,7 +8,6 @@ import Data.Aeson(decodeStrict')
 import Data.Function((&))
 import Options.Applicative hiding (header)
 import qualified Data.ByteString as B
-import Types
 
 main :: IO ()
 main = do
@@ -28,13 +27,13 @@ termHandler v h = Sig.CatchOnce $ do
     putStrLn "Stopped"
     putMVar v ()
 
-getConf :: IO KastiConfig
+getConf :: IO Kasti.Config
 getConf = do
     let args = argument str (metavar "CONFIGFILE")
     (confPath :: FilePath) <- execParser $ info args fullDesc
     readConf confPath
 
-readConf :: FilePath -> IO KastiConfig
+readConf :: FilePath -> IO Kasti.Config
 readConf path = do
     bs <- B.readFile path
     decodeStrict' bs

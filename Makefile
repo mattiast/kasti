@@ -15,4 +15,7 @@ image: static/elm.js static/browse.html FORCE
 stuff.tar.gz: FORCE
 	tar -czf stuff.tar.gz scripts
 
+run_local: image
+	docker run -p 3000:3000 kasti-backend:latest kasti-server /root/static/kasti-config.json
+
 FORCE:

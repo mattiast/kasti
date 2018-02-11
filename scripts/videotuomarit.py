@@ -2,7 +2,14 @@ import dryscrape
 import time
 from datetime import datetime
 import PyRSS2Gen
-from sys import argv
+import logging
+import sys
+import dateparser
+import argparse
+from update_rss import push_to_s3
+import json
+
+log = logging.getLogger(__name__)
 
 
 def get_episodes():
@@ -13,11 +20,12 @@ def get_episodes():
     time.sleep(3)
 
     arts = sess.xpath("//article[contains(@class,'teaser')]")
+    log.info("Found %d articles", len(arts))
 
     heading = lambda a: a.xpath("a/div[contains(@class,'teaser-heading')]/h2")[0].text()
     lnk_url = lambda a: a.xpath('a')[0].get_attr('href')
-    datef = lambda a: a.xpath("a/div[@class='details']/span[@class='updated']/time")[0].get_attr('datetime')
-    s2d = lambda s: datetime.strptime(s, "%Y-%m-%d")
+    datef = lambda a: a.xpath("a/div[@class='details']/span[@class='updated']/time")[0].get_attr('data-formatted-date')
+    s2d = lambda s: dateparser.parse(s, languages=['fi'])
 
     stuff = [{
         'title': heading(a),
@@ -27,20 +35,37 @@ def get_episodes():
     return stuff
 
 
-stuff = get_episodes()
+def generate_rss(stuff):
+    rss = PyRSS2Gen.RSS2(
+            title="Videotuomarit",
+            link="http://www.is.fi/videotuomarit",
+            description="Videotuomarit",
+            lastBuildDate=datetime.now(),
+            items=[
+                PyRSS2Gen.RSSItem(
+                    title=s['title'],
+                    guid=PyRSS2Gen.Guid(s['url']),
+                    link=s['url'],
+                    pubDate=s['date'])
+                for s in stuff])
+    return rss
 
-rss = PyRSS2Gen.RSS2(
-        title="Videotuomarit",
-        link="http://www.is.fi/videotuomarit",
-        description="Videotuomarit",
-        lastBuildDate=datetime.now(),
-        items=[
-            PyRSS2Gen.RSSItem(
-                title=s['title'],
-                guid=PyRSS2Gen.Guid(s['url']),
-                link=s['url'],
-                pubDate=s['date'])
-            for s in stuff])
 
-with open(argv[1], "w") as f:
-    rss.write_xml(f)
+if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+    parser = argparse.ArgumentParser(description='Videotuomarit RSS feed')
+    parser.add_argument('conffile', type=str)
+    args = parser.parse_args()
+
+    with open(args.conffile) as f:
+        conf = json.load(f)
+
+    stuff = get_episodes()
+
+    log.info("Generating RSS")
+    rss = generate_rss(stuff)
+    data = rss.to_xml(encoding='utf-8')
+    log.info("Writing to The Cloud")
+    push_to_s3(conf, 'videotuomarit.xml', data)
+    log.info("Done")

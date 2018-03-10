@@ -9,7 +9,24 @@ import Helpers as H
 import Date.Extra as Date
 import Date
 import Navigation as N
-import Bulma.Components exposing (navbarBurger, tabs, tab, TabsStyle(..))
+import Bulma.Components
+    exposing
+        ( navbarBurger
+        , navbarLink
+        , navbarDropdown
+        , navbarDivider
+        , navbarItem
+        , navbarItemLink
+        , navbarMenu
+        , navbarStart
+        , navbar
+        , navbarModifiers
+        , navbarBrand
+        , tabs
+        , tab
+        , TabsStyle(..)
+        , hoverableNavbarItemDropdown
+        )
 import Bulma.Elements exposing (easyTag)
 import Bulma.Modifiers exposing (..)
 
@@ -123,20 +140,11 @@ viewSelector model =
 viewMenu : MenuState -> Html Msg
 viewMenu state =
     let
-        activeString =
-            if state.navbarActive then
-                " is-active"
-            else
-                ""
-
         syncAllButton =
-            div [ class "navbar-item" ]
-                [ div [ class "field" ]
-                    [ div [ class "control" ]
-                        [ button [ class ("button " ++ syncStateClass state.syncAllState), onClick (SyncFeedAsk SyncAll) ]
-                            [ text "Sync all feeds" ]
-                        ]
-                    ]
+            navbarItem False
+                []
+                [ button [ class ("button " ++ syncStateClass state.syncAllState), onClick (SyncFeedAsk SyncAll) ]
+                    [ text "Sync all feeds" ]
                 ]
 
         hamburgerButton =
@@ -148,21 +156,27 @@ viewMenu state =
                 , span [] []
                 ]
     in
-        nav [ class "navbar" ]
-            [ div [ class "navbar-brand" ]
-                [ div [ class "navbar-item" ]
+        navbar navbarModifiers
+            []
+            [ navbarBrand []
+                hamburgerButton
+                [ navbarItem False
+                    []
                     [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
                     , easyTag { size = Large, color = Primary, isLink = False } [] "KASTI"
                     ]
-                , hamburgerButton
                 ]
-            , div [ class ("navbar-menu" ++ activeString) ]
-                [ div [ class "navbar-start" ]
-                    [ div [ class "navbar-item has-dropdown is-hoverable" ]
-                        [ a [ class "navbar-link is-active" ] [ text "Add feed" ]
-                        , div [ class "navbar-dropdown" ]
+            , navbarMenu state.navbarActive
+                []
+                [ navbarStart []
+                    [ hoverableNavbarItemDropdown Down
+                        []
+                        (navbarLink [] [ text "Add feed" ])
+                        [ navbarDropdown False
+                            Left
+                            []
                             ([ syncAllButton
-                             , hr [ class "navbar-divider" ] []
+                             , navbarDivider [] []
                              ]
                                 ++ viewNewFeedForm state.newFeed
                             )
@@ -174,7 +188,8 @@ viewMenu state =
 
 viewNewFeedForm : NewFeed -> List (Html Msg)
 viewNewFeedForm newFeed =
-    [ div [ class "navbar-item" ]
+    [ navbarItem False
+        []
         [ div [ class "field" ]
             [ label [ class "label" ] [ text "Name" ]
             , div [ class "control" ]
@@ -188,7 +203,8 @@ viewNewFeedForm newFeed =
                 ]
             ]
         ]
-    , div [ class "navbar-item" ]
+    , navbarItem False
+        []
         [ div [ class "field" ]
             [ label [ class "label" ] [ text "Feed URL" ]
             , div [ class "control" ]
@@ -202,7 +218,8 @@ viewNewFeedForm newFeed =
                 ]
             ]
         ]
-    , div [ class "navbar-item" ]
+    , navbarItem False
+        []
         [ div [ class "field" ]
             [ div [ class "control" ]
                 [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]

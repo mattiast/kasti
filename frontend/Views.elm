@@ -1,6 +1,6 @@
 module Views exposing (..)
 
-import Html exposing (..)
+import Html exposing (Html, div, Attribute, button, tr, text, h4, p, br, a, i, audio, nav, span, input, label)
 import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
@@ -27,8 +27,22 @@ import Bulma.Components
         , TabsStyle(..)
         , hoverableNavbarItemDropdown
         )
-import Bulma.Elements exposing (easyTag)
+import Bulma.Elements
+    exposing
+        ( easyTag
+        , table
+        , tableModifiers
+        , tableBody
+        , tableHead
+        , tableCell
+        , tableCellHead
+        )
 import Bulma.Modifiers exposing (..)
+
+
+tableRow : Bool -> List (Attribute msg) -> List (Html msg) -> Html msg
+tableRow isSelected =
+    tr
 
 
 view : Model -> Html Msg
@@ -74,17 +88,21 @@ viewChooser model =
 viewNewEpisodes : List NewEpisode -> Html Msg
 viewNewEpisodes newEpisodes =
     div []
-        [ table [ class "table" ] <|
-            List.map
-                (\ne ->
-                    tr [ onClick (EpisodePick ne.episode) ]
-                        (List.map (td [] << List.singleton)
-                            [ text ne.ftitle
-                            , text ne.episode.title
-                            ]
-                        )
-                )
-                newEpisodes
+        [ table tableModifiers
+            []
+            [ tableBody [] <|
+                List.map
+                    (\ne ->
+                        tableRow False
+                            [ onClick (EpisodePick ne.episode) ]
+                            (List.map (tableCell [] << List.singleton)
+                                [ text ne.ftitle
+                                , text ne.episode.title
+                                ]
+                            )
+                    )
+                    newEpisodes
+            ]
         ]
 
 
@@ -108,18 +126,22 @@ viewPositions prog =
     in
         div []
             [ text <| sec ++ " (" ++ num ++ " episodes)"
-            , table [ class "table" ] <|
-                List.map
-                    (\pi ->
-                        tr [ onClick (EpisodePick pi.episode) ]
-                            (List.map (td [] << List.singleton)
-                                [ text pi.ftitle
-                                , text pi.episode.title
-                                , text (H.renderSeconds (pi.duration - pi.position))
-                                ]
-                            )
-                    )
-                    prog
+            , table tableModifiers
+                []
+                [ tableBody [] <|
+                    List.map
+                        (\pi ->
+                            tableRow False
+                                [ onClick (EpisodePick pi.episode) ]
+                                (List.map (tableCell [] << List.singleton)
+                                    [ text pi.ftitle
+                                    , text pi.episode.title
+                                    , text (H.renderSeconds (pi.duration - pi.position))
+                                    ]
+                                )
+                        )
+                        prog
+                ]
             ]
 
 
@@ -257,14 +279,17 @@ feedList feeds =
         RD.Success fs ->
             let
                 feedItem f =
-                    tr []
-                        [ td [ onClick (AskEpList f.id) ] [ a [] [ text f.name ] ]
-                        , td [] [ syncButton f ]
+                    tableRow False
+                        []
+                        [ tableCell [ onClick (AskEpList f.id) ] [ a [] [ text f.name ] ]
+                        , tableCell [] [ syncButton f ]
                         ]
             in
-                fs
-                    |> List.map feedItem
-                    |> table [ class "table is-narrow" ]
+                table { tableModifiers | narrow = True }
+                    []
+                    [ tableBody [] <|
+                        List.map feedItem fs
+                    ]
 
         _ ->
             text (toString feeds)
@@ -297,18 +322,29 @@ syncButton feed =
 
 episodeList : List Episode -> Html Msg
 episodeList eps =
-    eps
-        |> List.sortWith (\x y -> Date.compare y.date x.date)
-        |> List.map episodeRow
-        |> (\rows -> [ tr [] [ th [] [ text "Date" ], th [] [ text "Title" ] ] ] ++ rows)
-        |> table [ class "table is-narrow" ]
+    table { tableModifiers | narrow = True }
+        []
+        [ tableHead []
+            [ tableRow False
+                []
+                [ tableCellHead [] [ text "Date" ]
+                , tableCellHead [] [ text "Title" ]
+                ]
+            ]
+        , tableBody [] <|
+            (eps
+                |> List.sortWith (\x y -> Date.compare y.date x.date)
+                |> List.map episodeRow
+            )
+        ]
 
 
 episodeRow : Episode -> Html Msg
 episodeRow ep =
-    tr [ onClick (EpisodePick ep) ]
-        [ td [] [ text (Date.toFormattedString "y/M/d" ep.date) ]
-        , td [] [ text ep.title ]
+    tableRow False
+        [ onClick (EpisodePick ep) ]
+        [ tableCell [] [ text (Date.toFormattedString "y/M/d" ep.date) ]
+        , tableCell [] [ text ep.title ]
         ]
 
 

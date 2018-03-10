@@ -9,6 +9,9 @@ import Helpers as H
 import Date.Extra as Date
 import Date
 import Navigation as N
+import Bulma.Components exposing (navbarBurger, tabs, tab, TabsStyle(..))
+import Bulma.Elements exposing (easyTag)
+import Bulma.Modifiers exposing (..)
 
 
 view : Model -> Html Msg
@@ -37,20 +40,17 @@ viewChooser : Model -> Html Msg
 viewChooser model =
     let
         item view path txt =
-            li
-                (if model.view == view then
-                    [ class "is-active" ]
-                 else
-                    []
-                )
-                [ a [ onClick (ClickUrl path) ] [ text txt ] ]
+            tab (model.view == view)
+                []
+                [ onClick (ClickUrl path) ]
+                [ text txt ]
     in
-        div [ class "tabs is-boxed is-medium" ]
-            [ ul []
-                [ item Browse "browse" "Browse"
-                , item Continue "continue" "Continue"
-                , item New "new" "New"
-                ]
+        tabs { style = Boxed, alignment = Left, size = Medium }
+            []
+            []
+            [ item Browse "browse" "Browse"
+            , item Continue "continue" "Continue"
+            , item New "new" "New"
             ]
 
 
@@ -140,10 +140,9 @@ viewMenu state =
                 ]
 
         hamburgerButton =
-            button
-                [ class ("button navbar-burger" ++ activeString)
-                , onClick NavbarToggle
-                ]
+            navbarBurger
+                state.navbarActive
+                [ onClick NavbarToggle ]
                 [ span [] []
                 , span [] []
                 , span [] []
@@ -153,7 +152,7 @@ viewMenu state =
             [ div [ class "navbar-brand" ]
                 [ div [ class "navbar-item" ]
                     [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
-                    , span [ class "tag is-primary is-large" ] [ text "KASTI" ]
+                    , easyTag { size = Large, color = Primary, isLink = False } [] "KASTI"
                     ]
                 , hamburgerButton
                 ]

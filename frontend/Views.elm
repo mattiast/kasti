@@ -1,6 +1,6 @@
 module Views exposing (..)
 
-import Html exposing (Html, div, Attribute, button, tr, text, h4, p, br, a, i, audio, nav, span, input)
+import Html exposing (Html, div, Attribute, tr, text, h4, p, br, a, i, audio, nav, span, input)
 import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
@@ -9,8 +9,9 @@ import Helpers as H
 import Date.Extra as Date
 import Date
 import Navigation as N
+import Bulma.Columns exposing (..)
 import Bulma.Modifiers exposing (..)
-import Bulma.Form exposing (field, label, controlInput, controlText, controlInputModifiers, controlButton)
+import Bulma.Form exposing (field, fields, label, controlInput, controlText, controlInputModifiers, controlButton)
 import Bulma.Components
     exposing
         ( navbarBurger
@@ -147,13 +148,25 @@ viewPositions prog =
             ]
 
 
+myQuarter : Devices (Maybe Width)
+myQuarter =
+    { mobile = Just Width3
+    , tablet = Just Width3
+    , desktop = Just Width3
+    , widescreen = Just Width3
+    , fullHD = Just Width3
+    }
+
+
 viewSelector : Model -> Html Msg
 viewSelector model =
-    div [ class "columns" ]
-        [ div [ class "column is-one-quarter" ]
-            [ feedList model.feeds
-            ]
-        , div [ class "column" ]
+    columns columnsModifiers
+        []
+        [ column { columnModifiers | widths = myQuarter }
+            []
+            [ feedList model.feeds ]
+        , column columnModifiers
+            []
             [ model.episodes
                 |> RD.map episodeList
                 |> RD.withDefault (text (toString model.episodes))
@@ -303,23 +316,14 @@ feedList feeds =
 syncButton : Feed -> Html Msg
 syncButton feed =
     let
-        aClass =
-            "button is-small"
-                ++ case feed.syncState of
-                    RD.NotAsked ->
-                        ""
-
-                    RD.Loading ->
-                        " is-loading"
-
-                    RD.Success () ->
-                        " is-success"
-
-                    RD.Failure e ->
-                        " is-danger"
+        ( color, state ) =
+            stateClass feed.syncState
     in
-        a [ class aClass, onClick (SyncFeedAsk (SyncSingle feed.id)) ]
+        controlButton { buttonModifiers | color = color, state = state, size = Small }
+            []
+            [ onClick (SyncFeedAsk (SyncSingle feed.id)) ]
             [ span [ class "icon is-small" ]
+                -- TODO icons too eventually
                 [ i [ class "fa fa-refresh" ] []
                 ]
             ]
@@ -367,17 +371,16 @@ viewPlayer state =
             ]
             []
         , br [] []
-        , div [ class "field is-grouped" ]
-            [ p [ class "control" ]
-                [ a [ class "button is-primary", onClick (PostTime state) ]
-                    [ text "Save position"
-                    ]
-                ]
-            , p [ class "control" ]
-                [ a [ class "button is-primary", onClick (AskTime state.episode) ]
-                    [ text "Get position"
-                    ]
-                ]
+        , fields Left
+            []
+            [ controlButton { buttonModifiers | color = Primary }
+                []
+                [ onClick (PostTime state) ]
+                [ text "Save position" ]
+            , controlButton { buttonModifiers | color = Primary }
+                []
+                [ onClick (AskTime state.episode) ]
+                [ text "Get position" ]
             ]
         ]
 

@@ -1,6 +1,6 @@
 module Views exposing (..)
 
-import Html exposing (Html, div, Attribute, button, tr, text, h4, p, br, a, i, audio, nav, span, input, label)
+import Html exposing (Html, div, Attribute, button, tr, text, h4, p, br, a, i, audio, nav, span, input)
 import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
@@ -9,6 +9,8 @@ import Helpers as H
 import Date.Extra as Date
 import Date
 import Navigation as N
+import Bulma.Modifiers exposing (..)
+import Bulma.Form exposing (field, label, controlInput, controlText, controlInputModifiers, controlButton)
 import Bulma.Components
     exposing
         ( navbarBurger
@@ -36,8 +38,8 @@ import Bulma.Elements
         , tableHead
         , tableCell
         , tableCellHead
+        , buttonModifiers
         )
-import Bulma.Modifiers exposing (..)
 
 
 tableRow : Bool -> List (Attribute msg) -> List (Html msg) -> Html msg
@@ -162,11 +164,18 @@ viewSelector model =
 viewMenu : MenuState -> Html Msg
 viewMenu state =
     let
+        ( buttonColor, buttonState ) =
+            stateClass state.syncAllState
+
         syncAllButton =
             navbarItem False
                 []
-                [ button [ class ("button " ++ syncStateClass state.syncAllState), onClick (SyncFeedAsk SyncAll) ]
-                    [ text "Sync all feeds" ]
+                [ field []
+                    [ controlButton { buttonModifiers | color = buttonColor, state = buttonState }
+                        []
+                        [ onClick (SyncFeedAsk SyncAll) ]
+                        [ text "Sync all feeds" ]
+                    ]
                 ]
 
         hamburgerButton =
@@ -212,65 +221,61 @@ viewNewFeedForm : NewFeed -> List (Html Msg)
 viewNewFeedForm newFeed =
     [ navbarItem False
         []
-        [ div [ class "field" ]
-            [ label [ class "label" ] [ text "Name" ]
-            , div [ class "control" ]
-                [ input
-                    [ type_ "text"
-                    , name "name"
-                    , placeholder "Feed title"
-                    , onInput (\v -> UpdateNewFeed { newFeed | name = v })
-                    ]
-                    []
+        [ field []
+            [ label [] [ text "Name" ]
+            , controlText controlInputModifiers
+                []
+                [ name "name"
+                , placeholder "Feed title"
+                , onInput (\v -> UpdateNewFeed { newFeed | name = v })
                 ]
+                []
             ]
         ]
     , navbarItem False
         []
-        [ div [ class "field" ]
-            [ label [ class "label" ] [ text "Feed URL" ]
-            , div [ class "control" ]
-                [ input
-                    [ type_ "url"
-                    , name "url"
-                    , placeholder "http://"
-                    , onInput (\v -> UpdateNewFeed { newFeed | url = v })
-                    ]
-                    []
+        [ field []
+            [ label [] [ text "Name" ]
+            , controlInput controlInputModifiers
+                []
+                [ type_ "url"
+                , name "url"
+                , placeholder "http://"
+                , onInput (\v -> UpdateNewFeed { newFeed | url = v })
                 ]
+                []
             ]
         ]
-    , navbarItem False
-        []
-        [ div [ class "field" ]
-            [ div [ class "control" ]
-                [ button [ class (addFeedButtonClass newFeed), onClick NewFeedPost ]
+    , let
+        ( color, state ) =
+            stateClass newFeed.postStatus
+      in
+        navbarItem False
+            []
+            [ field []
+                [ controlButton { buttonModifiers | color = color, state = state }
+                    []
+                    [ onClick NewFeedPost ]
                     [ text "Add" ]
                 ]
             ]
-        ]
     ]
 
 
-addFeedButtonClass : NewFeed -> String
-addFeedButtonClass newFeed =
-    "button " ++ syncStateClass newFeed.postStatus
-
-
-syncStateClass : RD.WebData a -> String
-syncStateClass state =
+stateClass : RD.WebData a -> ( Color, State )
+stateClass state =
     case state of
         RD.NotAsked ->
-            "is-primary"
+            ( Primary, Blur )
 
         RD.Loading ->
-            "is-primary is-loading"
+            ( Primary, Loading )
 
         RD.Success _ ->
-            "is-success"
+            ( Success, Blur )
 
         RD.Failure _ ->
-            "is-danger"
+            ( Danger, Blur )
 
 
 feedList : RD.WebData (List Feed) -> Html Msg

@@ -19,7 +19,7 @@ def get_episodes():
     sess.visit('/videotuomarit')
     time.sleep(3)
 
-    arts = sess.xpath("//article[contains(@class,'teaser')]")
+    arts = sess.xpath("//article[contains(@class,'teaser') and not(contains(@class,'is-advertorial'))]")
     log.info("Found %d articles", len(arts))
 
     heading = lambda a: a.xpath("a/div[contains(@class,'teaser-heading')]/h2")[0].text()

@@ -1,7 +1,7 @@
 all: image
 
 static/elm.js: frontend/*.elm
-	cd frontend ; elm-make Browse.elm --output elm.js
+	cd frontend ; elm-make --yes Browse.elm --output elm.js
 	mkdir -p static
 	mv frontend/elm.js static
 

@@ -1,6 +1,25 @@
 module Views exposing (..)
 
-import Html exposing (Html, div, Attribute, tr, text, h4, p, br, a, i, audio, nav, span, input)
+import Html
+    exposing
+        ( Html
+        , div
+        , Attribute
+        , tr
+        , text
+        , h4
+        , p
+        , br
+        , a
+        , i
+        , audio
+        , nav
+        , span
+        , input
+        , article
+        , strong
+        , small
+        )
 import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
@@ -11,6 +30,7 @@ import Date
 import Navigation as N
 import Bulma.Columns exposing (..)
 import Bulma.Modifiers exposing (..)
+import Bulma.Layout exposing (media, mediaContent, mediaRight, container, section, SectionSpacing(..))
 import Bulma.Form exposing (field, fields, label, controlInput, controlText, controlInputModifiers, controlButton)
 import Bulma.Components
     exposing
@@ -39,13 +59,12 @@ import Bulma.Elements
         , tableHead
         , tableCell
         , tableCellHead
+        , tableRow
         , buttonModifiers
+        , content
+        , easyProgress
+        , progressModifiers
         )
-
-
-tableRow : Bool -> List (Attribute msg) -> List (Html msg) -> Html msg
-tableRow isSelected =
-    tr
 
 
 view : Model -> Html Msg
@@ -114,8 +133,8 @@ sortEpisodes es =
     List.sortBy (\e -> -(Date.toTime e.episode.date)) es
 
 
-viewPositions : List ProgressInfo -> Html Msg
-viewPositions prog =
+positionAggregateInfo : List ProgressInfo -> Html Msg
+positionAggregateInfo prog =
     let
         sec =
             prog
@@ -127,34 +146,47 @@ viewPositions prog =
             List.length prog
                 |> toString
     in
-        div []
-            [ text <| sec ++ " (" ++ num ++ " episodes)"
-            , table tableModifiers
-                []
-                [ tableBody [] <|
-                    List.map
-                        (\pi ->
-                            tableRow False
-                                [ onClick (EpisodePick pi.episode) ]
-                                (List.map (tableCell [] << List.singleton)
-                                    [ text pi.ftitle
-                                    , text pi.episode.title
-                                    , text (H.renderSeconds (pi.duration - pi.position))
-                                    ]
-                                )
-                        )
-                        prog
+        text <| "Total time left: " ++ sec ++ " (" ++ num ++ " episodes)"
+
+
+viewPositions : List ProgressInfo -> Html Msg
+viewPositions prog =
+    columns { columnsModifiers | centered = True }
+        []
+        [ column columnModifiers
+            []
+            ([ positionAggregateInfo prog ] ++ List.map onePosition prog)
+        ]
+
+
+onePosition : ProgressInfo -> Html Msg
+onePosition pi =
+    media [ onClick (EpisodePick pi.episode) ]
+        [ mediaContent []
+            [ p []
+                [ strong [] [ text pi.ftitle ]
+                , br [] []
+                , text pi.episode.title
                 ]
             ]
+        , mediaRight []
+            [ p []
+                [ text (H.renderSeconds (pi.duration - pi.position))
+                , br [] []
+                , small [] [ text (Date.toFormattedString "y/M/d" pi.episode.date) ]
+                ]
+            , easyProgress progressModifiers [] (pi.position / pi.duration)
+            ]
+        ]
 
 
-myQuarter : Devices (Maybe Width)
-myQuarter =
-    { mobile = Just Width3
-    , tablet = Just Width3
-    , desktop = Just Width3
-    , widescreen = Just Width3
-    , fullHD = Just Width3
+devices : Width -> Devices (Maybe Width)
+devices w =
+    { mobile = Just w
+    , tablet = Just w
+    , desktop = Just w
+    , widescreen = Just w
+    , fullHD = Just w
     }
 
 
@@ -162,7 +194,7 @@ viewSelector : Model -> Html Msg
 viewSelector model =
     columns columnsModifiers
         []
-        [ column { columnModifiers | widths = myQuarter }
+        [ column { columnModifiers | widths = devices Width3 }
             []
             [ feedList model.feeds ]
         , column columnModifiers

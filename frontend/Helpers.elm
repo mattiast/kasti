@@ -103,6 +103,11 @@ modifyMenuState upd model =
     { model | menuState = upd model.menuState }
 
 
+modifyPositions : (List ProgressInfo -> List ProgressInfo) -> (Model -> Model)
+modifyPositions f model =
+    { model | positions = RD.map f model.positions }
+
+
 renderSeconds : Float -> String
 renderSeconds sec =
     let

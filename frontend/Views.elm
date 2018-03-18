@@ -4,8 +4,6 @@ import Html
     exposing
         ( Html
         , div
-        , Attribute
-        , tr
         , text
         , h4
         , p
@@ -16,7 +14,6 @@ import Html
         , nav
         , span
         , input
-        , article
         , strong
         , small
         )
@@ -32,39 +29,8 @@ import Bulma.Columns exposing (..)
 import Bulma.Modifiers exposing (..)
 import Bulma.Layout exposing (media, mediaContent, mediaRight, container, section, SectionSpacing(..))
 import Bulma.Form exposing (field, fields, label, controlInput, controlText, controlInputModifiers, controlButton)
-import Bulma.Components
-    exposing
-        ( navbarBurger
-        , navbarLink
-        , navbarDropdown
-        , navbarDivider
-        , navbarItem
-        , navbarItemLink
-        , navbarMenu
-        , navbarStart
-        , navbar
-        , navbarModifiers
-        , navbarBrand
-        , tabs
-        , tab
-        , TabsStyle(..)
-        , hoverableNavbarItemDropdown
-        )
-import Bulma.Elements
-    exposing
-        ( easyTag
-        , table
-        , tableModifiers
-        , tableBody
-        , tableHead
-        , tableCell
-        , tableCellHead
-        , tableRow
-        , buttonModifiers
-        , content
-        , easyProgress
-        , progressModifiers
-        )
+import Bulma.Components exposing (..)
+import Bulma.Elements exposing (..)
 
 
 view : Model -> Html Msg
@@ -146,7 +112,7 @@ positionAggregateInfo prog =
             List.length prog
                 |> toString
     in
-        text <| "Total time left: " ++ sec ++ " (" ++ num ++ " episodes)"
+        p [] [ text <| "Total time left: " ++ sec ++ " (" ++ num ++ " episodes)" ]
 
 
 viewPositions : List ProgressInfo -> Html Msg
@@ -155,7 +121,21 @@ viewPositions prog =
         []
         [ column columnModifiers
             []
-            ([ positionAggregateInfo prog ] ++ List.map onePosition prog)
+            ([ positionAggregateInfo prog
+             , sortButtons
+             ]
+                ++ List.map onePosition prog
+            )
+        ]
+
+
+sortButtons : Html Msg
+sortButtons =
+    connectedButtons Left
+        []
+        [ easyButton buttonModifiers [] (SortBy ByFeed) "Feed"
+        , easyButton buttonModifiers [] (SortBy ByDate) "Date"
+        , easyButton buttonModifiers [] (SortBy ByTime) "Time"
         ]
 
 
@@ -175,7 +155,7 @@ onePosition pi =
                 , br [] []
                 , small [] [ text (Date.toFormattedString "y/M/d" pi.episode.date) ]
                 ]
-            , easyProgress progressModifiers [] (pi.position / pi.duration)
+            , easyProgress { size = Small, color = Info } [] (pi.position / pi.duration)
             ]
         ]
 

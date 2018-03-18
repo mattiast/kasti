@@ -116,3 +116,10 @@ type Msg
     | ClickUrl String
     | NewEpisodesReceive (RD.WebData (List NewEpisode))
     | NavbarToggle
+    | SortBy SortMsg
+
+
+type SortMsg
+    = ByFeed
+    | ByDate
+    | ByTime

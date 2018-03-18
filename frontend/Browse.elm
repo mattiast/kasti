@@ -7,8 +7,10 @@ import Platform.Sub as Sub
 import RemoteData as RD
 import Helpers as H
 import Types exposing (..)
+import Client
 import Views
 import Navigation as N
+import Date
 
 
 main : Program Never Model Msg
@@ -41,11 +43,11 @@ init loc =
           , newEpisodes = RD.NotAsked
           }
         , Cmd.batch
-            [ getFeeds
+            [ Client.getFeeds
                 |> Cmd.map FeedsReceive
-            , getPositions
+            , Client.getPositions
                 |> Cmd.map PositionsReceive
-            , getNewEpisodes
+            , Client.getNewEpisodes
                 |> Cmd.map NewEpisodesReceive
             ]
         )
@@ -59,13 +61,13 @@ update msg model =
 
         EpisodePick ep ->
             ( model
-            , getProgress ep
+            , Client.getProgress ep
                 |> Cmd.map ReceiveProgress
             )
 
         AskEpList feed_id ->
             ( { model | episodes = RD.Loading }
-            , getEpisodes feed_id
+            , Client.getEpisodes feed_id
                 |> Cmd.map ReceiveEpList
             )
 
@@ -81,12 +83,12 @@ update msg model =
 
         ProgMsg (AskTime ep) ->
             ( model
-            , getProgress ep
+            , Client.getProgress ep
                 |> Cmd.map ReceiveProgress
             )
 
         ProgMsg (PostTime s) ->
-            ( model, postProgress s )
+            ( model, Client.postProgress s )
 
         ProgMsg (TimeUpdate pos dur) ->
             ( { model
@@ -109,7 +111,7 @@ update msg model =
                         SyncAll ->
                             H.modifyMenuState (\state -> { state | syncAllState = RD.Loading }) model
             in
-                ( newModel, syncFeed sfid )
+                ( newModel, Client.syncFeed sfid )
 
         SyncFeedReceive (SyncSingle fid) state ->
             let
@@ -117,7 +119,7 @@ update msg model =
                     H.modifyFeedAtId fid (\feed -> { feed | syncState = state }) model
 
                 nextCmd =
-                    getEpisodes fid
+                    Client.getEpisodes fid
                         |> Cmd.map ReceiveEpList
             in
                 ( newModel, nextCmd )
@@ -135,7 +137,7 @@ update msg model =
             )
 
         NewFeedPost ->
-            ( model, postNewFeed model.menuState.newFeed )
+            ( model, Client.postNewFeed model.menuState.newFeed )
 
         NewFeedReceive postStatus ->
             let
@@ -150,7 +152,7 @@ update msg model =
                 )
 
         PositionsAsk ->
-            ( model, Cmd.map PositionsReceive getPositions )
+            ( model, Cmd.map PositionsReceive Client.getPositions )
 
         PositionsReceive positions ->
             ( { model | positions = positions }, Cmd.none )
@@ -179,6 +181,21 @@ update msg model =
                 , Cmd.none
                 )
 
+        SortBy by ->
+            let
+                f =
+                    case by of
+                        ByFeed ->
+                            List.sortBy (\pi -> pi.ftitle)
+
+                        ByDate ->
+                            List.sortBy (\pi -> Date.toTime pi.episode.date)
+
+                        ByTime ->
+                            List.sortBy (\pi -> pi.duration - pi.position)
+            in
+                ( H.modifyPositions f model, Cmd.none )
+
 
 parseView : String -> Maybe WhichView
 parseView url =
@@ -196,85 +213,4 @@ parseView url =
             Nothing
 
 
-postNewFeed : NewFeed -> Cmd Msg
-postNewFeed newFeed =
-    Http.post "/feed"
-        (Http.jsonBody <| Debug.log "posting" <| H.encodeNewFeed newFeed)
-        (D.succeed "")
-        |> RD.sendRequest
-        |> Cmd.map (RD.map (\_ -> ()) >> NewFeedReceive)
-
-
 port setCurrentTime : Float -> Cmd msg
-
-
-syncFeed : SyncFeedId -> Cmd Msg
-syncFeed sfid =
-    let
-        url =
-            case sfid of
-                SyncSingle fid ->
-                    "/syncfeed/" ++ toString fid
-
-                SyncAll ->
-                    "/syncfeed/all"
-    in
-        Http.get url (D.succeed ())
-            |> RD.sendRequest
-            |> Cmd.map (SyncFeedReceive sfid)
-
-
-postProgress : PlayerState -> Cmd Msg
-postProgress state =
-    Http.post "/progress"
-        (Http.jsonBody <| Debug.log "posting" <| H.encodeProgress state)
-        (D.succeed "")
-        |> RD.sendRequest
-        |> Cmd.map (\_ -> PositionsAsk)
-
-
-getFeeds : Cmd (RD.WebData (List Feed))
-getFeeds =
-    Http.get "/feeds" (D.list H.decodeFeed)
-        |> RD.sendRequest
-
-
-getProgress : Episode -> Cmd (RD.WebData PlayerState)
-getProgress ep =
-    Http.get ("/progress/" ++ toString ep.id) (D.map (\( pos, dur ) -> PlayerState ep pos dur) H.decodePosDur)
-        |> RD.sendRequest
-
-
-getPositions : Cmd (RD.WebData (List ProgressInfo))
-getPositions =
-    let
-        decodeStuff =
-            D.list <|
-                D.map4 ProgressInfo
-                    (D.index 0 D.string)
-                    (D.index 1 H.decodeEpisode)
-                    (D.index 2 <| D.field "position" D.float)
-                    (D.index 2 <| D.field "duration" D.float)
-    in
-        Http.get "/progress/all"
-            decodeStuff
-            |> RD.sendRequest
-
-
-getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
-getEpisodes feed_id =
-    Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
-        |> RD.sendRequest
-
-
-getNewEpisodes : Cmd (RD.WebData (List NewEpisode))
-getNewEpisodes =
-    let
-        decodeStuff =
-            D.list <|
-                D.map2 NewEpisode
-                    (D.index 0 D.string)
-                    (D.index 1 H.decodeEpisode)
-    in
-        Http.get ("/episodes/new") decodeStuff
-            |> RD.sendRequest

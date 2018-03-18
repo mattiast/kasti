@@ -15,7 +15,12 @@ image: static/elm.js static/browse.html FORCE
 script-image: scripts/*
 	cd scripts ; docker build -t kasti-scripts .
 
-run_local: image
-	docker run -p 3000:3000 kasti-backend:latest kasti-server /root/static/kasti-config.json
+run_local: create_container
+	docker restart kasti-container
+
+create_container: image
+	docker stop kasti-container
+	docker rm kasti-container
+	docker create --name kasti-container -p 3000:3000 kasti-backend:latest kasti-server /root/static/kasti-config.json
 
 FORCE:

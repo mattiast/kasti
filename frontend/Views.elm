@@ -11,9 +11,7 @@ import Html
         , a
         , i
         , audio
-        , nav
         , span
-        , input
         , strong
         , small
         )
@@ -27,8 +25,8 @@ import Date
 import Navigation as N
 import Bulma.Columns exposing (..)
 import Bulma.Modifiers exposing (..)
-import Bulma.Layout exposing (media, mediaContent, mediaRight, container, section, SectionSpacing(..))
-import Bulma.Form exposing (field, fields, label, controlInput, controlText, controlInputModifiers, controlButton)
+import Bulma.Layout exposing (..)
+import Bulma.Form exposing (..)
 import Bulma.Components exposing (..)
 import Bulma.Elements exposing (..)
 
@@ -196,10 +194,10 @@ viewMenu state =
             navbarItem False
                 []
                 [ field []
-                    [ controlButton { buttonModifiers | color = buttonColor, state = buttonState }
+                    [ easyButton { buttonModifiers | color = buttonColor, state = buttonState }
                         []
-                        [ onClick (SyncFeedAsk SyncAll) ]
-                        [ text "Sync all feeds" ]
+                        (SyncFeedAsk SyncAll)
+                        "Sync all feeds"
                     ]
                 ]
 
@@ -278,10 +276,10 @@ viewNewFeedForm newFeed =
         navbarItem False
             []
             [ field []
-                [ controlButton { buttonModifiers | color = color, state = state }
+                [ easyButton { buttonModifiers | color = color, state = state }
                     []
-                    [ onClick NewFeedPost ]
-                    [ text "Add" ]
+                    NewFeedPost
+                    "Add"
                 ]
             ]
     ]
@@ -385,14 +383,14 @@ viewPlayer state =
         , br [] []
         , fields Left
             []
-            [ controlButton { buttonModifiers | color = Primary }
+            [ easyButton { buttonModifiers | color = Primary }
                 []
-                [ onClick (PostTime state) ]
-                [ text "Save position" ]
-            , controlButton { buttonModifiers | color = Primary }
+                (PostTime state)
+                "Save position"
+            , easyButton { buttonModifiers | color = Primary }
                 []
-                [ onClick (AskTime state.episode) ]
-                [ text "Get position" ]
+                (AskTime state.episode)
+                "Get position"
             ]
         ]
 

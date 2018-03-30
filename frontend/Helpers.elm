@@ -10,64 +10,65 @@ import Types exposing (..)
 import Time.DateTime as T
 import Formatting as F
 import Formatting exposing ((<>))
+import Client.Types as C
 
 
 decodeEpisode : J.Decoder Episode
 decodeEpisode =
-    J.map4 Episode
+    J.map2 makeEpisode
         (J.index 0 J.int)
-        (J.index 1 <| J.field "title" J.string)
-        (J.index 1 <| J.field "url" J.string)
-        (J.index 1 <| J.field "date" decodeDate)
+        (J.index 1 C.decodeEpisode)
 
 
-decodeDate : J.Decoder Date
-decodeDate =
-    let
-        helper : String -> J.Decoder Date
-        helper str =
-            case Date.fromString str of
-                Ok date ->
-                    J.succeed date
+makeEpisode : Int -> C.Episode -> Episode
+makeEpisode id ce =
+    { title = ce.epTitle
+    , url = ce.epUrl.fromEpUrl
+    , date = ce.epDate
+    , id = id
+    }
 
-                Err error ->
-                    J.fail (toString error)
-    in
-        J.andThen helper J.string
+
+makeProgressInfo : C.ProgressInfo -> ProgressInfo
+makeProgressInfo cp =
+    { ftitle = cp.ftitle
+    , episode = makeEpisode cp.epId cp.episode
+    , position = cp.msg.prPos
+    , duration = cp.msg.prDuration
+    }
 
 
 encodeProgress : PlayerState -> JE.Value
 encodeProgress state =
-    Debug.log "progress encode" <|
-        JE.object
-            [ ( "episode_id", JE.int state.episode.id )
-            , ( "position", JE.float state.time )
-            , ( "duration", JE.float state.duration )
-            ]
-
-
-decodePosDur : J.Decoder ( Float, Float )
-decodePosDur =
-    J.map2 (\x y -> ( x, y ))
-        (J.field "position" J.float)
-        (J.field "duration" J.float)
+    C.encodeProgressMsg
+        { prEpId = state.episode.id
+        , prPos = state.time
+        , prDuration = state.duration
+        }
 
 
 encodeNewFeed : NewFeed -> JE.Value
 encodeNewFeed newFeed =
-    JE.object
-        [ ( "name", JE.string newFeed.name )
-        , ( "url", JE.string newFeed.url )
-        ]
+    C.encodeFeedInfo
+        { fname = newFeed.name
+        , furl = newFeed.url
+        }
 
 
 decodeFeed : J.Decoder Feed
 decodeFeed =
-    J.map4 Feed
+    J.map2 makeFeed
         (J.index 0 J.int)
-        (J.index 1 <| J.field "name" (J.string))
-        (J.index 1 <| J.field "url" (J.string))
-        (J.succeed RD.NotAsked)
+        (J.index 1 <| C.decodeFeedInfo)
+
+
+makeFeed : Int -> C.FeedInfo -> Feed
+makeFeed id fi =
+    { id = id
+    , name = fi.fname
+    , url = fi.furl
+    , syncState = RD.NotAsked
+    }
 
 
 onTimeUpdate : Attribute MsgProg

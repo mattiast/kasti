@@ -6,6 +6,7 @@ import Platform.Cmd as Cmd
 import RemoteData as RD
 import Helpers as H
 import Types exposing (..)
+import Client.Types as C
 
 
 syncFeed : SyncFeedId -> Cmd Msg
@@ -41,7 +42,7 @@ getFeeds =
 
 getProgress : Episode -> Cmd (RD.WebData PlayerState)
 getProgress ep =
-    Http.get ("/progress/" ++ toString ep.id) (D.map (\( pos, dur ) -> PlayerState ep pos dur) H.decodePosDur)
+    Http.get ("/progress/" ++ toString ep.id) (D.map (\prog -> PlayerState ep prog.prPos prog.prDuration) C.decodeProgressMsg)
         |> RD.sendRequest
 
 
@@ -50,11 +51,7 @@ getPositions =
     let
         decodeStuff =
             D.list <|
-                D.map4 ProgressInfo
-                    (D.index 0 D.string)
-                    (D.index 1 H.decodeEpisode)
-                    (D.index 2 <| D.field "position" D.float)
-                    (D.index 2 <| D.field "duration" D.float)
+                D.map H.makeProgressInfo C.decodeProgressInfo
     in
         Http.get "/progress/all"
             decodeStuff

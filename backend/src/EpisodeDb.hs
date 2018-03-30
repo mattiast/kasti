@@ -47,7 +47,7 @@ readPosition eid conn = do
         [pos] -> return pos
         _ -> fail $ "weird, position not unique for" ++ show eid
 
-readPositions :: Connection -> IO [(String, (EpisodeId, Episode), ProgressMsg)]
+readPositions :: Connection -> IO [ProgressInfo]
 readPositions conn = do
     (rows :: [(String, EpisodeId) :. Episode :. ProgressMsg]) <- query_ conn
       "select f.name, e.id, e.url, e.title, e.date, p.episode_id, p.position, p.duration \
@@ -55,7 +55,7 @@ readPositions conn = do
       \ join episodes as e on p.episode_id = e.id \
       \ join feeds as f on e.feed_id = f.id \
       \ where p.position < p.duration"
-    return [(ftitle, (eid, ep), msg) | (ftitle, eid) :. ep :. msg <- rows ]
+    return [ProgressInfo ftitle eid ep msg | (ftitle, eid) :. ep :. msg <- rows ]
 
 readNewEpisodes :: Int -> Connection -> IO [(String, (EpisodeId, Episode))]
 readNewEpisodes n conn = do
@@ -86,4 +86,4 @@ writeFeeds conn fis =
 writePosition :: ProgressMsg -> Connection -> IO ()
 writePosition msg conn = withTransaction conn $ void $
     execute conn "insert into progress(episode_id, position, duration) values (?, ?, ?)\
-        \ on conflict(episode_id) do update set position = ?, duration = ?" (msg :. (proPos msg, prDuration msg))
+        \ on conflict(episode_id) do update set position = ?, duration = ?" (msg :. (prPos msg, prDuration msg))

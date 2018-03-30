@@ -111,7 +111,7 @@ jutska context = do
         json stuff
     get "/episodes/:feed_id" $ do
         noCache
-        fid <- FeedId <$> param "feed_id"
+        fid <- param "feed_id"
         eps <- liftAndCatchIO $ withConn $ readEpisodes fid
         json eps
     get "/syncfeed/all" $ do
@@ -119,7 +119,7 @@ jutska context = do
         liftAndCatchIO $ syncFeeds fs withConn
         json ("ok" :: String)
     get "/syncfeed/:feed_id" $ do
-        fid <- FeedId <$> param "feed_id"
+        fid <- param "feed_id"
         mfi <- lift $ MyMonad (getFeedInfo fid)
         let fs = fmap (fid,) mfi
         liftAndCatchIO $ syncFeeds fs withConn
@@ -135,6 +135,6 @@ jutska context = do
         json poss
     get "/progress/:episode_id" $ do
         noCache
-        eid <- EpisodeId <$> param "episode_id"
+        eid <- param "episode_id"
         (pos :: ProgressMsg) <- liftAndCatchIO $ withConn $ readPosition eid
         json pos

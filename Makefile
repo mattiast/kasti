@@ -1,9 +1,12 @@
 all: image
 
-static/elm.js: frontend/*.elm
+static/elm.js: frontend/*.elm frontend/Client/Types.elm
 	cd frontend ; elm-make --yes Browse.elm --output elm.js
 	mkdir -p static
 	mv frontend/elm.js static
+
+frontend/Client/Types.elm: backend/src/Types.hs backend/src/ElmGen.hs
+	cd backend ; stack runghc src/ElmGen.hs
 
 static/browse.html: frontend/browse.html
 	mkdir -p static

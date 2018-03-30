@@ -8,6 +8,7 @@ import RemoteData as RD
 import Helpers as H
 import Types exposing (..)
 import Client
+import Client.Types as C
 import Views
 import Navigation as N
 import Date

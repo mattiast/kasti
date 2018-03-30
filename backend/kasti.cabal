@@ -49,6 +49,7 @@ library
                      , filepath
                      , directory
                      , extensible-effects
+                     , elm-export
 
   default-language:    Haskell2010
 

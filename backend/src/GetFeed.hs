@@ -19,12 +19,6 @@ import EpisodeDb
 import Data.Pool
 import Control.Concurrent.Async(forConcurrently_)
 
-getFeeds :: FilePath -> IO [FeedInfo]
-getFeeds path = do
-    (bs :: BL.ByteString) <- BL.readFile path
-    return $ decode bs
-        & fromMaybe []
-
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
     r <- get url

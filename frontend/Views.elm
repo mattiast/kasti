@@ -1,20 +1,6 @@
 module Views exposing (..)
 
-import Html
-    exposing
-        ( Html
-        , div
-        , text
-        , h4
-        , p
-        , br
-        , a
-        , i
-        , audio
-        , span
-        , strong
-        , small
-        )
+import Html exposing (Html, div, text, h4, p, br, a, i, audio, span, strong, small)
 import Html.Events exposing (onClick, on, onInput)
 import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
 import Types exposing (..)
@@ -370,7 +356,9 @@ episodeRow ep =
 viewPlayer : PlayerState -> Html MsgProg
 viewPlayer state =
     div []
-        [ showState state
+        [ h4 [ class "title is-4" ] [ text state.episode.title ]
+        , p []
+            [ text (Date.toFormattedString "y/M/d" state.episode.date) ]
         , br [] []
         , audio
             [ src state.episode.url
@@ -392,15 +380,4 @@ viewPlayer state =
                 (AskTime state.episode)
                 "Get position"
             ]
-        ]
-
-
-showState : PlayerState -> Html msg
-showState state =
-    div []
-        [ h4 [ class "title is-4" ] [ text state.episode.title ]
-        , p []
-            [ text (Date.toFormattedString "y/M/d" state.episode.date)
-            ]
-        , a [ href state.episode.url ] [ text "[mp3 link]" ]
         ]

@@ -50,6 +50,7 @@ library
                      , directory
                      , extensible-effects
                      , elm-export
+                     , ghc-mod
 
   default-language:    Haskell2010
 

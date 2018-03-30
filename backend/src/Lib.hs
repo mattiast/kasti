@@ -125,9 +125,9 @@ jutska context = do
         liftAndCatchIO $ syncFeeds fs withConn
         json ("ok" :: String)
     post "/progress" $ do
-        (msg :: ProgressMsg) <- jsonData
-        liftAndCatchIO $ print msg
-        liftAndCatchIO $ withConn $ writePosition msg
+        (prog :: ProgressMsg) <- jsonData
+        liftAndCatchIO $ print prog
+        liftAndCatchIO $ withConn $ writePosition prog
         status ok200
     get "/progress/all" $ do
         noCache

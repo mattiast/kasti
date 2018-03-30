@@ -57,7 +57,7 @@ readPositions conn = do
       \ where p.position < p.duration"
     return [ProgressInfo ftitle eid ep msg | (ftitle, eid) :. ep :. msg <- rows ]
 
-readNewEpisodes :: Int -> Connection -> IO [(String, (EpisodeId, Episode))]
+readNewEpisodes :: Int -> Connection -> IO [NewEpisode]
 readNewEpisodes n conn = do
     (rows :: [(String, EpisodeId) :. Episode]) <- query conn
         "select f.name, e.id, e.url, e.title, e.date \
@@ -67,7 +67,7 @@ readNewEpisodes n conn = do
                \ limit ?) as e \
         \ join feeds as f on e.feed_id = f.id \
         \ order by e.id desc" (Only n)
-    return [(ftitle, (eid, ep)) | (ftitle, eid) :. ep <- rows ]
+    return [NewEpisode ftitle eid ep | (ftitle, eid) :. ep <- rows ]
 
 
 writeEpisodes :: FeedId -> [Episode] -> Connection -> IO ()

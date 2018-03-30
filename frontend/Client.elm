@@ -69,9 +69,7 @@ getNewEpisodes =
     let
         decodeStuff =
             D.list <|
-                D.map2 NewEpisode
-                    (D.index 0 D.string)
-                    (D.index 1 H.decodeEpisode)
+                D.map H.makeNewEpisode C.decodeNewEpisode
     in
         Http.get ("/episodes/new") decodeStuff
             |> RD.sendRequest

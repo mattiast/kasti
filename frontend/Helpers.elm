@@ -31,10 +31,17 @@ makeEpisode id ce =
 
 makeProgressInfo : C.ProgressInfo -> ProgressInfo
 makeProgressInfo cp =
-    { ftitle = cp.ftitle
-    , episode = makeEpisode cp.epId cp.episode
-    , position = cp.msg.prPos
-    , duration = cp.msg.prDuration
+    { ftitle = cp.pi_ftitle
+    , episode = makeEpisode cp.pi_epId cp.pi_episode
+    , position = cp.pi_prog.prPos
+    , duration = cp.pi_prog.prDuration
+    }
+
+
+makeNewEpisode : C.NewEpisode -> NewEpisode
+makeNewEpisode cn =
+    { ftitle = cn.ne_ftitle
+    , episode = makeEpisode cn.ne_epId cn.ne_episode
     }
 
 

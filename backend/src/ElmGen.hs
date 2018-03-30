@@ -34,6 +34,10 @@ spec =
     , toElmTypeSource (Proxy :: Proxy ProgressInfo)
     , toElmDecoderSource (Proxy :: Proxy ProgressInfo)
     , toElmEncoderSource (Proxy :: Proxy ProgressInfo)
+
+    , toElmTypeSource (Proxy :: Proxy NewEpisode)
+    , toElmDecoderSource (Proxy :: Proxy NewEpisode)
+    , toElmEncoderSource (Proxy :: Proxy NewEpisode)
     ]
 
 main :: IO ()

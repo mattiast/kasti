@@ -42,10 +42,17 @@ data FeedInfo = FeedInfo {
 type FeedId = Int
 
 data ProgressInfo = ProgressInfo 
-    { ftitle :: String
-    , epId :: EpisodeId
-    , episode :: Episode
-    , msg :: ProgressMsg
+    { pi_ftitle :: String
+    , pi_epId :: EpisodeId
+    , pi_episode :: Episode
+    , pi_prog :: ProgressMsg
+    }
+    deriving (Show, Generic, ElmType, FromJSON, ToJSON)
+
+data NewEpisode = NewEpisode 
+    { ne_ftitle :: String
+    , ne_epId :: EpisodeId
+    , ne_episode :: Episode
     }
     deriving (Show, Generic, ElmType, FromJSON, ToJSON)
 

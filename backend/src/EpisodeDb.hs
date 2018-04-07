@@ -77,9 +77,9 @@ writeEpisodes fid eps conn =
     & withTransaction conn
     & void
 
-writeFeeds :: Connection -> [FeedInfo] -> IO ()
-writeFeeds conn fis =
-    executeMany conn "insert into feeds(name, url) values (?,?) on conflict do nothing" fis
+writeFeed :: FeedInfo -> Connection -> IO ()
+writeFeed fi conn =
+    execute conn "insert into feeds(name, url) values (?,?) on conflict do nothing" fi
     & withTransaction conn
     & void
 

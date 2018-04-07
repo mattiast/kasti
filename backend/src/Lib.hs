@@ -103,7 +103,7 @@ jutska context = do
         json fs
     post "/feed" $ do
         (fi :: FeedInfo) <- jsonData
-        liftAndCatchIO $ withConn $ \conn -> writeFeeds conn [fi]
+        lift $ MyMonad (saveFeedInfo fi)
         json ("ok" :: String)
     get "/episodes/new" $ do
         noCache
@@ -127,7 +127,7 @@ jutska context = do
     post "/progress" $ do
         (prog :: ProgressMsg) <- jsonData
         liftAndCatchIO $ print prog
-        liftAndCatchIO $ withConn $ writePosition prog
+        lift $ MyMonad (saveProgress prog)
         status ok200
     get "/progress/all" $ do
         noCache

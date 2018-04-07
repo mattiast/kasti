@@ -17,6 +17,8 @@ module PodEff
     , getPosition
     , getEpisodes
     , getNewEpisodes
+    , saveFeedInfo
+    , saveProgress
     , runPod
     ) where
 import Types
@@ -32,6 +34,8 @@ data PodEff a where
     PodGetProgress :: EpisodeId -> PodEff ProgressMsg
     PodGetFeedEpisodes :: FeedId -> PodEff [(EpisodeId, Episode)]
     PodGetNewEpisodes :: Int -> PodEff [NewEpisode]
+    PodWriteFeed :: FeedInfo -> PodEff ()
+    PodWriteProgress :: ProgressMsg -> PodEff ()
 
 getFeedInfo :: (Member PodEff e) => FeedId -> Eff e (Maybe FeedInfo)
 getFeedInfo fid = send (PodGetFeedInfo fid)
@@ -51,6 +55,12 @@ getNewEpisodes n = send (PodGetNewEpisodes n)
 getEpisodes ::  (Member PodEff e) => FeedId -> Eff e [(EpisodeId, Episode)]
 getEpisodes fid = send (PodGetFeedEpisodes fid)
 
+saveFeedInfo :: (Member PodEff e) => FeedInfo -> Eff e ()
+saveFeedInfo fi = send (PodWriteFeed fi)
+
+saveProgress :: (Member PodEff e) => ProgressMsg -> Eff e ()
+saveProgress prog = send (PodWriteProgress prog)
+
 runPod :: (SetMember Lift (Lift IO) r) => Connection -> Eff (PodEff ': r) w -> Eff r w
 runPod conn = handle_relay return (oneQ conn)
 
@@ -65,3 +75,5 @@ query x = case x of
     PodGetProgress eid -> readPosition eid
     PodGetFeedEpisodes fid -> readEpisodes fid
     PodGetNewEpisodes n -> readNewEpisodes n
+    PodWriteFeed fi -> writeFeed fi
+    PodWriteProgress prog -> writePosition prog

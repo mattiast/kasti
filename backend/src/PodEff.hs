@@ -20,7 +20,6 @@ import Control.Eff
 import Control.Eff.Lift
 import Database.PostgreSQL.Simple(Connection)
 import EpisodeDb
-import Control.Monad.IO.Class
 
 data PodEff a where
     PodGetFeedInfo :: FeedId -> PodEff (Maybe FeedInfo)
@@ -42,6 +41,3 @@ query :: PodEff a -> Connection -> IO a
 query x = case x of
     PodGetFeeds -> readFeeds
     PodGetFeedInfo fid -> readFeed fid
-
-instance (SetMember Lift (Lift IO) r) => MonadIO (Eff r) where
-    liftIO = lift

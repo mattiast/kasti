@@ -1,11 +1,12 @@
 all: image
 
 static/elm.js: frontend/*.elm frontend/Client/Types.elm
+	cd frontend ; elm-package install --yes
 	cd frontend ; elm-make --yes Browse.elm --output elm.js
 	mkdir -p static
 	mv frontend/elm.js static
 
-frontend/Client/Types.elm: backend/src/Types.hs backend/src/ElmGen.hs
+frontend/Client/Types.elm: backend/src/Types.hs backend/src/ElmGen.hs stack-build
 	mkdir -p frontend/Client
 	cd backend ; stack runghc src/ElmGen.hs
 
@@ -13,7 +14,10 @@ static/browse.html: frontend/browse.html
 	mkdir -p static
 	cp frontend/browse.html static
 
-image: static/elm.js static/browse.html FORCE
+stack-build: FORCE
+	cd backend ; stack build
+
+image: static/elm.js static/browse.html stack-build
 	cd backend ; stack image container
 
 script-image: scripts/*

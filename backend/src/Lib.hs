@@ -114,11 +114,11 @@ jutska context = do
         fid <- param "feed_id"
         eps <- lift $ MyMonad $ getEpisodes fid
         json eps
-    get "/syncfeed/all" $ do
+    post "/syncfeed/all" $ do
         fs <- lift $ MyMonad getFeeds
         liftAndCatchIO $ syncFeeds fs withConn
         json ("ok" :: String)
-    get "/syncfeed/:feed_id" $ do
+    post "/syncfeed/:feed_id" $ do
         fid <- param "feed_id"
         mfi <- lift $ MyMonad (getFeedInfo fid)
         let fs = fmap (fid,) mfi

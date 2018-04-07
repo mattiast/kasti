@@ -20,7 +20,9 @@ syncFeed sfid =
                 SyncAll ->
                     "/syncfeed/all"
     in
-        Http.get url (D.succeed ())
+        Http.post url
+            Http.emptyBody
+            (D.succeed ())
             |> RD.sendRequest
             |> Cmd.map (SyncFeedReceive sfid)
 

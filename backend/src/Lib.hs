@@ -107,12 +107,12 @@ jutska context = do
         json ("ok" :: String)
     get "/episodes/new" $ do
         noCache
-        stuff <- liftAndCatchIO $ withConn $ readNewEpisodes 15
+        stuff <- lift $ MyMonad (getNewEpisodes 15)
         json stuff
     get "/episodes/:feed_id" $ do
         noCache
         fid <- param "feed_id"
-        eps <- liftAndCatchIO $ withConn $ readEpisodes fid
+        eps <- lift $ MyMonad $ getEpisodes fid
         json eps
     get "/syncfeed/all" $ do
         fs <- lift $ MyMonad getFeeds
@@ -131,10 +131,10 @@ jutska context = do
         status ok200
     get "/progress/all" $ do
         noCache
-        poss <- liftAndCatchIO $ withConn readPositions
+        poss <- lift $ MyMonad getPositions
         json poss
     get "/progress/:episode_id" $ do
         noCache
         eid <- param "episode_id"
-        (pos :: ProgressMsg) <- liftAndCatchIO $ withConn $ readPosition eid
+        (pos :: ProgressMsg) <- lift $ MyMonad (getPosition eid)
         json pos

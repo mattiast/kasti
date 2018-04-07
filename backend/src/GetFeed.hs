@@ -1,15 +1,12 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, Rank2Types #-}
 module GetFeed where
 import Control.Lens hiding ((.=))
-import Data.Aeson
-import Data.Function((&))
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time.Clock(UTCTime)
 import Data.Time.Format
 import Database.PostgreSQL.Simple(Connection)
 import Network.Wreq hiding ((:=))
-import qualified Data.ByteString.Lazy.Char8 as BL
 import Text.Feed.Import
 import Text.Feed.Query
 import Text.Feed.Types

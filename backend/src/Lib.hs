@@ -5,7 +5,8 @@ module Lib
     , stop
     , Config
     ) where
-import Control.Concurrent(ThreadId, forkIO, throwTo)
+import Control.Concurrent(throwTo)
+import Control.Concurrent.Async
 import Network.HTTP.Types(ok200)
 import qualified Data.Text.Lazy as L
 import Web.Scotty.Trans
@@ -59,7 +60,7 @@ handleStuff :: Context -> MyMonad a -> IO a
 handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> Lift.runLift $ runPod conn x)
 
 data Handler = Handler
-    { mainTid :: ThreadId
+    { mainTid :: Async ()
     , ekg :: Server
     , ctx :: Context
     }
@@ -70,9 +71,9 @@ start config = do
     let context = Context config pool
         tlsConfig = tlsSettings (tlsCertPath config) (tlsKeyPath config)
         warpConfig = setPort 3000 defaultSettings
-    server <- forkServer "localhost" 3001
+    server <- forkServer "0.0.0.0" 3001
     app <- scottyAppT (handleStuff context) $ jutska context
-    mainThread <- forkIO $ runTLS tlsConfig warpConfig app
+    mainThread <- async $ runTLS tlsConfig warpConfig app
     return Handler
         { mainTid = mainThread
         , ekg = server
@@ -81,7 +82,7 @@ start config = do
 
 stop :: Handler -> IO ()
 stop h = do
-    throwTo (mainTid h) (UserInterrupt :: AsyncException)
+    cancel (mainTid h)
     closePool $ cPool $ ctx h
     throwTo (serverThreadId $ ekg h) (UserInterrupt :: AsyncException)
 

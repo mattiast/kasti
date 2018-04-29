@@ -42,6 +42,7 @@ library
                      , random
                      , parallel
                      , async
+                     , stm
                      , process
                      , resource-pool
 
@@ -50,7 +51,6 @@ library
                      , directory
                      , extensible-effects
                      , elm-export
-                     , ghc-mod
 
   default-language:    Haskell2010
 

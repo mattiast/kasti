@@ -9,6 +9,7 @@ RUN apt update && apt install -y \
     lxc \
     nodejs-legacy \
     npm \
+    libtinfo-dev \
     sudo
 
 RUN export CLOUD_SDK_REPO="cloud-sdk-xenial" && \
@@ -24,5 +25,5 @@ RUN adduser --disabled-password --gecos '' circleci
 USER circleci
 WORKDIR /home/circleci
 
-RUN stack setup --resolver lts-10.0
+RUN stack setup --resolver lts-11.2
 RUN echo 1 + 1 | stack ghci

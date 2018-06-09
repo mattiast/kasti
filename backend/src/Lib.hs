@@ -18,8 +18,7 @@ import PodEff
 import Data.Pool
 import Database.PostgreSQL.Simple
 import Data.Aeson hiding (json)
-import Control.Eff
-import qualified Control.Eff.Lift as Lift
+import Control.Monad.Freer
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
@@ -47,17 +46,17 @@ instance FromJSON Config where
         <*> v .: "tls_key_path"
     parseJSON _ = mempty
 
-newtype MyMonad a = MyMonad (Eff '[PodEff, Lift.Lift IO] a)
+newtype MyMonad a = MyMonad (Eff '[PodEff, IO] a)
     deriving (Functor, Applicative, Monad)
 
 instance MonadIO MyMonad where
-    liftIO = MyMonad . Lift.lift
+    liftIO = MyMonad . sendM
 
 noCache :: (Monad m) => ActionT e m ()
 noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
 
 handleStuff :: Context -> MyMonad a -> IO a
-handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> Lift.runLift $ runPod conn x)
+handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> runM $ runPod conn x)
 
 data Handler = Handler
     { mainTid :: Async ()

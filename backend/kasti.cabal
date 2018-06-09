@@ -28,7 +28,6 @@ library
                      , lens
                      , lens-aeson
                      , time
-                     , text-format
                      , scotty
                      , warp-tls
                      , warp
@@ -49,7 +48,7 @@ library
                      , postgresql-simple
                      , filepath
                      , directory
-                     , extensible-effects
+                     , freer-simple
                      , elm-export
 
   default-language:    Haskell2010

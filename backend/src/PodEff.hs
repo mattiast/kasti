@@ -22,8 +22,7 @@ module PodEff
     , runPod
     ) where
 import Types
-import Control.Eff
-import Control.Eff.Lift
+import Control.Monad.Freer
 import Database.PostgreSQL.Simple(Connection)
 import EpisodeDb
 
@@ -61,11 +60,8 @@ saveFeedInfo fi = send (PodWriteFeed fi)
 saveProgress :: (Member PodEff e) => ProgressMsg -> Eff e ()
 saveProgress prog = send (PodWriteProgress prog)
 
-runPod :: (SetMember Lift (Lift IO) r) => Connection -> Eff (PodEff ': r) w -> Eff r w
-runPod conn = handle_relay return (oneQ conn)
-
-oneQ :: (SetMember Lift (Lift IO) r) => Connection -> PodEff v -> Arr r v a -> Eff r a
-oneQ conn x f = lift (query x conn) >>= f
+runPod :: (LastMember IO r) => Connection -> Eff (PodEff ': r) w -> Eff r w
+runPod conn = interpretM (flip query conn)
 
 query :: PodEff a -> Connection -> IO a
 query x = case x of

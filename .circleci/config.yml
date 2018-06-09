@@ -25,18 +25,18 @@ jobs:
           name: Login to AWS ECR
           command: eval $(aws ecr get-login --no-include-email)
       - run:
-          name: Push docker image to GCR
+          name: Push docker image to ECR
           command: |
-              docker tag kasti-backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.0.$CIRCLE_BUILD_NUM
-              docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.0.$CIRCLE_BUILD_NUM
+              docker tag kasti-backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
+              docker                     push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
       - run:
           name: Build scripts image
           command: make script-image
       - run:
-          name: Push script image to GCR
+          name: Push script image to ECR
           command: |
-              docker tag kasti-scripts:latest gcr.io/$GOOGLE_PROJECT_ID/kasti-scripts:0.0.$CIRCLE_BUILD_NUM
-              gcloud docker --           push gcr.io/$GOOGLE_PROJECT_ID/kasti-scripts:0.0.$CIRCLE_BUILD_NUM
+              docker tag kasti-scripts:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
+              gcloud docker --           push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
 
           # Required environment variables:
           # - AWS_ACCOUNT_ID

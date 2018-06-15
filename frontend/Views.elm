@@ -379,5 +379,9 @@ viewPlayer state =
                 []
                 (AskTime state.episode)
                 "Get position"
+            , easyButton { buttonModifiers | color = Primary }
+                []
+                (SetPlaybackRate 2.0)
+                "2x speed"
             ]
         ]

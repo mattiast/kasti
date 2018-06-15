@@ -84,6 +84,7 @@ type MsgProg
     = TimeUpdate Float Float
     | PostTime PlayerState
     | AskTime Episode
+    | SetPlaybackRate Float
 
 
 type WhichView

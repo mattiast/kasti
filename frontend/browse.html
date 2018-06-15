@@ -16,6 +16,11 @@
                 var audio = document.getElementById('audio-player');
                 audio.currentTime = time;
             });
+
+            app.ports.setPlaybackRate.subscribe(function(speed) {
+                var audio = document.getElementById('audio-player');
+                audio.playbackRate = speed;
+            });
         </script>
     </body>
 </html>

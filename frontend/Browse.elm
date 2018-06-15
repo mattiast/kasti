@@ -99,6 +99,9 @@ update msg model =
             , Cmd.none
             )
 
+        ProgMsg (SetPlaybackRate speed) ->
+            ( model, setPlaybackRate speed )
+
         Nop ->
             ( Debug.log "nop" model, Cmd.none )
 
@@ -215,3 +218,6 @@ parseView url =
 
 
 port setCurrentTime : Float -> Cmd msg
+
+
+port setPlaybackRate : Float -> Cmd msg

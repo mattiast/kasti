@@ -2,3 +2,8 @@ release
 static
 stuff.tar.gz
 hosts
+scripts/.idea
+scripts/.mypy_cache
+scripts/venv
+frontend/index.html
+frontend/Client

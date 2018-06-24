@@ -41,6 +41,8 @@ library
                      , random
                      , parallel
                      , async
+                     , lifted-async
+                     , unliftio
                      , stm
                      , process
                      , resource-pool

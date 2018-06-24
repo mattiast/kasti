@@ -14,7 +14,8 @@ import Text.RSS.Syntax(DateString)
 import Types
 import EpisodeDb
 import Data.Pool
-import Control.Concurrent.Async(forConcurrently_)
+import Control.Concurrent.Async.Lifted.Safe(forConcurrently_)
+import Control.Monad.Reader
 
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
@@ -22,15 +23,14 @@ fetchFeed url = do
     let body = r ^. responseBody
     return $ parseFeedSource body
 
-type ContIO a = forall b . (a -> IO b) -> IO b
-
-syncFeeds :: (Foldable t) => t (FeedId, FeedInfo) -> ContIO Connection -> IO ()
-syncFeeds fs conn = do
+syncFeeds :: (Foldable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO ()
+syncFeeds fs = do
     let parallelDownloads = 5
-    dlPool <- createPool (return ()) (\() -> return ()) 1 1.234 parallelDownloads
+    dlPool <- liftIO $ createPool (return ()) (\() -> return ()) 1 1.234 parallelDownloads
     forConcurrently_ fs $ \(fid, fi) -> do
-        es <- withResource dlPool $ const $ fetchEpisodes fi
-        conn $ writeEpisodes fid es
+        es <- liftIO $ withResource dlPool $ const $ fetchEpisodes fi
+        conn <- ask
+        liftIO $ writeEpisodes fid es conn
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

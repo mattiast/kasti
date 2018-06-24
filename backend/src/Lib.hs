@@ -19,7 +19,7 @@ import Data.Pool
 import Database.PostgreSQL.Simple
 import Data.Aeson hiding (json)
 import Control.Monad.Freer
-import Control.Monad.IO.Class
+import Control.Monad.Reader
 import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
 import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
@@ -116,13 +116,13 @@ jutska context = do
         json eps
     post "/syncfeed/all" $ do
         fs <- lift $ MyMonad getFeeds
-        liftAndCatchIO $ syncFeeds fs withConn
+        liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
         json ("ok" :: String)
     post "/syncfeed/:feed_id" $ do
         fid <- param "feed_id"
         mfi <- lift $ MyMonad (getFeedInfo fid)
         let fs = fmap (fid,) mfi
-        liftAndCatchIO $ syncFeeds fs withConn
+        liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
         json ("ok" :: String)
     post "/progress" $ do
         (prog :: ProgressMsg) <- jsonData

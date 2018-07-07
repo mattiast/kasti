@@ -16,6 +16,7 @@ import EpisodeDb
 import Data.Pool
 import Control.Concurrent.Async.Lifted.Safe(forConcurrently_)
 import Control.Monad.Reader
+import Control.Applicative
 
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
@@ -39,7 +40,9 @@ fetchEpisodes fi = do
     return $ mapMaybe itemEpisodeInfo items
 
 parsePubDate :: DateString -> Maybe UTCTime
-parsePubDate = parseTimeM True defaultTimeLocale rfc822DateFormat . T.unpack
+parsePubDate dt = let ds = T.unpack dt
+                   in (parseTimeM True defaultTimeLocale rfc822DateFormat ds)
+                   <|> (parseTimeM True defaultTimeLocale "%A, %e %B %Y %k:%M:%S %Z" ds)
 
 itemEpisodeInfo :: Item -> Maybe Episode
 itemEpisodeInfo item = do

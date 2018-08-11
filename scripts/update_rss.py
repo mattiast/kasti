@@ -4,7 +4,6 @@ from sys import argv
 import psycopg2
 import psycopg2.extras
 
-from botocore.client import Config
 import boto3
 import io
 import json
@@ -73,12 +72,9 @@ def push_to_s3(conf, key, data):
     session = boto3.session.Session()
     client = session.client(
         's3',
-        # TODO Region is hardcoded (I use Digital Ocean spaces, not amazon S3)
-        region_name='nyc3',
-        endpoint_url=conf['s3_endpoint'],
+        region_name=conf['s3_region_name'],
         aws_access_key_id=conf['s3_access_key'],
         aws_secret_access_key=conf['s3_secret'],
-        config=Config(s3={'addressing_style': 'virtual'}),
     )
 
     data_obj = io.BytesIO(bytes(data, encoding='utf-8'))

@@ -29,7 +29,6 @@ library
                      , lens-aeson
                      , time
                      , scotty
-                     , warp-tls
                      , warp
                      , http-types
                      , feed

@@ -18,19 +18,16 @@ import PodEff
 import Data.Pool
 import Database.PostgreSQL.Simple
 import Data.Aeson hiding (json)
-import Control.Monad.Freer
+import Control.Monad.Freer hiding (run)
 import Control.Monad.Reader
 import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
-import Network.Wai.Handler.WarpTLS (runTLS, tlsSettings)
-import Network.Wai.Handler.Warp (defaultSettings, setPort)
+import Network.Wai.Handler.Warp (run)
 import System.FilePath((</>))
 
 data Config = Config {
     dbString :: String
   , staticPath :: FilePath
-  , tlsCertPath :: FilePath
-  , tlsKeyPath :: FilePath
 } deriving Show
 
 data Context = Context {
@@ -42,8 +39,6 @@ instance FromJSON Config where
     parseJSON (Object v) = Config
         <$> v .: "postgres_string"
         <*> v .: "static_path"
-        <*> v .: "tls_cert_path"
-        <*> v .: "tls_key_path"
     parseJSON _ = mempty
 
 newtype MyMonad a = MyMonad (Eff '[PodEff, IO] a)
@@ -68,11 +63,9 @@ start :: Config -> IO Handler
 start config = do
     pool <- initPool (dbString config)
     let context = Context config pool
-        tlsConfig = tlsSettings (tlsCertPath config) (tlsKeyPath config)
-        warpConfig = setPort 3000 defaultSettings
     server <- forkServer "0.0.0.0" 3001
     app <- scottyAppT (handleStuff context) $ jutska context
-    mainThread <- async $ runTLS tlsConfig warpConfig app
+    mainThread <- async $ run 3000 app
     return Handler
         { mainTid = mainThread
         , ekg = server

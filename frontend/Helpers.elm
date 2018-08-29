@@ -53,12 +53,11 @@ encodeProgress state =
     }
 
 
-encodeNewFeed : NewFeed -> JE.Value
+encodeNewFeed : NewFeed -> C.FeedInfo
 encodeNewFeed newFeed =
-    C.encodeFeedInfo
-        { fname = newFeed.name
-        , furl = newFeed.url
-        }
+    { fname = newFeed.name
+    , furl = newFeed.url
+    }
 
 
 makeFeed : ( Int, C.FeedInfo ) -> Feed

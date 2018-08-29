@@ -1,15 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Api where
 
-import           Data.Aeson
-import           Data.Proxy
-import           GHC.Generics
-import           Servant.API
-import           Servant.Elm      (ElmType)
+import Servant.API
 import Types
 
 type Api =
@@ -17,4 +11,6 @@ type Api =
     (Capture "episodeId" EpisodeId :> Get '[JSON] ProgressMsg :<|>
      "all" :> Get '[JSON] [ProgressInfo] :<|>
      ReqBody '[JSON] ProgressMsg :> Post '[JSON] ()) :<|>
-  "feeds" :> Get '[JSON] [(FeedId, FeedInfo)]
+  "feeds" :> Get '[JSON] [(FeedId, FeedInfo)] :<|>
+  "feed" :> ReqBody '[JSON] FeedInfo :> Post '[JSON] () :<|>
+  "episodes" :> "new" :> Get '[JSON] [NewEpisode]

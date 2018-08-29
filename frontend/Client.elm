@@ -63,19 +63,13 @@ getEpisodes feed_id =
 
 getNewEpisodes : Cmd (RD.WebData (List NewEpisode))
 getNewEpisodes =
-    let
-        decodeStuff =
-            D.list <|
-                D.map H.makeNewEpisode C.decodeNewEpisode
-    in
-        Http.get ("/episodes/new") decodeStuff
-            |> RD.sendRequest
+    C.getEpisodesNew
+        |> RD.sendRequest
+        |> Cmd.map (RD.map (List.map H.makeNewEpisode))
 
 
 postNewFeed : NewFeed -> Cmd Msg
 postNewFeed newFeed =
-    Http.post "/feed"
-        (Http.jsonBody <| Debug.log "posting" <| H.encodeNewFeed newFeed)
-        (D.succeed "")
+    C.postFeed (H.encodeNewFeed newFeed)
         |> RD.sendRequest
-        |> Cmd.map (RD.map (\_ -> ()) >> NewFeedReceive)
+        |> Cmd.map NewFeedReceive

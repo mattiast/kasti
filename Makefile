@@ -6,9 +6,9 @@ static/elm.js: frontend/*.elm frontend/Client/Types.elm
 	mkdir -p static
 	mv frontend/elm.js static
 
-frontend/Client/Types.elm: backend/src/Types.hs backend/src/ElmGen.hs stack-build
+frontend/Client/Types.elm: backend/src/Types.hs backend/ElmGen.hs stack-build
 	mkdir -p frontend/Client
-	cd backend ; stack runghc src/ElmGen.hs
+	cd backend ; stack runghc ElmGen.hs
 
 static/browse.html: frontend/browse.html
 	mkdir -p static

@@ -29,35 +29,30 @@ syncFeed sfid =
 
 postProgress : PlayerState -> Cmd Msg
 postProgress state =
-    Http.post "/progress"
-        (Http.jsonBody <| Debug.log "posting" <| H.encodeProgress state)
-        (D.succeed "")
+    C.postProgress (H.encodeProgress state)
         |> RD.sendRequest
         |> Cmd.map (\_ -> PositionsAsk)
 
 
 getFeeds : Cmd (RD.WebData (List Feed))
 getFeeds =
-    Http.get "/feeds" (D.list H.decodeFeed)
+    C.getFeeds
         |> RD.sendRequest
+        |> Cmd.map (RD.map (List.map H.makeFeed))
 
 
 getProgress : Episode -> Cmd (RD.WebData PlayerState)
 getProgress ep =
-    Http.get ("/progress/" ++ toString ep.id) (D.map (\prog -> PlayerState ep prog.prPos prog.prDuration) C.decodeProgressMsg)
+    C.getProgressByEpisodeId ep.id
         |> RD.sendRequest
+        |> Cmd.map (RD.map (\prog -> PlayerState ep prog.prPos prog.prDuration))
 
 
 getPositions : Cmd (RD.WebData (List ProgressInfo))
 getPositions =
-    let
-        decodeStuff =
-            D.list <|
-                D.map H.makeProgressInfo C.decodeProgressInfo
-    in
-        Http.get "/progress/all"
-            decodeStuff
-            |> RD.sendRequest
+    C.getProgressAll
+        |> RD.sendRequest
+        |> Cmd.map (RD.map (List.map H.makeProgressInfo))
 
 
 getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))

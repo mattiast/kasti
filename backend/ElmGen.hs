@@ -3,17 +3,20 @@ module Main where
 
 import Data.Proxy
 import Types
+import Api
 import Elm
+import Servant.Elm
 
 spec :: Spec
 spec =
   Spec
     ["Client", "Types"]
-    [ "import Json.Decode exposing (..)"
+    ([ "import Json.Decode exposing (..)"
     , "import Json.Decode.Pipeline exposing (..)"
     , "import Exts.Json.Decode exposing (..)"
     , "import Date exposing (Date)"
     , "import Json.Encode"
+    , "import Http"
 
     , toElmTypeSource (Proxy :: Proxy Episode)
     , toElmDecoderSource (Proxy :: Proxy Episode)
@@ -38,7 +41,8 @@ spec =
     , toElmTypeSource (Proxy :: Proxy NewEpisode)
     , toElmDecoderSource (Proxy :: Proxy NewEpisode)
     , toElmEncoderSource (Proxy :: Proxy NewEpisode)
-    ]
+
+    ] ++ generateElmForAPI (Proxy :: Proxy Api))
 
 main :: IO ()
 main = specsToDir [spec] "../frontend"

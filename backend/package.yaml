@@ -38,6 +38,13 @@ library:
   - unliftio
   - stm
   - resource-pool
+  - aeson
+  - servant-elm
+  - servant
+  - wai
+  - servant-server
+  - transformers
+  - containers
 
 executables:
   kasti-server:

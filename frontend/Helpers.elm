@@ -45,13 +45,12 @@ makeNewEpisode cn =
     }
 
 
-encodeProgress : PlayerState -> JE.Value
+encodeProgress : PlayerState -> C.ProgressMsg
 encodeProgress state =
-    C.encodeProgressMsg
-        { prEpId = state.episode.id
-        , prPos = state.time
-        , prDuration = state.duration
-        }
+    { prEpId = state.episode.id
+    , prPos = state.time
+    , prDuration = state.duration
+    }
 
 
 encodeNewFeed : NewFeed -> JE.Value
@@ -62,15 +61,8 @@ encodeNewFeed newFeed =
         }
 
 
-decodeFeed : J.Decoder Feed
-decodeFeed =
-    J.map2 makeFeed
-        (J.index 0 J.int)
-        (J.index 1 <| C.decodeFeedInfo)
-
-
-makeFeed : Int -> C.FeedInfo -> Feed
-makeFeed id fi =
+makeFeed : ( Int, C.FeedInfo ) -> Feed
+makeFeed ( id, fi ) =
     { id = id
     , name = fi.fname
     , url = fi.furl

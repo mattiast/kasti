@@ -97,7 +97,7 @@ jutska context = do
     post "/feed" $ do
         (fi :: FeedInfo) <- jsonData
         lift $ MyMonad (saveFeedInfo fi)
-        json ("ok" :: String)
+        status ok200
     get "/episodes/new" $ do
         noCache
         stuff <- lift $ MyMonad (getNewEpisodes 15)
@@ -110,13 +110,13 @@ jutska context = do
     post "/syncfeed/all" $ do
         fs <- lift $ MyMonad getFeeds
         liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
-        json ("ok" :: String)
+        status ok200
     post "/syncfeed/:feed_id" $ do
         fid <- param "feed_id"
         mfi <- lift $ MyMonad (getFeedInfo fid)
         let fs = fmap (fid,) mfi
         liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
-        json ("ok" :: String)
+        status ok200
     post "/progress" $ do
         (prog :: ProgressMsg) <- jsonData
         liftAndCatchIO $ print prog

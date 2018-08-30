@@ -13,13 +13,6 @@ import Formatting exposing ((<>))
 import Client.Types as C
 
 
-decodeEpisode : J.Decoder Episode
-decodeEpisode =
-    J.map2 makeEpisode
-        (J.index 0 J.int)
-        (J.index 1 C.decodeEpisode)
-
-
 makeEpisode : Int -> C.Episode -> Episode
 makeEpisode id ce =
     { title = ce.epTitle

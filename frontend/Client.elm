@@ -12,17 +12,15 @@ import Client.Types as C
 syncFeed : SyncFeedId -> Cmd Msg
 syncFeed sfid =
     let
-        url =
+        req =
             case sfid of
                 SyncSingle fid ->
-                    "/syncfeed/" ++ toString fid
+                    C.postSyncfeedByFeedId fid
 
                 SyncAll ->
-                    "/syncfeed/all"
+                    C.postSyncfeedAll
     in
-        Http.post url
-            Http.emptyBody
-            (D.succeed ())
+        req
             |> RD.sendRequest
             |> Cmd.map (SyncFeedReceive sfid)
 
@@ -57,8 +55,9 @@ getPositions =
 
 getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
 getEpisodes feed_id =
-    Http.get ("/episodes/" ++ toString feed_id) (D.list H.decodeEpisode)
+    C.getEpisodesByFeedId feed_id
         |> RD.sendRequest
+        |> Cmd.map (RD.map (List.map (\( id, ep ) -> H.makeEpisode id ep)))
 
 
 getNewEpisodes : Cmd (RD.WebData (List NewEpisode))

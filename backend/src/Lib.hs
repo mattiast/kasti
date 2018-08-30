@@ -16,30 +16,15 @@ import Types
 import EpisodeDb
 import PodEff
 import Data.Pool
-import Database.PostgreSQL.Simple
-import Data.Aeson hiding (json)
 import Control.Monad.Freer hiding (run)
 import Control.Monad.Reader
 import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
 import Network.Wai.Handler.Warp (run)
 import System.FilePath((</>))
+import Context
 
-data Config = Config {
-    dbString :: String
-  , staticPath :: FilePath
-} deriving Show
-
-data Context = Context {
-    cConfig :: Config
-  , cPool :: Pool Connection
-}
-
-instance FromJSON Config where
-    parseJSON (Object v) = Config
-        <$> v .: "postgres_string"
-        <*> v .: "static_path"
-    parseJSON _ = mempty
+import qualified ServantStuff as SS
 
 newtype MyMonad a = MyMonad (Eff '[PodEff, IO] a)
     deriving (Functor, Applicative, Monad)
@@ -64,7 +49,8 @@ start config = do
     pool <- initPool (dbString config)
     let context = Context config pool
     server <- forkServer "0.0.0.0" 3001
-    app <- scottyAppT (handleStuff context) $ jutska context
+    -- app <- scottyAppT (handleStuff context) $ jutska context
+    let app = SS.app context
     mainThread <- async $ run 3000 app
     return Handler
         { mainTid = mainThread
@@ -119,7 +105,6 @@ jutska context = do
         status ok200
     post "/progress" $ do
         (prog :: ProgressMsg) <- jsonData
-        liftAndCatchIO $ print prog
         lift $ MyMonad (saveProgress prog)
         status ok200
     get "/progress/all" $ do

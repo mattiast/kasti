@@ -49,8 +49,8 @@ start config = do
     pool <- initPool (dbString config)
     let context = Context config pool
     server <- forkServer "0.0.0.0" 3001
-    -- app <- scottyAppT (handleStuff context) $ jutska context
-    let app = SS.app context
+    appStatic <- scottyAppT (handleStuff context) $ jutska context
+    let app = SS.app context appStatic
     mainThread <- async $ run 3000 app
     return Handler
         { mainTid = mainThread
@@ -66,8 +66,7 @@ stop h = do
 
 jutska :: Context -> ScottyT L.Text MyMonad ()
 jutska context = do
-    let withConn = withResource (cPool context)
-        servePage = do
+    let servePage = do
             setHeader "Content-Type" "text/html; charset=utf-8"
             file $ (staticPath $ cConfig context) </> "browse.html"
     get "/browse" servePage
@@ -76,43 +75,3 @@ jutska context = do
     get "/elm.js" $ do
         setHeader "Content-Type" "application/javascript"
         file $ (staticPath $ cConfig context) </> "elm.js"
-    get "/feeds" $ do
-        noCache
-        fs <- lift $ MyMonad getFeeds
-        json fs
-    post "/feed" $ do
-        (fi :: FeedInfo) <- jsonData
-        lift $ MyMonad (saveFeedInfo fi)
-        status ok200
-    get "/episodes/new" $ do
-        noCache
-        stuff <- lift $ MyMonad (getNewEpisodes 15)
-        json stuff
-    get "/episodes/:feed_id" $ do
-        noCache
-        fid <- param "feed_id"
-        eps <- lift $ MyMonad $ getEpisodes fid
-        json eps
-    post "/syncfeed/all" $ do
-        fs <- lift $ MyMonad getFeeds
-        liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
-        status ok200
-    post "/syncfeed/:feed_id" $ do
-        fid <- param "feed_id"
-        mfi <- lift $ MyMonad (getFeedInfo fid)
-        let fs = fmap (fid,) mfi
-        liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
-        status ok200
-    post "/progress" $ do
-        (prog :: ProgressMsg) <- jsonData
-        lift $ MyMonad (saveProgress prog)
-        status ok200
-    get "/progress/all" $ do
-        noCache
-        poss <- lift $ MyMonad getPositions
-        json poss
-    get "/progress/:episode_id" $ do
-        noCache
-        eid <- param "episode_id"
-        (pos :: ProgressMsg) <- lift $ MyMonad (getPosition eid)
-        json pos

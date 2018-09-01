@@ -16,10 +16,10 @@ import EpisodeDb
 import Database.PostgreSQL.Simple
 
 
-app :: Context -> Application
-app context = let
+app :: Context -> Middleware
+app context application = let
     x = server context
-    in serve (Proxy :: Proxy Api) x
+    in serve (Proxy :: Proxy (Api :<|> Raw)) (x :<|> Tagged application)
 
 server :: Context -> (Server Api)
 server context = let
@@ -37,7 +37,7 @@ progressStuff :: Context -> (Server ProgressApi)
 progressStuff context =
     (\episodeId -> withConn (readPosition episodeId) context) :<|> 
     (withConn readPositions context) :<|> 
-    (\prog -> withConn (writePosition prog) context)
+    (\prog -> withConn (writePosition prog) context >> return (OK "ok"))
 
 feedsStuff :: Context -> (Server FeedsApi)
 feedsStuff = withConn readFeeds

@@ -42,6 +42,10 @@ spec =
     , toElmDecoderSource (Proxy :: Proxy NewEpisode)
     , toElmEncoderSource (Proxy :: Proxy NewEpisode)
 
+    , toElmTypeSource (Proxy :: Proxy OK)
+    , toElmDecoderSource (Proxy :: Proxy OK)
+    , toElmEncoderSource (Proxy :: Proxy OK)
+
     ] ++ generateElmForAPI (Proxy :: Proxy Api))
 
 main :: IO ()

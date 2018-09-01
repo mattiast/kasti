@@ -1,16 +1,24 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Api where
 
 import Servant.API
 import Types
+import GHC.Generics
+import Elm
+import Data.Aeson
+
+data OK = OK { okText :: String }
+    deriving (Generic, ElmType, FromJSON, ToJSON)
 
 type ProgressApi =
   "progress" :>
     (Capture "episodeId" EpisodeId :> Get '[JSON] ProgressMsg :<|>
      "all" :> Get '[JSON] [ProgressInfo] :<|>
-     ReqBody '[JSON] ProgressMsg :> Post '[JSON] ())
+     ReqBody '[JSON] ProgressMsg :> Post '[JSON] OK)
 
 type EpisodeApi =
   "episodes" :>

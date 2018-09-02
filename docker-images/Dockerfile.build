@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt update && apt install -y \
     apt-transport-https \
@@ -7,7 +7,7 @@ RUN apt update && apt install -y \
     iptables \
     libpq-dev \
     lxc \
-    nodejs-legacy \
+    nodejs \
     npm \
     libtinfo-dev \
     python-pip \
@@ -15,12 +15,12 @@ RUN apt update && apt install -y \
 
 RUN curl -sSL https://get.docker.com/ | sh
 RUN curl -sSL https://get.haskellstack.org/ | sh
-RUN npm install -g elm@0.18
+RUN npm install -g elm@0.19
 RUN pip install awscli
 RUN adduser circleci
 
 USER circleci
 WORKDIR /home/circleci
 
-RUN stack setup --resolver lts-11.2
+RUN stack setup --resolver lts-12.6
 RUN echo 1 + 1 | stack ghci

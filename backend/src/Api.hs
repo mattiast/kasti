@@ -21,8 +21,8 @@ type ProgressApi =
 
 type EpisodeApi =
   "episodes" :>
-    ("new" :> Get '[JSON] [NewEpisode] :<|>
-     Capture "feedId" FeedId :> Get '[JSON] [(EpisodeId, Episode)])
+    ("new" :> Get '[JSON] (NoCache [NewEpisode]) :<|>
+     Capture "feedId" FeedId :> Get '[JSON] (NoCache [(EpisodeId, Episode)]))
 
 type SyncFeedApi = 
   "syncfeed" :>

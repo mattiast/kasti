@@ -46,7 +46,9 @@ feedStuff :: Context -> (Server FeedApi)
 feedStuff context fi = withConn (writeFeed fi) context >> return NoContent
 
 episodeStuff :: Context -> (Server EpisodeApi)
-episodeStuff context = (withConn (readNewEpisodes 15) context) :<|> (\feedId -> withConn (readEpisodes feedId) context)
+episodeStuff context =
+    (fmap noCache $ withConn (readNewEpisodes 15) context) :<|>
+    (\feedId -> fmap noCache $ withConn (readEpisodes feedId) context)
 
 syncfeedStuff :: Context -> (Server SyncFeedApi)
 syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn (syncOne feedId) context)

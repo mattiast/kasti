@@ -7,18 +7,14 @@ module Lib
     ) where
 import Control.Concurrent(throwTo)
 import Control.Concurrent.Async
-import Network.HTTP.Types(ok200)
 import qualified Data.Text.Lazy as L
 import Web.Scotty.Trans
 import System.Remote.Monitoring
-import GetFeed(syncFeeds)
-import Types
 import EpisodeDb
 import PodEff
 import Data.Pool
 import Control.Monad.Freer hiding (run)
 import Control.Monad.Reader
-import Control.Monad.Trans.Class(lift)
 import Control.Exception.Base(AsyncException(..))
 import Network.Wai.Handler.Warp (run)
 import System.FilePath((</>))

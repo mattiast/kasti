@@ -22,7 +22,7 @@ syncFeed sfid =
     in
         req
             |> RD.sendRequest
-            |> Cmd.map (SyncFeedReceive sfid)
+            |> Cmd.map (RD.map (\_ -> ()) >> SyncFeedReceive sfid)
 
 
 postProgress : PlayerState -> Cmd Msg
@@ -71,4 +71,4 @@ postNewFeed : NewFeed -> Cmd Msg
 postNewFeed newFeed =
     C.postFeed (H.encodeNewFeed newFeed)
         |> RD.sendRequest
-        |> Cmd.map NewFeedReceive
+        |> Cmd.map (RD.map (\_ -> ()) >> NewFeedReceive)

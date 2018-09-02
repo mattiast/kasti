@@ -1,10 +1,8 @@
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TupleSections #-}
 module ServantStuff where
 
-import Control.Concurrent
 import Control.Monad.IO.Class
-import Control.Monad.Trans.Except
-import Data.Map
 import Network.Wai
 import Servant hiding (Context)
 
@@ -14,6 +12,8 @@ import Context
 import Data.Pool
 import EpisodeDb
 import Database.PostgreSQL.Simple
+import Control.Monad.Reader
+import GetFeed(syncFeeds)
 
 
 app :: Context -> Middleware
@@ -37,31 +37,28 @@ progressStuff :: Context -> (Server ProgressApi)
 progressStuff context =
     (\episodeId -> withConn (readPosition episodeId) context) :<|> 
     (withConn readPositions context) :<|> 
-    (\prog -> withConn (writePosition prog) context >> return (OK "ok"))
+    (\prog -> withConn (writePosition prog) context >> return NoContent)
 
 feedsStuff :: Context -> (Server FeedsApi)
 feedsStuff = withConn readFeeds
 
 feedStuff :: Context -> (Server FeedApi)
-feedStuff context fi = withConn (writeFeed fi) context
+feedStuff context fi = withConn (writeFeed fi) context >> return NoContent
 
 episodeStuff :: Context -> (Server EpisodeApi)
 episodeStuff context = (withConn (readNewEpisodes 15) context) :<|> (\feedId -> withConn (readEpisodes feedId) context)
 
 syncfeedStuff :: Context -> (Server SyncFeedApi)
-syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn syncOne context)
+syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn (syncOne feedId) context)
 
-syncAll :: Connection -> IO ()
-syncAll conn = return ()
---        fs <- lift $ MyMonad getFeeds
---        liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
---        status ok200
---
-syncOne :: Connection -> IO ()
-syncOne conn = return ()
+syncAll :: Connection -> IO NoContent
+syncAll conn = do
+    fs <- readFeeds conn
+    runReaderT (syncFeeds fs) conn
+    return NoContent
 
---        fid <- param "feed_id"
---        mfi <- lift $ MyMonad (getFeedInfo fid)
---        let fs = fmap (fid,) mfi
---        liftAndCatchIO $ withConn $ runReaderT $ syncFeeds fs
---        status ok200
+syncOne :: FeedId -> Connection -> IO NoContent
+syncOne feedId conn = do
+    mf <- readFeed feedId conn
+    runReaderT (syncFeeds (fmap (feedId,) mf)) conn
+    return NoContent

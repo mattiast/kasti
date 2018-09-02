@@ -6,17 +6,15 @@ import Types
 import Api
 import Elm
 import Servant.Elm
+import Servant(NoContent)
 
 spec :: Spec
 spec =
   Spec
     ["Client", "Types"]
-    ([ "import Json.Decode exposing (..)"
-    , "import Json.Decode.Pipeline exposing (..)"
+    ([ defElmImports
     , "import Exts.Json.Decode exposing (..)"
     , "import Date exposing (Date)"
-    , "import Json.Encode"
-    , "import Http"
 
     , toElmTypeSource (Proxy :: Proxy Episode)
     , toElmDecoderSource (Proxy :: Proxy Episode)
@@ -42,9 +40,7 @@ spec =
     , toElmDecoderSource (Proxy :: Proxy NewEpisode)
     , toElmEncoderSource (Proxy :: Proxy NewEpisode)
 
-    , toElmTypeSource (Proxy :: Proxy OK)
-    , toElmDecoderSource (Proxy :: Proxy OK)
-    , toElmEncoderSource (Proxy :: Proxy OK)
+    , toElmTypeSource (Proxy :: Proxy NoContent)
 
     ] ++ generateElmForAPI (Proxy :: Proxy Api))
 

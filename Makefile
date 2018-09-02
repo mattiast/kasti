@@ -1,8 +1,7 @@
 all: image
 
 static/elm.js: frontend/*.elm frontend/Client/Types.elm
-	cd frontend ; elm-package install --yes
-	cd frontend ; elm-make --yes Browse.elm --output elm.js
+	cd frontend ; elm make Browse.elm --output elm.js
 	mkdir -p static
 	mv frontend/elm.js static
 

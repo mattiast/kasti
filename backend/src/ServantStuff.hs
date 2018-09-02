@@ -35,8 +35,8 @@ withConn thing context = liftIO $ withResource (cPool context) thing
 
 progressStuff :: Context -> (Server ProgressApi)
 progressStuff context =
-    (\episodeId -> withConn (readPosition episodeId) context) :<|> 
-    (withConn readPositions context) :<|> 
+    (\episodeId -> fmap noCache $ withConn (readPosition episodeId) context) :<|>
+    fmap noCache (withConn readPositions context) :<|>
     (\prog -> withConn (writePosition prog) context >> return NoContent)
 
 feedsStuff :: Context -> (Server FeedsApi)

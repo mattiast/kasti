@@ -8,10 +8,15 @@ module Api where
 import Servant.API
 import Types
 
+type NoCache a = Headers '[Header "Cache-Control" String] a
+
+noCache :: a -> NoCache a
+noCache = addHeader "no-cache, no-store, must-revalidate"
+
 type ProgressApi =
   "progress" :>
-    (Capture "episodeId" EpisodeId :> Get '[JSON] ProgressMsg :<|>
-     "all" :> Get '[JSON] [ProgressInfo] :<|>
+    (Capture "episodeId" EpisodeId :> Get '[JSON] (NoCache ProgressMsg) :<|>
+     "all" :> Get '[JSON] (NoCache [ProgressInfo]) :<|>
      ReqBody '[JSON] ProgressMsg :> Post '[JSON] NoContent)
 
 type EpisodeApi =

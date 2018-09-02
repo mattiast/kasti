@@ -28,9 +28,6 @@ newtype MyMonad a = MyMonad (Eff '[PodEff, IO] a)
 instance MonadIO MyMonad where
     liftIO = MyMonad . sendM
 
-noCache :: (Monad m) => ActionT e m ()
-noCache = setHeader "Cache-Control" "no-cache, no-store, must-revalidate"
-
 handleStuff :: Context -> MyMonad a -> IO a
 handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> runM $ runPod conn x)
 

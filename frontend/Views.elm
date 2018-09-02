@@ -15,7 +15,21 @@ import Bulma.Form exposing (..)
 import Bulma.Components exposing (..)
 import Bulma.Elements exposing (..)
 import Debug exposing (toString)
-import Iso8601
+import Time
+import DateFormat as DF
+
+
+showTime : Time.Posix -> String
+showTime time =
+    DF.format
+        [ DF.yearNumberLastTwo
+        , DF.text "/"
+        , DF.monthFixed
+        , DF.text "/"
+        , DF.dayOfMonthFixed
+        ]
+        Time.utc
+        time
 
 
 view : Model -> Browser.Document Msg
@@ -139,7 +153,7 @@ onePosition pi =
             [ p []
                 [ text (H.renderSeconds (pi.duration - pi.position))
                 , br [] []
-                , small [] [ text (Iso8601.fromTime pi.episode.date) ]
+                , small [] [ text (showTime pi.episode.date) ]
                 ]
             , easyProgress { size = Small, color = Info } [] (pi.position / pi.duration)
             ]
@@ -349,7 +363,7 @@ episodeRow : Episode -> Html Msg
 episodeRow ep =
     tableRow False
         [ onClick (EpisodePick ep) ]
-        [ tableCell [] [ text (Iso8601.fromTime ep.date) ]
+        [ tableCell [] [ text (showTime ep.date) ]
         , tableCell [] [ text ep.title ]
         ]
 
@@ -359,7 +373,7 @@ viewPlayer state =
     div []
         [ h4 [ class "title is-4" ] [ text state.episode.title ]
         , p []
-            [ text (Iso8601.fromTime state.episode.date) ]
+            [ text (showTime state.episode.date) ]
         , br [] []
         , audio
             [ src state.episode.url

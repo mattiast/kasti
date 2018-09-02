@@ -8,6 +8,8 @@ import RemoteData as RD
 import Types exposing (..)
 import Client.Types as C
 import Debug exposing (toString)
+import Time
+import DateFormat as DF
 
 
 makeEpisode : Int -> C.Episode -> Episode
@@ -99,21 +101,16 @@ modifyPositions f model =
 
 renderSeconds : Float -> String
 renderSeconds sec =
-    toString sec
-
-
-
---    let
---        z =
---            T.dateTime T.zero
---
---        x =
---            T.addSeconds (floor sec) z
---
---        pad2 =
---            F.padLeft 2 '0' F.int
---
---        fmt =
---            F.int <> F.s ":" <> pad2 <> F.s ":" <> pad2
---    in
---        F.print fmt (T.hour x) (T.minute x) (T.second x)
+    let
+        time =
+            Time.millisToPosix (round (sec * 1000))
+    in
+        DF.format
+            [ DF.hourMilitaryNumber
+            , DF.text ":"
+            , DF.minuteFixed
+            , DF.text ":"
+            , DF.secondFixed
+            ]
+            Time.utc
+            time

@@ -13,13 +13,15 @@
             "krisajenkins/remotedata": "5.0.0",
             "surprisetalk/elm-bulma": "6.1.2",
             "NoRedInk/elm-json-decode-pipeline": "1.0.0",
-            "justinmimbs/date": "1.1.0",
             "elm/url": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.2",
+            "ryannhg/date-format": "1.0.0",
+            "thaterikperson/elm-strftime": "2.0.2",
             "elm/time": "1.0.0",
             "elm/core": "1.0.0"
         },
         "indirect": {
+            "elm/regex": "1.0.0",
             "elm/parser": "1.1.0",
             "elm/virtual-dom": "1.0.0"
         }

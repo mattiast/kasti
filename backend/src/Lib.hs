@@ -7,29 +7,15 @@ module Lib
     ) where
 import Control.Concurrent(throwTo)
 import Control.Concurrent.Async
-import qualified Data.Text.Lazy as L
-import Web.Scotty.Trans
+import Web.Scotty
 import System.Remote.Monitoring
 import EpisodeDb
-import PodEff
-import Data.Pool
-import Control.Monad.Freer hiding (run)
-import Control.Monad.Reader
 import Control.Exception.Base(AsyncException(..))
 import Network.Wai.Handler.Warp (run)
 import System.FilePath((</>))
 import Context
 
 import qualified ServantStuff as SS
-
-newtype MyMonad a = MyMonad (Eff '[PodEff, IO] a)
-    deriving (Functor, Applicative, Monad)
-
-instance MonadIO MyMonad where
-    liftIO = MyMonad . sendM
-
-handleStuff :: Context -> MyMonad a -> IO a
-handleStuff context (MyMonad x) = withResource (cPool context) (\conn -> runM $ runPod conn x)
 
 data Handler = Handler
     { mainTid :: Async ()
@@ -42,7 +28,7 @@ start config = do
     pool <- initPool (dbString config)
     let context = Context config pool
     server <- forkServer "0.0.0.0" 3001
-    appStatic <- scottyAppT (handleStuff context) $ jutska context
+    appStatic <- scottyApp $ jutska context
     let app = SS.app context appStatic
     mainThread <- async $ run 3000 app
     return Handler
@@ -57,7 +43,7 @@ stop h = do
     closePool $ cPool $ ctx h
     throwTo (serverThreadId $ ekg h) (UserInterrupt :: AsyncException)
 
-jutska :: Context -> ScottyT L.Text MyMonad ()
+jutska :: Context -> ScottyM ()
 jutska context = do
     let servePage = do
             setHeader "Content-Type" "text/html; charset=utf-8"

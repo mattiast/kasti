@@ -1,22 +1,26 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, Rank2Types #-}
-module GetFeed where
+
+module GetFeed
+  ( syncFeeds
+  ) where
+
+import Control.Applicative
+import Control.Concurrent.Async.Lifted.Safe (forConcurrently_)
 import Control.Lens hiding ((.=))
+import Control.Monad.Reader
 import Data.Maybe
+import Data.Pool
 import qualified Data.Text as T
-import Data.Time.Clock(UTCTime)
+import Data.Time.Clock (UTCTime)
 import Data.Time.Format
-import Database.PostgreSQL.Simple(Connection)
+import Database.PostgreSQL.Simple (Connection)
+import EpisodeDb
 import Network.Wreq hiding ((:=))
 import Text.Feed.Import
 import Text.Feed.Query
 import Text.Feed.Types
-import Text.RSS.Syntax(DateString)
+import Text.RSS.Syntax (DateString)
 import Types
-import EpisodeDb
-import Data.Pool
-import Control.Concurrent.Async.Lifted.Safe(forConcurrently_)
-import Control.Monad.Reader
-import Control.Applicative
 
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do

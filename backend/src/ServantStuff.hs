@@ -1,20 +1,23 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TupleSections #-}
-module ServantStuff where
+
+module ServantStuff
+  ( app
+  , server
+  ) where
 
 import Control.Monad.IO.Class
 import Network.Wai
 import Servant hiding (Context)
 
 import Api
-import Types
 import Context
-import Data.Pool
-import EpisodeDb
-import Database.PostgreSQL.Simple
 import Control.Monad.Reader
-import GetFeed(syncFeeds)
-
+import Data.Pool
+import Database.PostgreSQL.Simple
+import EpisodeDb
+import GetFeed (syncFeeds)
+import Types
 
 app :: Context -> Middleware
 app context application = let

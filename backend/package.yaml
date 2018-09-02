@@ -29,7 +29,6 @@ library:
   - wreq
   - ekg
   - postgresql-simple
-  - freer-simple
   - elm-export
   - parallel
   - async

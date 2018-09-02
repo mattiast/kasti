@@ -10,25 +10,30 @@ import Types exposing (..)
 import Client
 import Client.Types as C
 import Views
-import Navigation as N
+import Browser.Navigation as N
+import Browser
 import Date
+import Url as U
+import Debug
 
 
-main : Program Never Model Msg
+main : Program D.Value Model Msg
 main =
-    N.program UrlChange
+    Browser.application
         { init = init
         , view = Views.view
         , update = update
         , subscriptions = \_ -> Sub.none
+        , onUrlChange = UrlChange
+        , onUrlRequest = ClickUrl
         }
 
 
-init : N.Location -> ( Model, Cmd Msg )
-init loc =
+init : D.Value -> U.Url -> N.Key -> ( Model, Cmd Msg )
+init value loc key =
     let
         firstView =
-            parseView loc.pathname
+            parseView loc.path
                 |> Maybe.withDefault Browse
     in
         ( { feeds = RD.NotAsked
@@ -40,6 +45,7 @@ init loc =
                 , navbarActive = False
                 }
           , view = firstView
+          , navKey = key
           , positions = RD.NotAsked
           , newEpisodes = RD.NotAsked
           }
@@ -164,14 +170,23 @@ update msg model =
         UrlChange loc ->
             ( { model
                 | view =
-                    parseView (loc.pathname)
+                    parseView loc.path
                         |> Maybe.withDefault model.view
               }
             , Cmd.none
             )
 
-        ClickUrl url ->
-            ( model, N.newUrl url )
+        ClickUrl urlRequest ->
+            case Debug.log "clickurl" urlRequest of
+                Browser.Internal url ->
+                    ( model
+                    , N.pushUrl model.navKey (U.toString url)
+                    )
+
+                Browser.External url ->
+                    ( model
+                    , N.load url
+                    )
 
         NewEpisodesReceive stuff ->
             ( { model | newEpisodes = stuff }, Cmd.none )
@@ -193,7 +208,7 @@ update msg model =
                             List.sortBy (\pi -> pi.ftitle)
 
                         ByDate ->
-                            List.sortBy (\pi -> Date.toTime pi.episode.date)
+                            List.sortBy (\pi -> pi.ftitle)
 
                         ByTime ->
                             List.sortBy (\pi -> pi.duration - pi.position)

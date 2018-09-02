@@ -6,24 +6,26 @@ import Html.Attributes exposing (id, style, href, class, src, controls, type_, n
 import Types exposing (..)
 import RemoteData as RD
 import Helpers as H
-import Date.Extra as Date
-import Date
-import Navigation as N
+import Browser.Navigation as N
+import Browser
 import Bulma.Columns exposing (..)
 import Bulma.Modifiers exposing (..)
 import Bulma.Layout exposing (..)
 import Bulma.Form exposing (..)
 import Bulma.Components exposing (..)
 import Bulma.Elements exposing (..)
+import Debug exposing (toString)
+import Iso8601
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div []
+    Browser.Document
+        "Kasti"
         [ viewMenu model.menuState
         , viewChooser model
         , RD.map viewPlayer model.playerState
-            |> RD.withDefault (audio [ id "audio-player", style [ ( "display", "none" ) ] ] [])
+            |> RD.withDefault (audio [ id "audio-player", style "display" "none" ] [])
             |> Html.map ProgMsg
         , case model.view of
             Browse ->
@@ -42,10 +44,10 @@ view model =
 viewChooser : Model -> Html Msg
 viewChooser model =
     let
-        item view path txt =
-            tab (model.view == view)
+        item viu path txt =
+            tab (model.view == viu)
                 []
-                [ onClick (ClickUrl path) ]
+                [ href path ]
                 [ text txt ]
     in
         tabs { style = Boxed, alignment = Left, size = Medium }
@@ -80,7 +82,7 @@ viewNewEpisodes newEpisodes =
 
 sortEpisodes : List NewEpisode -> List NewEpisode
 sortEpisodes es =
-    List.sortBy (\e -> -(Date.toTime e.episode.date)) es
+    es
 
 
 positionAggregateInfo : List ProgressInfo -> Html Msg
@@ -137,7 +139,7 @@ onePosition pi =
             [ p []
                 [ text (H.renderSeconds (pi.duration - pi.position))
                 , br [] []
-                , small [] [ text (Date.toFormattedString "y/M/d" pi.episode.date) ]
+                , small [] [ text (Iso8601.fromTime pi.episode.date) ]
                 ]
             , easyProgress { size = Small, color = Info } [] (pi.position / pi.duration)
             ]
@@ -295,7 +297,7 @@ feedList feeds =
                 feedItem f =
                     tableRow False
                         []
-                        [ tableCell [ onClick (AskEpList f.id) ] [ a [] [ text f.name ] ]
+                        [ tableCell [ onClick (AskEpList f.id) ] [ text f.name ]
                         , tableCell [] [ syncButton f ]
                         ]
             in
@@ -338,7 +340,6 @@ episodeList eps =
             ]
         , tableBody [] <|
             (eps
-                |> List.sortWith (\x y -> Date.compare y.date x.date)
                 |> List.map episodeRow
             )
         ]
@@ -348,7 +349,7 @@ episodeRow : Episode -> Html Msg
 episodeRow ep =
     tableRow False
         [ onClick (EpisodePick ep) ]
-        [ tableCell [] [ text (Date.toFormattedString "y/M/d" ep.date) ]
+        [ tableCell [] [ text (Iso8601.fromTime ep.date) ]
         , tableCell [] [ text ep.title ]
         ]
 
@@ -358,12 +359,12 @@ viewPlayer state =
     div []
         [ h4 [ class "title is-4" ] [ text state.episode.title ]
         , p []
-            [ text (Date.toFormattedString "y/M/d" state.episode.date) ]
+            [ text (Iso8601.fromTime state.episode.date) ]
         , br [] []
         , audio
             [ src state.episode.url
             , controls True
-            , style [ ( "width", "1000px" ) ]
+            , style "width" "1000px"
             , id "audio-player"
             , H.onTimeUpdate
             ]

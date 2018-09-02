@@ -1,8 +1,10 @@
 module Types exposing (..)
 
 import RemoteData as RD
-import Date exposing (Date)
-import Navigation as N
+import Time exposing (Posix)
+import Browser.Navigation as N
+import Browser
+import Url as U
 
 
 type alias FeedId =
@@ -32,7 +34,7 @@ type alias Episode =
     { id : EpisodeId
     , title : String
     , url : String
-    , date : Date
+    , date : Posix
     }
 
 
@@ -54,6 +56,7 @@ type alias Model =
     , playerState : RD.WebData PlayerState
     , menuState : MenuState
     , view : WhichView
+    , navKey : N.Key
     , positions : RD.WebData (List ProgressInfo)
     , newEpisodes : RD.WebData (List NewEpisode)
     }
@@ -113,8 +116,8 @@ type Msg
     | NewFeedReceive (RD.WebData ())
     | PositionsReceive (RD.WebData (List ProgressInfo))
     | PositionsAsk
-    | UrlChange N.Location
-    | ClickUrl String
+    | UrlChange U.Url
+    | ClickUrl Browser.UrlRequest
     | NewEpisodesReceive (RD.WebData (List NewEpisode))
     | NavbarToggle
     | SortBy SortMsg

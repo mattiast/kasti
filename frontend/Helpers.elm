@@ -1,16 +1,13 @@
 module Helpers exposing (..)
 
-import Date exposing (Date)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as J
 import Json.Encode as JE
 import RemoteData as RD
 import Types exposing (..)
-import Time.DateTime as T
-import Formatting as F
-import Formatting exposing ((<>))
 import Client.Types as C
+import Debug exposing (toString)
 
 
 makeEpisode : Int -> C.Episode -> Episode
@@ -102,17 +99,21 @@ modifyPositions f model =
 
 renderSeconds : Float -> String
 renderSeconds sec =
-    let
-        z =
-            T.dateTime T.zero
+    toString sec
 
-        x =
-            T.addSeconds (floor sec) z
 
-        pad2 =
-            F.padLeft 2 '0' F.int
 
-        fmt =
-            F.int <> F.s ":" <> pad2 <> F.s ":" <> pad2
-    in
-        F.print fmt (T.hour x) (T.minute x) (T.second x)
+--    let
+--        z =
+--            T.dateTime T.zero
+--
+--        x =
+--            T.addSeconds (floor sec) z
+--
+--        pad2 =
+--            F.padLeft 2 '0' F.int
+--
+--        fmt =
+--            F.int <> F.s ":" <> pad2 <> F.s ":" <> pad2
+--    in
+--        F.print fmt (T.hour x) (T.minute x) (T.second x)

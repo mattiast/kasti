@@ -9,7 +9,7 @@ jobs:
       - restore_cache:
           key: stack_dir3
       - restore_cache:
-          key: elm-stuff3
+          key: elm-stuff4
       - run:
           name: Build app image
           command: make
@@ -20,7 +20,8 @@ jobs:
       - save_cache:
           paths:
             - frontend/elm-stuff
-          key: elm-stuff3-{{ epoch }}
+            - /home/circleci/.elm
+          key: elm-stuff4-{{ epoch }}
       - run:
           name: Login to AWS ECR
           command: eval $(aws ecr get-login --no-include-email)

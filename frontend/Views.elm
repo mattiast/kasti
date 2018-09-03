@@ -89,14 +89,19 @@ viewNewEpisodes newEpisodes =
                                 ]
                             )
                     )
-                    newEpisodes
+                    (sortEpisodes newEpisodes)
             ]
         ]
 
 
+recency : Time.Posix -> Int
+recency t =
+    0 - Time.toMillis Time.utc t
+
+
 sortEpisodes : List NewEpisode -> List NewEpisode
 sortEpisodes es =
-    es
+    List.sortBy (\e -> recency e.episode.date) es
 
 
 positionAggregateInfo : List ProgressInfo -> Html Msg
@@ -354,6 +359,7 @@ episodeList eps =
             ]
         , tableBody [] <|
             (eps
+                |> List.sortBy (\ep -> recency ep.date)
                 |> List.map episodeRow
             )
         ]

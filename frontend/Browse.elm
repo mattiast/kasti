@@ -14,6 +14,7 @@ import Browser.Navigation as N
 import Browser
 import Url as U
 import Debug
+import Time
 
 
 main : Program D.Value Model Msg
@@ -207,7 +208,7 @@ update msg model =
                             List.sortBy (\pi -> pi.ftitle)
 
                         ByDate ->
-                            List.sortBy (\pi -> pi.ftitle)
+                            List.sortBy (\pi -> 0 - Time.toMillis Time.utc pi.episode.date)
 
                         ByTime ->
                             List.sortBy (\pi -> pi.duration - pi.position)

@@ -13,6 +13,14 @@ jobs:
       - run:
           name: Build app image
           command: make
+      - run:
+          name: Login to AWS ECR
+          command: eval $(aws ecr get-login --no-include-email)
+      - run:
+          name: Push docker image to ECR
+          command: |
+              docker tag kasti-backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
+              docker                     push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
       - save_cache:
           paths:
             - /home/circleci/.stack
@@ -22,14 +30,6 @@ jobs:
             - frontend/elm-stuff
             - /home/circleci/.elm
           key: elm-stuff4-{{ epoch }}
-      - run:
-          name: Login to AWS ECR
-          command: eval $(aws ecr get-login --no-include-email)
-      - run:
-          name: Push docker image to ECR
-          command: |
-              docker tag kasti-backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
-              docker                     push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
 #     - run:
 #         name: Build scripts image
 #         command: make script-image

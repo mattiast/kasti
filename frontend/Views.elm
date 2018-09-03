@@ -211,7 +211,7 @@ viewMenu state =
         hamburgerButton =
             navbarBurger
                 state.navbarActive
-                [ onClick NavbarToggle ]
+                [ onClick NavbarToggle, href "#" ]
                 [ span [] []
                 , span [] []
                 , span [] []

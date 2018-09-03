@@ -19,19 +19,6 @@ import Time
 import DateFormat as DF
 
 
-showTime : Time.Posix -> String
-showTime time =
-    DF.format
-        [ DF.yearNumberLastTwo
-        , DF.text "/"
-        , DF.monthFixed
-        , DF.text "/"
-        , DF.dayOfMonthFixed
-        ]
-        Time.utc
-        time
-
-
 view : Model -> Browser.Document Msg
 view model =
     Browser.Document
@@ -96,7 +83,7 @@ viewNewEpisodes newEpisodes =
 
 recency : Time.Posix -> Int
 recency t =
-    0 - Time.toMillis Time.utc t
+    0 - Time.posixToMillis t
 
 
 sortEpisodes : List NewEpisode -> List NewEpisode
@@ -163,6 +150,19 @@ onePosition pi =
             , easyProgress { size = Small, color = Info } [] (pi.position / pi.duration)
             ]
         ]
+
+
+showTime : Time.Posix -> String
+showTime time =
+    DF.format
+        [ DF.yearNumberLastTwo
+        , DF.text "/"
+        , DF.monthFixed
+        , DF.text "/"
+        , DF.dayOfMonthFixed
+        ]
+        Time.utc
+        time
 
 
 devices : Width -> Devices (Maybe Width)

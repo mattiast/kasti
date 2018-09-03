@@ -208,7 +208,7 @@ update msg model =
                             List.sortBy (\pi -> pi.ftitle)
 
                         ByDate ->
-                            List.sortBy (\pi -> 0 - Time.toMillis Time.utc pi.episode.date)
+                            List.sortBy (\pi -> 0 - Time.posixToMillis pi.episode.date)
 
                         ByTime ->
                             List.sortBy (\pi -> pi.duration - pi.position)

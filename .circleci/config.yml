@@ -41,6 +41,9 @@ jobs:
           name: Build scripts image
           command: make script-image
       - run:
+          name: Login to AWS ECR
+          command: eval $(aws ecr get-login --no-include-email)
+      - run:
           name: Push script image to ECR
           command: |
               docker tag kasti-scripts:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM

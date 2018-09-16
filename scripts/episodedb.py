@@ -1,15 +1,22 @@
 import logging
+from typing import NamedTuple, List
+import datetime as dt
+from psycopg2.extensions import connection
 
 
 log = logging.getLogger(__name__)
 
 
-def write_db(conn, data, showname):
+class EpisodeData(NamedTuple):
+    title: str
+    description: str
+    date: dt.datetime
+    audio_url: str
+
+
+def write_db(conn: connection, data: List[EpisodeData], showname: str):
     c = conn.cursor()
-    tuples = [
-        (s["audio_url"], s["title"], s["description"], showname, s["date"])
-        for s in data
-    ]
+    tuples = [(s.audio_url, s.title, s.description, showname, s.date) for s in data]
     log.info(
         "Got %d episodes, let's see how many are already in the database", len(tuples)
     )

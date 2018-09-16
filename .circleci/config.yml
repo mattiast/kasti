@@ -30,6 +30,13 @@ jobs:
             - frontend/elm-stuff
             - /home/circleci/.elm
           key: elm-stuff4-{{ epoch }}
+
+  build-scripts:
+    docker:
+      - image: mattiast/kasti-build:0.0.7
+    steps:
+      - checkout
+      - setup_remote_docker
       - run:
           name: Build scripts image
           command: make script-image
@@ -38,9 +45,19 @@ jobs:
           command: |
               docker tag kasti-scripts:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
               docker                     push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
+workflows:
+  version: 2
+  build-stuff:
+    jobs:
+      - build
+      - request-script:
+        type: approval
+      - build-scripts:
+        requires:
+          - request-script
 
-          # Required environment variables:
-          # - AWS_ACCOUNT_ID
-          # - AWS_ACCESS_KEY_ID
-          # - AWS_SECRET_ACCESS_KEY
-          # - AWS_DEFAULT_REGION
+# Required environment variables:
+# - AWS_ACCOUNT_ID
+# - AWS_ACCESS_KEY_ID
+# - AWS_SECRET_ACCESS_KEY
+# - AWS_DEFAULT_REGION

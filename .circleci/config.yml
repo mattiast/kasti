@@ -51,10 +51,10 @@ workflows:
     jobs:
       - build
       - request-script:
-        type: approval
+          type: approval
       - build-scripts:
-        requires:
-          - request-script
+          requires:
+            - request-script
 
 # Required environment variables:
 # - AWS_ACCOUNT_ID

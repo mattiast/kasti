@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 def get_episodes(query, pages=1):
     dryscrape.start_xvfb()
     log.info("Opening the website")
-    sess = dryscrape.Session(base_url='http://www.radiorock.fi')
+    sess = dryscrape.Session(base_url='https://www.radiorock.fi')
     sess.set_attribute('auto_load_images', False)
     sess.visit('/#!/ohjelma/%s' % query)
     log.info("Let's increase the window size and wait a bit...")

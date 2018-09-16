@@ -13,16 +13,16 @@ log = logging.getLogger(__name__)
 def get_episodes(query, pages=1):
     dryscrape.start_xvfb()
     log.info("Opening the website")
-    sess = dryscrape.Session(base_url='https://www.radiorock.fi')
-    sess.set_attribute('auto_load_images', False)
-    sess.visit('/#!/ohjelma/%s' % query)
+    sess = dryscrape.Session(base_url="https://www.radiorock.fi")
+    sess.set_attribute("auto_load_images", False)
+    sess.visit("/#!/ohjelma/%s" % query)
     log.info("Let's increase the window size and wait a bit...")
     sess.driver.set_viewport_size(2000, 2000)
     time.sleep(3)
     log.info("OK we'll scrape %d pages", pages)
     for i in range(pages - 1):
         log.info("Page %d...", i)
-        sess.driver.exec_script('window.scrollBy(0, 2000)')
+        sess.driver.exec_script("window.scrollBy(0, 2000)")
         time.sleep(1)
 
     arts = sess.xpath(
@@ -34,24 +34,24 @@ def get_episodes(query, pages=1):
         [c] = a.xpath("div[@class='item-content']")
         url = c.xpath("div/a[@class='podcast-link']")
         if url:
-            url = url[0]['href']
+            url = url[0]["href"]
         else:
             continue
-        tt = c.xpath("div/time")[0]['datetime']
+        tt = c.xpath("div/time")[0]["datetime"]
         date = datetime.datetime.fromtimestamp(int(tt) / 1000.0)
         title = c.xpath("h2/a")[0].text()
         description = c.xpath("div/p")
         if description:
             description = description[0].text()
         else:
-            description = ''
+            description = ""
         log.info("Found an episode on %s", date)
 
         yield {
-            'date': date,
-            'title': title,
-            'description': description,
-            'audio_url': url
+            "date": date,
+            "title": title,
+            "description": description,
+            "audio_url": url,
         }
 
 

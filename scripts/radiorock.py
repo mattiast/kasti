@@ -1,9 +1,11 @@
-import dryscrape
-import time
 import datetime
-from episodedb import write_db
-import psycopg2
 import logging
+import time
+
+import dryscrape
+import psycopg2
+from episodedb import write_db
+
 
 log = logging.getLogger(__name__)
 

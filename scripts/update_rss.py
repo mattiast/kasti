@@ -1,16 +1,16 @@
-from datetime import datetime
-import PyRSS2Gen
-from sys import argv
-import psycopg2
-import psycopg2.extras
-
-import boto3
 import io
 import json
 import logging
 import sys
+from datetime import datetime
+from sys import argv
 
+import boto3
+import psycopg2
+import psycopg2.extras
+import PyRSS2Gen
 import radiorock
+
 
 log = logging.getLogger(__name__)
 

@@ -5,3 +5,9 @@ boto3
 psycopg2-binary
 xvfbwrapper
 dateparser
+
+flake8
+pylint
+mypy
+black
+imps

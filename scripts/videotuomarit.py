@@ -1,13 +1,15 @@
-import dryscrape
-import time
-from datetime import datetime
-import PyRSS2Gen
+import argparse
+import json
 import logging
 import sys
+import time
+from datetime import datetime
+
 import dateparser
-import argparse
+import dryscrape
+import PyRSS2Gen
 from update_rss import push_to_s3
-import json
+
 
 log = logging.getLogger(__name__)
 

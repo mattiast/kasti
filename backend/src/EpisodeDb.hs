@@ -26,12 +26,14 @@ closePool pool = do
     putStrLn "DB connection pool closed"
 
 readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
-readFeeds conn = query_ conn "select id, name, url from feeds"
-    & fmap (fmap $ \(Only fid :. fi) -> (fid, fi))
+readFeeds conn = do
+    rows <- query_ conn "select id, name, url from feeds"
+    return [ (fid, fi) | Only fid :. fi <- rows ]
 
 readEpisodes :: FeedId -> Connection -> IO [(EpisodeId, Episode)]
-readEpisodes fid conn = query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
-    & fmap (fmap $ \(Only eid :. ep) -> (eid, ep))
+readEpisodes fid conn = do
+    rows <- query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
+    return [ (eid, ep) | Only eid :. ep <- rows ]
 
 readFeed :: FeedId -> Connection -> IO (Maybe FeedInfo)
 readFeed fid conn = do

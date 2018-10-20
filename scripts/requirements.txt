@@ -5,6 +5,7 @@ boto3
 psycopg2-binary
 xvfbwrapper
 dateparser
+requests
 
 flake8
 pylint

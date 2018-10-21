@@ -8,6 +8,7 @@ from sys import argv
 import boto3
 import psycopg2
 import psycopg2.extras
+from psycopg2.extensions import connection
 import PyRSS2Gen
 import radiorock
 
@@ -35,7 +36,7 @@ def dict_factory(cursor, row):
     return d
 
 
-def get_epi(conn, name):
+def get_epi(conn: connection, name: str):
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     c.execute(
         """select date, title, description, audio_url
@@ -67,7 +68,7 @@ def create_rss(info, stuff):
     return rss
 
 
-def push_to_s3(conf, key, data):
+def push_to_s3(conf, key: str, data: str):
     session = boto3.session.Session()
     client = session.client(
         "s3",

@@ -1,6 +1,6 @@
 import datetime as dt
 import logging
-from typing import Iterator
+from typing import Iterator, Optional
 from urllib.parse import quote
 
 import lxml.etree
@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 def fetch_episodes(
-    tag_name, tag_cat="ohjelma", page=0
+    tag_name: str, tag_cat: str = "ohjelma", page: int = 0
 ) -> Iterator[EpisodeData]:
     url = "https://www.radiorock.fi/api/content?tagCategory={}&tagName={}&page={}".format(
         tag_cat, quote(tag_name), page
@@ -33,18 +33,23 @@ def fetch_episodes(
         media_id = post["media"]["id"]
 
         r = requests.get(
-            "https://gatling.nelonenmedia.fi/media-xml-cache?v=2&id={}".format(media_id)
+            "https://gatling.nelonenmedia.fi/media-xml-cache?v=2&id={}".format(
+                media_id
+            )
         )
         e = lxml.etree.fromstring(r.content)
         audios = e.xpath("//AudioMediaFile")
         if audios:
             audio_url = audios[0].text
             yield EpisodeData(
-                title=title, description=description, date=ts, audio_url=audio_url
+                title=title,
+                description=description,
+                date=ts,
+                audio_url=audio_url,
             )
 
 
-def fetch_and_write(showname, dbpath, query=None):
+def fetch_and_write(showname: str, dbpath: str, query: Optional[str] = None):
     if query is None:
         query = showname
 

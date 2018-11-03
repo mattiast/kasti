@@ -1,9 +1,7 @@
 lxml
-dryscrape
 PyRSS2Gen
 boto3
 psycopg2-binary
-xvfbwrapper
 dateparser
 requests
 
@@ -12,3 +10,4 @@ pylint
 mypy
 black
 imps
+pudb

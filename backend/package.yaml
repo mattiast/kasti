@@ -20,7 +20,11 @@ dependencies:
 
 library:
   source-dirs: src
-  ghc-options: -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  ghc-options:
+  - -Wall
+  - -Wincomplete-uni-patterns
+  - -Wincomplete-record-updates
+  - -frefinement-level-hole-fits=1
   dependencies:
   - scotty
   - warp

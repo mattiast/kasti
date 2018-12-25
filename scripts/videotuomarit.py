@@ -89,8 +89,7 @@ if __name__ == "__main__":
     with open(args.conffile) as f:
         conf = json.load(f)
 
-    stuff = get_episodes2()
-    stuff = list(stuff)
+    stuff = list(get_episodes2())
 
     log.info("Generating RSS")
     rss = generate_rss(stuff)

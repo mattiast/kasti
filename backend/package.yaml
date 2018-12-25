@@ -27,7 +27,6 @@ library:
   - http-types
   - feed
   - wreq
-  - ekg
   - postgresql-simple
   - elm-export
   - parallel

@@ -43,7 +43,7 @@ getProgress : Episode -> Cmd (RD.WebData PlayerState)
 getProgress ep =
     C.getProgressByEpisodeId ep.id
         |> RD.sendRequest
-        |> Cmd.map (RD.map (\prog -> PlayerState ep prog.prPos prog.prDuration))
+        |> Cmd.map (RD.map (\prog -> PlayerState ep prog.prPos prog.prDuration False))
 
 
 getPositions : Cmd (RD.WebData (List ProgressInfo))

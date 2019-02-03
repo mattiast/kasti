@@ -402,7 +402,11 @@ viewPlayer state =
                 "Get position"
             , easyButton { buttonModifiers | color = Primary }
                 []
-                (SetPlaybackRate 2.0)
-                "2x speed"
+                (SetDoubleSpeed (not state.doubleSpeed))
+                (if state.doubleSpeed then
+                    "2x speed"
+                 else
+                    "1x speed"
+                )
             ]
         ]

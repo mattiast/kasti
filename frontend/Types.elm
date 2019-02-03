@@ -47,6 +47,7 @@ type alias PlayerState =
     { episode : Episode
     , time : Float
     , duration : Float
+    , doubleSpeed : Bool
     }
 
 
@@ -87,7 +88,7 @@ type MsgProg
     = TimeUpdate Float Float
     | PostTime PlayerState
     | AskTime Episode
-    | SetPlaybackRate Float
+    | SetDoubleSpeed Bool
 
 
 type WhichView

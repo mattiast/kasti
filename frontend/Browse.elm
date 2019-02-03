@@ -105,8 +105,18 @@ update msg model =
             , Cmd.none
             )
 
-        ProgMsg (SetPlaybackRate speed) ->
-            ( model, setPlaybackRate speed )
+        ProgMsg (SetDoubleSpeed isDouble) ->
+            ( { model
+                | playerState =
+                    RD.map (\state -> { state | doubleSpeed = isDouble }) model.playerState
+              }
+            , setPlaybackRate
+                (if isDouble then
+                    2.0
+                 else
+                    1.0
+                )
+            )
 
         Nop ->
             ( Debug.log "nop" model, Cmd.none )

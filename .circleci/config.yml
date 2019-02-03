@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mattiast/kasti-build:0.0.7
+      - image: mattiast/kasti-build:0.0.8
     steps:
       - checkout
       - setup_remote_docker
@@ -33,7 +33,7 @@ jobs:
 
   build-scripts:
     docker:
-      - image: mattiast/kasti-build:0.0.7
+      - image: mattiast/kasti-build:0.0.8
     steps:
       - checkout
       - setup_remote_docker

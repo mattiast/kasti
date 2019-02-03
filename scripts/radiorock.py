@@ -33,19 +33,14 @@ def fetch_episodes(
         media_id = post["media"]["id"]
 
         r = requests.get(
-            "https://gatling.nelonenmedia.fi/media-xml-cache?v=2&id={}".format(
-                media_id
-            )
+            "https://gatling.nelonenmedia.fi/media-xml-cache?v=2&id={}".format(media_id)
         )
         e = lxml.etree.fromstring(r.content)
         audios = e.xpath("//AudioMediaFile")
         if audios:
             audio_url = audios[0].text
             yield EpisodeData(
-                title=title,
-                description=description,
-                date=ts,
-                audio_url=audio_url,
+                title=title, description=description, date=ts, audio_url=audio_url
             )
 
 

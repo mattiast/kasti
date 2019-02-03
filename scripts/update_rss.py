@@ -8,9 +8,9 @@ from sys import argv
 import boto3
 import psycopg2
 import psycopg2.extras
-from psycopg2.extensions import connection
 import PyRSS2Gen
 import radiorock
+from psycopg2.extensions import connection
 
 
 log = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
-import logging
-from typing import NamedTuple, List
 import datetime as dt
+import logging
+from typing import List, NamedTuple
+
 from psycopg2.extensions import connection
 
 

@@ -22,6 +22,9 @@ image: static/elm.js static/browse.html stack-build
 script-image: scripts/*
 	cd scripts ; docker build -t kasti-scripts .
 
+build-image: docker-images/Dockerfile.build
+	cd docker-images ; docker build -t mattiast/kasti-build -f Dockerfile.build .
+
 run_local: create_container
 	docker restart kasti-container
 

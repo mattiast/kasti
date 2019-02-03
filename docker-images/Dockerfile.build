@@ -22,5 +22,5 @@ RUN adduser circleci
 USER circleci
 WORKDIR /home/circleci
 
-RUN stack setup --resolver lts-12.6
+RUN stack setup --resolver lts-13.6
 RUN echo 1 + 1 | stack ghci

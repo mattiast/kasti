@@ -8,3 +8,4 @@ scripts/venv
 frontend/index.html
 frontend/Client
 kasti.cabal
+dist

@@ -16,8 +16,9 @@ static/browse.html: frontend/browse.html
 stack-build: FORCE
 	cd backend ; stack build
 
-image: static/elm.js static/browse.html stack-build
-	cd backend ; stack image container
+image: #static/elm.js static/browse.html stack-build
+	cd backend ; nix-build --attr docker-container-small
+	docker load -i backend/result
 
 script-image: scripts/*
 	cd scripts ; docker build -t kasti-scripts .

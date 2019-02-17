@@ -8,11 +8,8 @@ let
 
       haskellPackages = pkgs.haskellPackages.override {
         overrides = haskellPackagesNew: haskellPackgesOld: rec {
-          kasti-minimal =
-              ( pkgs.haskell.lib.justStaticExecutables
-                  ( haskellPackagesNew.callPackage ./kasti.nix { }
-                  )
-              );
+          kasti-minimal = pkgs.haskell.lib.justStaticExecutables kasti;
+          kasti = haskellPackagesNew.callPackage ./kasti.nix { };
         };
       };
     };
@@ -21,6 +18,7 @@ let
   pkgs = import <nixpkgs> { inherit config; };
 
 in
-  { kasti = pkgs.haskellPackages.kasti-minimal;
+  { kasti = pkgs.haskellPackages.kasti;
     docker-container-small = pkgs.docker-container-small;
+    env = pkgs.haskellPackages.kasti.env;
   }

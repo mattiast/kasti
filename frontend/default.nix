@@ -12,12 +12,12 @@ in stdenv.mkDerivation {
 
   buildInputs = [ elmPackages.elm ];
 
-  buildPhase = pkgs.elmPackages.fetchElmDeps {
+  buildPhase = elmPackages.fetchElmDeps {
     elmPackages = import srcs;
     inherit versionsDat;
   };
 
   installPhase = ''
-    elm make src/Browse.elm --output $out
+    ${elmPackages.elm}/bin/elm make src/Browse.elm --output $out
   '';
 }

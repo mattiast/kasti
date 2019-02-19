@@ -1,14 +1,13 @@
-{ nixpkgs ? <nixpkgs>
-, config ? {}
+{ nixpkgs ? import <nixpkgs> {}
 }:
 
-with (import nixpkgs config);
+with nixpkgs;
 
 let
   srcs = ./elm-srcs.nix;
   versionsDat = ./versions.dat;
 in stdenv.mkDerivation {
-  name = "kasti-frontend";
+  name = "kasti-frontend.js";
   src = ./.;
 
   buildInputs = [ elmPackages.elm ];
@@ -19,7 +18,6 @@ in stdenv.mkDerivation {
   };
 
   installPhase = ''
-    elm make src/Browse.elm --output $out/elm.js
+    elm make src/Browse.elm --output $out
   '';
 }
-

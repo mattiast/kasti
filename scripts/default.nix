@@ -19,5 +19,6 @@ in
       python
       myVim
       git
+      elmPackages.elm
     ];
   }

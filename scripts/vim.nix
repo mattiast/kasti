@@ -8,12 +8,37 @@ let
         vim-fugitive
         vim-nix
         jedi-vim
+        vim-unimpaired
+        gitgutter
+        colorsamplerpack
+        fzf-vim
+        ctrlp
+        LanguageClient-neovim
+        airline
       ];
     };
     vimrcConfig.customRC = ''
-      let g:deoplete#enable_at_startup = 1
-      let g:deoplete#enable_ignore_case = 1
+      set t_Co=256
+      colorscheme inkpot
+      let mapleader = ","
       nnoremap <silent> <leader>w :w<cr>
+
+      set wildmenu
+      set tabstop=4 shiftwidth=4 softtabstop=4 expandtab
+      set wildignorecase
+      set ignorecase
+      set hidden
+      set mouse=a
+      set relativenumber
+      set diffopt=filler,vertical
+      set updatetime=100
+
+      let g:LanguageClient_serverCommands = {
+        \ 'python': ['pyls']
+        \ }
+      highlight ALEWarning ctermfg=Red ctermbg=Yellow
+      highlight ALEError ctermfg=White ctermbg=Red
+
     '';
   };
 in myVim

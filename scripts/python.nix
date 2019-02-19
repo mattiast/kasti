@@ -8,5 +8,9 @@ pkgs.python37.withPackages (
     requests
     jedi
     mypy
+    python-language-server
+    pyls-isort
+    pyls-black
+    pyls-mypy
   ]
   )

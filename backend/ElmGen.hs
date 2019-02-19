@@ -13,8 +13,12 @@ spec =
   Spec
     ["Client", "Types"]
     ([ defElmImports
-    , "import Exts.Json.Decode exposing (..)"
-    , "import Date exposing (Date)"
+    , "import Time exposing (Posix)"
+     , "import Iso8601"
+     , "import Debug exposing (toString)"
+     , "decodeDate = Iso8601.decoder"
+     , "type alias Date = Posix"
+     , "decode = succeed"
 
     , toElmTypeSource (Proxy :: Proxy Episode)
     , toElmDecoderSource (Proxy :: Proxy Episode)

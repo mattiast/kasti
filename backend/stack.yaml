@@ -4,7 +4,11 @@ packages:
 - '.'
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+- github: mattjbray/servant-elm
+  commit: f665ddd5cefac26b3e56981f3516772d3987a6f3
+- github: mattiast/elm-export
+  commit: cca124bda9f1d2226e3134e41f05ebb8c3bb7eaa
 
 
 # Override default flag values for local packages and extra-deps

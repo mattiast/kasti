@@ -5,29 +5,33 @@ import Json.Decode.Pipeline exposing (..)
 import Json.Encode
 import Http
 import String
+import Url
+
+
 import Time exposing (Posix)
+
 import Iso8601
+
 import Debug exposing (toString)
 
+decodeDate = Iso8601.decoder
 
-decodeDate =
-    Iso8601.decoder
+type alias Date = Posix
 
+decode = succeed
 
 type alias Episode =
     { epUrl : EpisodeUrl
     , epTitle : String
-    , epDate : Posix
+    , epDate : Date
     }
-
 
 decodeEpisode : Decoder Episode
 decodeEpisode =
-    succeed Episode
+    decode Episode
         |> required "epUrl" decodeEpisodeUrl
         |> required "epTitle" string
         |> required "epDate" decodeDate
-
 
 encodeEpisode : Episode -> Json.Encode.Value
 encodeEpisode x =
@@ -37,17 +41,14 @@ encodeEpisode x =
         , ( "epDate", (Json.Encode.string << toString) x.epDate )
         ]
 
-
 type alias EpisodeUrl =
     { fromEpUrl : String
     }
 
-
 decodeEpisodeUrl : Decoder EpisodeUrl
 decodeEpisodeUrl =
-    succeed EpisodeUrl
+    decode EpisodeUrl
         |> required "fromEpUrl" string
-
 
 encodeEpisodeUrl : EpisodeUrl -> Json.Encode.Value
 encodeEpisodeUrl x =
@@ -55,21 +56,18 @@ encodeEpisodeUrl x =
         [ ( "fromEpUrl", Json.Encode.string x.fromEpUrl )
         ]
 
-
 type alias ProgressMsg =
     { prEpId : Int
     , prPos : Float
     , prDuration : Float
     }
 
-
 decodeProgressMsg : Decoder ProgressMsg
 decodeProgressMsg =
-    succeed ProgressMsg
+    decode ProgressMsg
         |> required "prEpId" int
         |> required "prPos" float
         |> required "prDuration" float
-
 
 encodeProgressMsg : ProgressMsg -> Json.Encode.Value
 encodeProgressMsg x =
@@ -79,19 +77,16 @@ encodeProgressMsg x =
         , ( "prDuration", Json.Encode.float x.prDuration )
         ]
 
-
 type alias FeedInfo =
     { fname : String
     , furl : String
     }
 
-
 decodeFeedInfo : Decoder FeedInfo
 decodeFeedInfo =
-    succeed FeedInfo
+    decode FeedInfo
         |> required "fname" string
         |> required "furl" string
-
 
 encodeFeedInfo : FeedInfo -> Json.Encode.Value
 encodeFeedInfo x =
@@ -100,7 +95,6 @@ encodeFeedInfo x =
         , ( "furl", Json.Encode.string x.furl )
         ]
 
-
 type alias ProgressInfo =
     { pi_ftitle : String
     , pi_epId : Int
@@ -108,15 +102,13 @@ type alias ProgressInfo =
     , pi_prog : ProgressMsg
     }
 
-
 decodeProgressInfo : Decoder ProgressInfo
 decodeProgressInfo =
-    succeed ProgressInfo
+    decode ProgressInfo
         |> required "pi_ftitle" string
         |> required "pi_epId" int
         |> required "pi_episode" decodeEpisode
         |> required "pi_prog" decodeProgressMsg
-
 
 encodeProgressInfo : ProgressInfo -> Json.Encode.Value
 encodeProgressInfo x =
@@ -127,21 +119,18 @@ encodeProgressInfo x =
         , ( "pi_prog", encodeProgressMsg x.pi_prog )
         ]
 
-
 type alias NewEpisode =
     { ne_ftitle : String
     , ne_epId : Int
     , ne_episode : Episode
     }
 
-
 decodeNewEpisode : Decoder NewEpisode
 decodeNewEpisode =
-    succeed NewEpisode
+    decode NewEpisode
         |> required "ne_ftitle" string
         |> required "ne_epId" int
         |> required "ne_episode" decodeEpisode
-
 
 encodeNewEpisode : NewEpisode -> Json.Encode.Value
 encodeNewEpisode x =
@@ -151,12 +140,10 @@ encodeNewEpisode x =
         , ( "ne_episode", encodeEpisode x.ne_episode )
         ]
 
-
 type NoContent
     = NoContent
 
-
-getProgressByEpisodeId : Int -> Http.Request ProgressMsg
+getProgressByEpisodeId : Int -> Http.Request (ProgressMsg)
 getProgressByEpisodeId capture_episodeId =
     Http.request
         { method =
@@ -167,7 +154,7 @@ getProgressByEpisodeId capture_episodeId =
             String.join "/"
                 [ ""
                 , "progress"
-                , capture_episodeId |> toString
+                , capture_episodeId |> String.fromInt |> Url.percentEncode
                 ]
         , body =
             Http.emptyBody
@@ -179,8 +166,7 @@ getProgressByEpisodeId capture_episodeId =
             False
         }
 
-
-getProgressAll : Http.Request (List ProgressInfo)
+getProgressAll : Http.Request (List (ProgressInfo))
 getProgressAll =
     Http.request
         { method =
@@ -203,8 +189,7 @@ getProgressAll =
             False
         }
 
-
-postProgress : ProgressMsg -> Http.Request NoContent
+postProgress : ProgressMsg -> Http.Request (NoContent)
 postProgress body =
     Http.request
         { method =
@@ -220,8 +205,8 @@ postProgress body =
             Http.jsonBody (encodeProgressMsg body)
         , expect =
             Http.expectStringResponse
-                (\r ->
-                    if String.isEmpty r.body then
+                (\res ->
+                    if String.isEmpty res.body then
                         Ok NoContent
                     else
                         Err "Expected the response body to be empty"
@@ -232,8 +217,7 @@ postProgress body =
             False
         }
 
-
-getFeeds : Http.Request (List ( Int, FeedInfo ))
+getFeeds : Http.Request (List ((Int, FeedInfo)))
 getFeeds =
     Http.request
         { method =
@@ -248,15 +232,14 @@ getFeeds =
         , body =
             Http.emptyBody
         , expect =
-            Http.expectJson (list (map2 (\x y -> ( x, y )) (index 0 int) (index 1 decodeFeedInfo)))
+            Http.expectJson (list (map2 (\x y -> (x, y)) (index 0 int) (index 1 decodeFeedInfo)))
         , timeout =
             Nothing
         , withCredentials =
             False
         }
 
-
-postFeed : FeedInfo -> Http.Request NoContent
+postFeed : FeedInfo -> Http.Request (NoContent)
 postFeed body =
     Http.request
         { method =
@@ -272,8 +255,8 @@ postFeed body =
             Http.jsonBody (encodeFeedInfo body)
         , expect =
             Http.expectStringResponse
-                (\r ->
-                    if String.isEmpty r.body then
+                (\res ->
+                    if String.isEmpty res.body then
                         Ok NoContent
                     else
                         Err "Expected the response body to be empty"
@@ -284,8 +267,7 @@ postFeed body =
             False
         }
 
-
-getEpisodesNew : Http.Request (List NewEpisode)
+getEpisodesNew : Http.Request (List (NewEpisode))
 getEpisodesNew =
     Http.request
         { method =
@@ -308,8 +290,7 @@ getEpisodesNew =
             False
         }
 
-
-getEpisodesByFeedId : Int -> Http.Request (List ( Int, Episode ))
+getEpisodesByFeedId : Int -> Http.Request (List ((Int, Episode)))
 getEpisodesByFeedId capture_feedId =
     Http.request
         { method =
@@ -320,20 +301,19 @@ getEpisodesByFeedId capture_feedId =
             String.join "/"
                 [ ""
                 , "episodes"
-                , capture_feedId |> toString
+                , capture_feedId |> String.fromInt |> Url.percentEncode
                 ]
         , body =
             Http.emptyBody
         , expect =
-            Http.expectJson (list (map2 (\x y -> ( x, y )) (index 0 int) (index 1 decodeEpisode)))
+            Http.expectJson (list (map2 (\x y -> (x, y)) (index 0 int) (index 1 decodeEpisode)))
         , timeout =
             Nothing
         , withCredentials =
             False
         }
 
-
-postSyncfeedAll : Http.Request NoContent
+postSyncfeedAll : Http.Request (NoContent)
 postSyncfeedAll =
     Http.request
         { method =
@@ -350,8 +330,8 @@ postSyncfeedAll =
             Http.emptyBody
         , expect =
             Http.expectStringResponse
-                (\{ body } ->
-                    if String.isEmpty body then
+                (\res ->
+                    if String.isEmpty res.body then
                         Ok NoContent
                     else
                         Err "Expected the response body to be empty"
@@ -362,8 +342,7 @@ postSyncfeedAll =
             False
         }
 
-
-postSyncfeedByFeedId : Int -> Http.Request NoContent
+postSyncfeedByFeedId : Int -> Http.Request (NoContent)
 postSyncfeedByFeedId capture_feedId =
     Http.request
         { method =
@@ -374,14 +353,14 @@ postSyncfeedByFeedId capture_feedId =
             String.join "/"
                 [ ""
                 , "syncfeed"
-                , capture_feedId |> toString
+                , capture_feedId |> String.fromInt |> Url.percentEncode
                 ]
         , body =
             Http.emptyBody
         , expect =
             Http.expectStringResponse
-                (\{ body } ->
-                    if String.isEmpty body then
+                (\res ->
+                    if String.isEmpty res.body then
                         Ok NoContent
                     else
                         Err "Expected the response body to be empty"

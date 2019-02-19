@@ -6,7 +6,7 @@ scripts/.idea
 scripts/.mypy_cache
 scripts/venv
 frontend/index.html
-frontend/Client
+frontend/src/Client
 kasti.cabal
 dist
 result

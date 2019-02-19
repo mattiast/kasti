@@ -49,4 +49,4 @@ spec =
     ] ++ generateElmForAPI (Proxy :: Proxy Api))
 
 main :: IO ()
-main = specsToDir [spec] "../frontend"
+main = specsToDir [spec] "../frontend/src"

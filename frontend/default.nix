@@ -8,7 +8,7 @@ let
   srcs = ./elm-srcs.nix;
   versionsDat = ./versions.dat;
 in stdenv.mkDerivation {
-  name = "elm-app-0.1.0";
+  name = "kasti-frontend";
   src = ./.;
 
   buildInputs = [ elmPackages.elm ];
@@ -19,7 +19,7 @@ in stdenv.mkDerivation {
   };
 
   installPhase = ''
-    elm make Browse.elm --output $out/elm.js
+    elm make src/Browse.elm --output $out/elm.js
   '';
 }
 

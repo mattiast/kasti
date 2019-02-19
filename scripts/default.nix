@@ -2,7 +2,6 @@
 with nixPkgs;
 let
   python = import ./python.nix { pkgs = nixPkgs; };
-  myVim = import ./vim.nix { pkgs = nixPkgs; python = python; };
   scriptImage = dockerTools.buildImage {
     name = "kasti-scripts";
     tag = "latest";
@@ -12,14 +11,4 @@ let
     ];
   };
 in
-  stdenv.mkDerivation rec {
-    name = "kasti-scripts";
-    env = buildEnv { name = name; paths = buildInputs; };
-    buildInputs = [
-      python
-      myVim
-      git
-      elmPackages.elm
-      elmPackages.elm-format
-    ];
-  }
+  scriptImage

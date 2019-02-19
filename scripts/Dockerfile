@@ -7,4 +7,4 @@ RUN adduser --disabled-password --gecos '' kasti
 
 USER kasti
 WORKDIR /home/kasti
-ADD ./*.py /home/kasti/
+ADD ./src/*.py /home/kasti/

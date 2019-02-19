@@ -6,7 +6,7 @@ let
     name = "kasti-scripts";
     tag = "latest";
     contents = [
-      ./.
+      ./src
       python
     ];
   };

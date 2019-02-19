@@ -20,5 +20,6 @@ in
       myVim
       git
       elmPackages.elm
+      elmPackages.elm-format
     ];
   }

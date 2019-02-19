@@ -15,6 +15,7 @@ let
         ctrlp
         LanguageClient-neovim
         airline
+        elm-vim
       ];
     };
     vimrcConfig.customRC = ''

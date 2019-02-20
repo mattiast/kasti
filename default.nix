@@ -6,8 +6,12 @@ let
   jsFile = import ./frontend/default.nix { nixpkgs = nixPkgs; };
   scriptImage = import ./scripts/default.nix { nixPkgs = nixPkgs; };
   kasti-exe = (import ./backend/default.nix).kasti-minimal;
-in
-  stdenv.mkDerivation rec {
+  image = nixPkgs.dockerTools.buildImage {
+    name = "kasti-container";
+    config.Cmd = [ "${kasti-exe}/bin/kasti-server" ];
+  };
+
+  env = stdenv.mkDerivation rec {
     name = "kasti-env";
     env = buildEnv { name = name; paths = buildInputs; };
     buildInputs = [
@@ -17,4 +21,8 @@ in
       elmPackages.elm
       elmPackages.elm-format
     ];
-  }
+  };
+
+in {
+  inherit env image scriptImage jsFile kasti-exe;
+}

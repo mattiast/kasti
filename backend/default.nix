@@ -19,6 +19,7 @@ let
 
 in
   { kasti = pkgs.haskellPackages.kasti;
+    kasti-minimal = pkgs.haskellPackages.kasti-minimal;
     docker-container-small = pkgs.docker-container-small;
     env = pkgs.haskellPackages.kasti.env;
   }

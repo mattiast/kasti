@@ -5,6 +5,7 @@ let
   myVim = import ./scripts/vim.nix { pkgs = nixPkgs; python = python; };
   jsFile = import ./frontend/default.nix { nixpkgs = nixPkgs; };
   scriptImage = import ./scripts/default.nix { nixPkgs = nixPkgs; };
+  kasti-exe = (import ./backend/default.nix).kasti-minimal;
 in
   stdenv.mkDerivation rec {
     name = "kasti-env";

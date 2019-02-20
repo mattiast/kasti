@@ -1,12 +1,12 @@
-module Client exposing (..)
+module Client exposing (getEpisodes, getFeeds, getNewEpisodes, getPositions, getProgress, postNewFeed, postProgress, syncFeed)
 
-import Json.Decode as D
+import Client.Types as C
+import Helpers as H
 import Http
+import Json.Decode as D
 import Platform.Cmd as Cmd
 import RemoteData as RD
-import Helpers as H
 import Types exposing (..)
-import Client.Types as C
 
 
 syncFeed : SyncFeedId -> Cmd Msg
@@ -20,9 +20,9 @@ syncFeed sfid =
                 SyncAll ->
                     C.postSyncfeedAll
     in
-        req
-            |> RD.sendRequest
-            |> Cmd.map (RD.map (\_ -> ()) >> SyncFeedReceive sfid)
+    req
+        |> RD.sendRequest
+        |> Cmd.map (RD.map (\_ -> ()) >> SyncFeedReceive sfid)
 
 
 postProgress : PlayerState -> Cmd Msg

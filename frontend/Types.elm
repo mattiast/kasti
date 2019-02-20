@@ -1,9 +1,9 @@
-module Types exposing (..)
+module Types exposing (Episode, EpisodeId, Feed, FeedId, MenuState, Model, Msg(..), MsgProg(..), NewEpisode, NewFeed, PlayerState, ProgressInfo, SortMsg(..), SyncFeedId(..), WhichView(..), emptyNewFeed)
 
+import Browser
+import Browser.Navigation as N
 import RemoteData as RD
 import Time exposing (Posix)
-import Browser.Navigation as N
-import Browser
 import Url as U
 
 

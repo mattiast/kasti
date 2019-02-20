@@ -1,15 +1,15 @@
-module Helpers exposing (..)
+module Helpers exposing (encodeNewFeed, encodeProgress, makeEpisode, makeFeed, makeNewEpisode, makeProgressInfo, modifyFeedAtId, modifyMenuState, modifyPositions, onTimeUpdate, renderSeconds, targetCurrentTime, targetDuration)
 
+import Client.Types as C
+import DateFormat as DF
+import Debug exposing (toString)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as J
 import Json.Encode as JE
 import RemoteData as RD
-import Types exposing (..)
-import Client.Types as C
-import Debug exposing (toString)
 import Time
-import DateFormat as DF
+import Types exposing (..)
 
 
 makeEpisode : Int -> C.Episode -> Episode
@@ -83,10 +83,11 @@ modifyFeedAtId fid upd model =
         updAt feed =
             if feed.id == fid then
                 upd feed
+
             else
                 feed
     in
-        { model | feeds = RD.map (List.map updAt) model.feeds }
+    { model | feeds = RD.map (List.map updAt) model.feeds }
 
 
 modifyMenuState : (MenuState -> MenuState) -> Model -> Model
@@ -105,12 +106,12 @@ renderSeconds sec =
         time =
             Time.millisToPosix (round (sec * 1000))
     in
-        DF.format
-            [ DF.hourMilitaryNumber
-            , DF.text ":"
-            , DF.minuteFixed
-            , DF.text ":"
-            , DF.secondFixed
-            ]
-            Time.utc
-            time
+    DF.format
+        [ DF.hourMilitaryNumber
+        , DF.text ":"
+        , DF.minuteFixed
+        , DF.text ":"
+        , DF.secondFixed
+        ]
+        Time.utc
+        time

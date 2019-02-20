@@ -1,20 +1,20 @@
-port module Browse exposing (..)
+port module Browse exposing (main)
 
-import Json.Decode as D
+import Browser
+import Browser.Navigation as N
+import Client
+import Client.Types as C
+import Debug
+import Helpers as H
 import Http
+import Json.Decode as D
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
 import RemoteData as RD
-import Helpers as H
-import Types exposing (..)
-import Client
-import Client.Types as C
-import Views
-import Browser.Navigation as N
-import Browser
-import Url as U
-import Debug
 import Time
+import Types exposing (..)
+import Url as U
+import Views
 
 
 main : Program D.Value Model Msg
@@ -36,28 +36,28 @@ init value loc key =
             parseView loc.path
                 |> Maybe.withDefault Browse
     in
-        ( { feeds = RD.NotAsked
-          , episodes = RD.NotAsked
-          , playerState = RD.NotAsked
-          , menuState =
-                { newFeed = emptyNewFeed
-                , syncAllState = RD.NotAsked
-                , navbarActive = False
-                }
-          , view = firstView
-          , navKey = key
-          , positions = RD.NotAsked
-          , newEpisodes = RD.NotAsked
-          }
-        , Cmd.batch
-            [ Client.getFeeds
-                |> Cmd.map FeedsReceive
-            , Client.getPositions
-                |> Cmd.map PositionsReceive
-            , Client.getNewEpisodes
-                |> Cmd.map NewEpisodesReceive
-            ]
-        )
+    ( { feeds = RD.NotAsked
+      , episodes = RD.NotAsked
+      , playerState = RD.NotAsked
+      , menuState =
+            { newFeed = emptyNewFeed
+            , syncAllState = RD.NotAsked
+            , navbarActive = False
+            }
+      , view = firstView
+      , navKey = key
+      , positions = RD.NotAsked
+      , newEpisodes = RD.NotAsked
+      }
+    , Cmd.batch
+        [ Client.getFeeds
+            |> Cmd.map FeedsReceive
+        , Client.getPositions
+            |> Cmd.map PositionsReceive
+        , Client.getNewEpisodes
+            |> Cmd.map NewEpisodesReceive
+        ]
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,6 +113,7 @@ update msg model =
             , setPlaybackRate
                 (if isDouble then
                     2.0
+
                  else
                     1.0
                 )
@@ -131,7 +132,7 @@ update msg model =
                         SyncAll ->
                             H.modifyMenuState (\state -> { state | syncAllState = RD.Loading }) model
             in
-                ( newModel, Client.syncFeed sfid )
+            ( newModel, Client.syncFeed sfid )
 
         SyncFeedReceive (SyncSingle fid) state ->
             let
@@ -142,14 +143,14 @@ update msg model =
                     Client.getEpisodes fid
                         |> Cmd.map ReceiveEpList
             in
-                ( newModel, nextCmd )
+            ( newModel, nextCmd )
 
         SyncFeedReceive SyncAll state ->
             let
                 newModel =
                     H.modifyMenuState (\ms -> { ms | syncAllState = state }) model
             in
-                ( newModel, Cmd.none )
+            ( newModel, Cmd.none )
 
         UpdateNewFeed newFeed ->
             ( H.modifyMenuState (\state -> { state | newFeed = newFeed }) model
@@ -167,9 +168,9 @@ update msg model =
                 upd ms =
                     { ms | newFeed = { oldNewFeed | postStatus = postStatus } }
             in
-                ( H.modifyMenuState upd model
-                , Cmd.none
-                )
+            ( H.modifyMenuState upd model
+            , Cmd.none
+            )
 
         PositionsAsk ->
             ( model, Cmd.map PositionsReceive Client.getPositions )
@@ -206,9 +207,9 @@ update msg model =
                 upd ms =
                     { ms | navbarActive = not ms.navbarActive }
             in
-                ( H.modifyMenuState upd model
-                , Cmd.none
-                )
+            ( H.modifyMenuState upd model
+            , Cmd.none
+            )
 
         SortBy by ->
             let
@@ -223,7 +224,7 @@ update msg model =
                         ByTime ->
                             List.sortBy (\pi -> pi.duration - pi.position)
             in
-                ( H.modifyPositions f model, Cmd.none )
+            ( H.modifyPositions f model, Cmd.none )
 
 
 parseView : String -> Maybe WhichView

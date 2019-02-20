@@ -1,22 +1,22 @@
-module Views exposing (..)
+module Views exposing (view)
 
-import Html exposing (Html, div, text, h4, p, br, a, i, audio, span, strong, small)
-import Html.Events exposing (onClick, on, onInput)
-import Html.Attributes exposing (id, style, href, class, src, controls, type_, name, placeholder)
-import Types exposing (..)
-import RemoteData as RD
-import Helpers as H
-import Browser.Navigation as N
 import Browser
+import Browser.Navigation as N
 import Bulma.Columns exposing (..)
-import Bulma.Modifiers exposing (..)
-import Bulma.Layout exposing (..)
-import Bulma.Form exposing (..)
 import Bulma.Components exposing (..)
 import Bulma.Elements exposing (..)
-import Debug exposing (toString)
-import Time
+import Bulma.Form exposing (..)
+import Bulma.Layout exposing (..)
+import Bulma.Modifiers exposing (..)
 import DateFormat as DF
+import Debug exposing (toString)
+import Helpers as H
+import Html exposing (Html, a, audio, br, div, h4, i, p, small, span, strong, text)
+import Html.Attributes exposing (class, controls, href, id, name, placeholder, src, style, type_)
+import Html.Events exposing (on, onClick, onInput)
+import RemoteData as RD
+import Time
+import Types exposing (..)
 
 
 view : Model -> Browser.Document Msg
@@ -51,13 +51,13 @@ viewChooser model =
                 [ href path ]
                 [ text txt ]
     in
-        tabs { style = Boxed, alignment = Left, size = Medium }
-            []
-            []
-            [ item Browse "browse" "Browse"
-            , item Continue "continue" "Continue"
-            , item New "new" "New"
-            ]
+    tabs { style = Boxed, alignment = Left, size = Medium }
+        []
+        []
+        [ item Browse "browse" "Browse"
+        , item Continue "continue" "Continue"
+        , item New "new" "New"
+        ]
 
 
 viewNewEpisodes : List NewEpisode -> Html Msg
@@ -104,7 +104,7 @@ positionAggregateInfo prog =
             List.length prog
                 |> toString
     in
-        p [] [ text <| "Total time left: " ++ sec ++ " (" ++ num ++ " episodes)" ]
+    p [] [ text <| "Total time left: " ++ sec ++ " (" ++ num ++ " episodes)" ]
 
 
 viewPositions : List ProgressInfo -> Html Msg
@@ -217,34 +217,34 @@ viewMenu state =
                 , span [] []
                 ]
     in
-        navbar navbarModifiers
-            []
-            [ navbarBrand []
-                hamburgerButton
-                [ navbarItem False
-                    []
-                    [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
-                    , easyTag { size = Large, color = Primary, isLink = False } [] "KASTI"
-                    ]
-                ]
-            , navbarMenu state.navbarActive
+    navbar navbarModifiers
+        []
+        [ navbarBrand []
+            hamburgerButton
+            [ navbarItem False
                 []
-                [ navbarStart []
-                    [ hoverableNavbarItemDropdown Down
+                [ span [ class "icon is-large" ] [ i [ class "fa fa-google-wallet" ] [] ]
+                , easyTag { size = Large, color = Primary, isLink = False } [] "KASTI"
+                ]
+            ]
+        , navbarMenu state.navbarActive
+            []
+            [ navbarStart []
+                [ hoverableNavbarItemDropdown Down
+                    []
+                    (navbarLink [] [ text "Add feed" ])
+                    [ navbarDropdown False
+                        Left
                         []
-                        (navbarLink [] [ text "Add feed" ])
-                        [ navbarDropdown False
-                            Left
-                            []
-                            ([ syncAllButton
-                             , navbarDivider [] []
-                             ]
-                                ++ viewNewFeedForm state.newFeed
-                            )
-                        ]
+                        ([ syncAllButton
+                         , navbarDivider [] []
+                         ]
+                            ++ viewNewFeedForm state.newFeed
+                        )
                     ]
                 ]
             ]
+        ]
 
 
 viewNewFeedForm : NewFeed -> List (Html Msg)
@@ -280,15 +280,15 @@ viewNewFeedForm newFeed =
         ( color, state ) =
             stateClass newFeed.postStatus
       in
-        navbarItem False
-            []
-            [ field []
-                [ easyButton { buttonModifiers | color = color, state = state }
-                    []
-                    NewFeedPost
-                    "Add"
-                ]
+      navbarItem False
+        []
+        [ field []
+            [ easyButton { buttonModifiers | color = color, state = state }
+                []
+                NewFeedPost
+                "Add"
             ]
+        ]
     ]
 
 
@@ -320,11 +320,11 @@ feedList feeds =
                         , tableCell [] [ syncButton f ]
                         ]
             in
-                table { tableModifiers | narrow = True }
-                    []
-                    [ tableBody [] <|
-                        List.map feedItem fs
-                    ]
+            table { tableModifiers | narrow = True }
+                []
+                [ tableBody [] <|
+                    List.map feedItem fs
+                ]
 
         _ ->
             text (toString feeds)
@@ -336,14 +336,14 @@ syncButton feed =
         ( color, state ) =
             stateClass feed.syncState
     in
-        controlButton { buttonModifiers | color = color, state = state, size = Small }
-            []
-            [ onClick (SyncFeedAsk (SyncSingle feed.id)) ]
-            [ span [ class "icon is-small" ]
-                -- TODO icons too eventually
-                [ i [ class "fa fa-refresh" ] []
-                ]
+    controlButton { buttonModifiers | color = color, state = state, size = Small }
+        []
+        [ onClick (SyncFeedAsk (SyncSingle feed.id)) ]
+        [ span [ class "icon is-small" ]
+            -- TODO icons too eventually
+            [ i [ class "fa fa-refresh" ] []
             ]
+        ]
 
 
 episodeList : List Episode -> Html Msg
@@ -405,6 +405,7 @@ viewPlayer state =
                 (SetDoubleSpeed (not state.doubleSpeed))
                 (if state.doubleSpeed then
                     "2x speed"
+
                  else
                     "1x speed"
                 )

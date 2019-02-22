@@ -1,19 +1,10 @@
+{ nixPkgs ? import <nixpkgs> {}}:
 let
-  config = rec {
-    packageOverrides = pkgs: rec {
-      haskellPackages = pkgs.haskellPackages.override {
-        overrides = haskellPackagesNew: haskellPackgesOld: rec {
-          kasti-minimal = pkgs.haskell.lib.justStaticExecutables kasti;
-          kasti = haskellPackagesNew.callPackage ./kasti.nix { };
-        };
-      };
-    };
-  };
-
-  pkgs = import <nixpkgs> { inherit config; };
+  kasti = nixPkgs.haskellPackages.callPackage ./kasti.nix { };
+  kasti-minimal = nixPkgs.haskell.lib.justStaticExecutables kasti;
 
 in
-  { kasti = pkgs.haskellPackages.kasti;
-    kasti-minimal = pkgs.haskellPackages.kasti-minimal;
-    env = pkgs.haskellPackages.kasti.env;
+  { kasti = kasti;
+    kasti-minimal = kasti-minimal;
+    env = kasti.env;
   }

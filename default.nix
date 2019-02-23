@@ -4,13 +4,32 @@ let
   python = import ./scripts/python.nix { pkgs = nixPkgs; };
   myVim = import ./scripts/vim.nix { pkgs = nixPkgs; python = python; };
   neoVim = import ./neovim.nix { pkgs = nixPkgs; };
-  jsFile = import ./frontend/default.nix { nixpkgs = nixPkgs; };
   scriptImage = import ./scripts/default.nix { nixPkgs = nixPkgs; };
   backend = (import ./backend/default.nix { nixPkgs = nixPkgs; });
   kasti-exe = backend.kasti-minimal;
+  kasti-elm-client = stdenv.mkDerivation {
+    name = "kasti-elm-client";
+    unpackPhase = "true"; # no sources needed
+
+    buildInputs = [ kasti-exe ];
+
+    installPhase = ''
+      mkdir -p $out/Client
+      ${kasti-exe}/bin/elm-gen $out
+    '';
+  };
+
+  jsFile = import ./frontend/default.nix { nixpkgs = nixPkgs; kasti-elm-client = kasti-elm-client; };
+
   image = nixPkgs.dockerTools.buildImage {
     name = "kasti-container";
     config.Cmd = [ "${kasti-exe}/bin/kasti-server" ];
+    contents = [ jsFile ];
+    runAsRoot = ''
+      #!${stdenv.shell}
+      mkdir -p /jsfiles
+      cp ${jsFile} /jsfiles
+    '';
   };
 
   env = stdenv.mkDerivation rec {
@@ -30,5 +49,5 @@ let
   };
 
 in {
-  inherit env image scriptImage jsFile kasti-exe;
+  inherit env image scriptImage jsFile kasti-exe kasti-elm-client;
 }

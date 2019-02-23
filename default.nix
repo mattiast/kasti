@@ -23,6 +23,8 @@ let
       elmPackages.elm
       elmPackages.elm-format
       cabal-install
+      haskellPackages.ghc
+      haskellPackages.ghcid
     ];
   };
 

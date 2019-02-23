@@ -68,6 +68,7 @@ let
           airline
           elm-vim
           neomake
+          haskell-vim
         ];
       };     
     };

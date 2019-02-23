@@ -17,10 +17,6 @@ flags: {}
 # Extra package databases containing global packages
 extra-package-dbs: []
 
-image:
-  containers:
-    - base: mattiast/kasti-run:0.0.4
-      name: kasti-backend
-      # Optionally add a directory to a path inside the docker image.
-      add:
-        ../static/: /root/static/
+nix:
+  enable: True
+  packages: [ zlib postgresql ]

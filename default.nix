@@ -6,7 +6,8 @@ let
   neoVim = import ./neovim.nix { pkgs = nixPkgs; };
   jsFile = import ./frontend/default.nix { nixpkgs = nixPkgs; };
   scriptImage = import ./scripts/default.nix { nixPkgs = nixPkgs; };
-  kasti-exe = (import ./backend/default.nix { nixPkgs = nixPkgs; }).kasti-minimal;
+  backend = (import ./backend/default.nix { nixPkgs = nixPkgs; });
+  kasti-exe = backend.kasti-minimal;
   image = nixPkgs.dockerTools.buildImage {
     name = "kasti-container";
     config.Cmd = [ "${kasti-exe}/bin/kasti-server" ];
@@ -23,7 +24,7 @@ let
       elmPackages.elm
       elmPackages.elm-format
       cabal-install
-      haskellPackages.ghc
+      backend.kasti.compiler
       haskellPackages.ghcid
     ];
   };

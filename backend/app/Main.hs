@@ -2,12 +2,14 @@
 module Main where
 
 import qualified Lib as Kasti
+import Context
 import qualified System.Posix.Signals as Sig
 import Control.Concurrent.MVar
 import Data.Aeson(decodeStrict')
 import Data.Function((&))
 import Options.Applicative hiding (header)
 import qualified Data.ByteString as B
+import System.Environment(getEnv)
 
 main :: IO ()
 main = do
@@ -28,13 +30,8 @@ termHandler v h = Sig.CatchOnce $ do
     putMVar v ()
 
 getConf :: IO Kasti.Config
-getConf = do
-    let args = argument str (metavar "CONFIGFILE")
-    (confPath :: FilePath) <- execParser $ info args fullDesc
-    readConf confPath
-
-readConf :: FilePath -> IO Kasti.Config
-readConf path = do
-    bs <- B.readFile path
-    decodeStrict' bs
-        & maybe (fail "couldn't parse conf file") return
+getConf =
+    Config
+    <$> getEnv "DB_STRING"
+    <*> getEnv "HTML_PATH"
+    <*> getEnv "JS_PATH"

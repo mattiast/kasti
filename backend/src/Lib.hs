@@ -9,7 +9,6 @@ import Control.Concurrent.Async
 import Web.Scotty
 import EpisodeDb
 import Network.Wai.Handler.Warp (run)
-import System.FilePath((</>))
 import Context
 
 import qualified ServantStuff as SS
@@ -40,10 +39,10 @@ jutska :: Context -> ScottyM ()
 jutska context = do
     let servePage = do
             setHeader "Content-Type" "text/html; charset=utf-8"
-            file $ (staticPath $ cConfig context) </> "browse.html"
+            file $ (htmlPath $ cConfig context)
     get "/browse" servePage
     get "/continue" servePage
     get "/new" servePage
     get "/elm.js" $ do
         setHeader "Content-Type" "application/javascript"
-        file $ (staticPath $ cConfig context) </> "elm.js"
+        file $ (jsPath $ cConfig context)

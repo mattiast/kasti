@@ -20,16 +20,15 @@ let
   };
 
   jsFile = import ./frontend/default.nix { nixpkgs = nixPkgs; kasti-elm-client = kasti-elm-client; };
+  htmlFile = ./frontend/browse.html;
 
   image = nixPkgs.dockerTools.buildImage {
     name = "kasti-container";
     config.Cmd = [ "${kasti-exe}/bin/kasti-server" ];
-    contents = [ jsFile ];
-    runAsRoot = ''
-      #!${stdenv.shell}
-      mkdir -p /jsfiles
-      cp ${jsFile} /jsfiles
-    '';
+    config.Env = [
+      "HTML_PATH=${htmlFile}"
+      "JS_PATH=${jsFile}"
+    ];
   };
 
   env = stdenv.mkDerivation rec {

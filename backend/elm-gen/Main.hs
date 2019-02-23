@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 import Data.Proxy
@@ -6,7 +7,8 @@ import Types
 import Api
 import Elm
 import Servant.Elm
-import Servant(NoContent)
+import Servant.API.ContentTypes(NoContent)
+import Options.Applicative hiding (header)
 
 spec :: Spec
 spec =
@@ -49,4 +51,8 @@ spec =
     ] ++ generateElmForAPI (Proxy :: Proxy Api))
 
 main :: IO ()
-main = specsToDir [spec] "../frontend/src"
+main = do
+    let args = argument str (metavar "SRCDIR")
+    (srcPath :: FilePath) <- execParser $ info args fullDesc
+
+    specsToDir [spec] srcPath

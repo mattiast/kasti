@@ -41,7 +41,6 @@ library:
   - stm
   - resource-pool
   - aeson
-  - servant-elm
   - servant
   - wai
   - servant-server
@@ -60,6 +59,19 @@ executables:
     - kasti
     - unix
     - optparse-applicative
+  elm-gen:
+    main:                Main.hs
+    source-dirs:         elm-gen
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - kasti
+    - optparse-applicative
+    - elm-export
+    - servant-elm
+    - servant
 
 tests:
   kasti-test:

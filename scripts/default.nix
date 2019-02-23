@@ -10,6 +10,7 @@ let
   };
   scriptImage = dockerTools.buildImage {
     name = "kasti-scripts";
+    tag = "latest";
     fromImage = pythonBaseImage;
     contents = [
       ./src

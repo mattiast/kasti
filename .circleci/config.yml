@@ -2,62 +2,45 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mattiast/kasti-build:0.0.8
+      - image: mattiast/kasti-build:0.1.1
     steps:
       - checkout
       - setup_remote_docker
       - restore_cache:
-          key: stack_dir3
-      - restore_cache:
-          key: elm-stuff4
+          key: nix_store0
       - run:
           name: Build app image
-          command: make
+          command: |
+              nix-build -A image
+              docker load -i result
       - run:
           name: Login to AWS ECR
           command: eval $(aws ecr get-login --no-include-email)
       - run:
-          name: Push docker image to ECR
+          name: Push app image to ECR
           command: |
               docker tag kasti-backend:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
               docker                     push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-backend:0.1.$CIRCLE_BUILD_NUM
-      - save_cache:
-          paths:
-            - /home/circleci/.stack
-          key: stack_dir3-{{ epoch }}
-      - save_cache:
-          paths:
-            - frontend/elm-stuff
-            - /home/circleci/.elm
-          key: elm-stuff4-{{ epoch }}
-
-  build-scripts:
-    docker:
-      - image: mattiast/kasti-build:0.0.8
-    steps:
-      - checkout
-      - setup_remote_docker
       - run:
           name: Build scripts image
-          command: make script-image
-      - run:
-          name: Login to AWS ECR
-          command: eval $(aws ecr get-login --no-include-email)
+          command: |
+              nix-build -A scriptImage
+              docker load -i result
       - run:
           name: Push script image to ECR
           command: |
               docker tag kasti-scripts:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
               docker                     push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
+      - save_cache:
+          paths:
+            - /nix/store
+          key: nix_store0-{{ epoch }}
+
 workflows:
   version: 2
   build-stuff:
     jobs:
       - build
-      - request-script:
-          type: approval
-      - build-scripts:
-          requires:
-            - request-script
 
 # Required environment variables:
 # - AWS_ACCOUNT_ID

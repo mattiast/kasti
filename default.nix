@@ -23,12 +23,14 @@ let
   htmlFile = ./frontend/browse.html;
 
   image = nixPkgs.dockerTools.buildImage {
-    name = "kasti-container";
+    name = "kasti-backend";
+    tag = "latest";
     config.Cmd = [ "${kasti-exe}/bin/kasti-server" ];
     config.Env = [
       "HTML_PATH=${htmlFile}"
       "JS_PATH=${jsFile}"
     ];
+    contents = [ iana-etc cacert ];
   };
 
   env = stdenv.mkDerivation rec {

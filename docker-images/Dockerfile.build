@@ -1,26 +1,9 @@
-FROM ubuntu:18.04
+FROM nixos/nix
 
-RUN apt update && apt install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    iptables \
-    libpq-dev \
-    lxc \
-    nodejs \
-    npm \
-    libtinfo-dev \
-    python-pip \
-    sudo
+RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+RUN nix-channel --update
 
-RUN curl -sSL https://get.docker.com/ | sh
-RUN curl -sSL https://get.haskellstack.org/ | sh
-RUN npm install -g elm@0.19
-RUN pip install awscli
-RUN adduser circleci
-
-USER circleci
-WORKDIR /home/circleci
-
-RUN stack setup --resolver lts-13.6
-RUN echo 1 + 1 | stack ghci
+RUN nix-env -iA docker -f '<nixpkgs>'
+RUN nix-env -iA git -f '<nixpkgs>'
+RUN nix-env -iA awscli -f '<nixpkgs>'
+RUN nix-env -iA cacert -f '<nixpkgs>'

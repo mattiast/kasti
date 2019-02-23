@@ -1,7 +1,7 @@
 { nixPkgs ? import <nixpkgs> {}}:
 with nixPkgs;
 let
-  python = import ./scripts/python.nix { pkgs = nixPkgs; };
+  python = (import ./scripts/python.nix { pkgs = nixPkgs; }).python-dev;
   myVim = import ./scripts/vim.nix { pkgs = nixPkgs; python = python; };
   neoVim = import ./neovim.nix { pkgs = nixPkgs; };
   scriptImage = import ./scripts/default.nix { nixPkgs = nixPkgs; };

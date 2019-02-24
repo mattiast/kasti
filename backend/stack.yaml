@@ -5,8 +5,8 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- github: mattjbray/servant-elm
-  commit: f665ddd5cefac26b3e56981f3516772d3987a6f3
+- github: mattiast/servant-elm
+  commit: 42b14455d7a09c34389d7ba7aa5e80202802387a
 - github: mattiast/elm-export
   commit: cca124bda9f1d2226e3134e41f05ebb8c3bb7eaa
 

@@ -6,9 +6,9 @@ mkDerivation {
   pname = "servant-elm";
   version = "0.5.0.0";
   src = fetchgit {
-    url = "https://github.com/mattjbray/servant-elm.git";
-    sha256 = "1mfbd9bk5kkd6wdfhg42k0w8wccs1ffv8ndxvhsyffyswp3zwkbw";
-    rev = "f665ddd5cefac26b3e56981f3516772d3987a6f3";
+    url = "https://github.com/mattiast/servant-elm.git";
+    sha256 = "1ka3ppkyjc8y46vb2sn45r5v0wr71aqa7yk8bsj3gl2mx70z850p";
+    rev = "42b14455d7a09c34389d7ba7aa5e80202802387a";
     fetchSubmodules = true;
   };
   isLibrary = true;

@@ -15,7 +15,7 @@ class EpisodeData(NamedTuple):
     audio_url: str
 
 
-def write_db(conn: connection, data: List[EpisodeData], showname: str):
+def write_db(conn: connection, data: List[EpisodeData], showname: str) -> int:
     c = conn.cursor()
     tuples = [(s.audio_url, s.title, s.description, showname, s.date) for s in data]
     log.info(

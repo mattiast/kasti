@@ -44,7 +44,7 @@ def fetch_episodes(
             )
 
 
-def fetch_and_write(showname: str, dbpath: str, query: Optional[str] = None):
+def fetch_and_write(showname: str, dbpath: str, query: Optional[str] = None) -> int:
     if query is None:
         query = showname
 

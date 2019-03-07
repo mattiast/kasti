@@ -46,6 +46,7 @@ let
       cabal-install
       backend.kasti.compiler
       haskellPackages.ghcid
+      fzf
     ];
   };
 

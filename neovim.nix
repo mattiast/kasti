@@ -53,6 +53,11 @@ let
         nnoremap <silent> <leader>mt :CtrlPTag<cr>
         nnoremap <silent> <leader>mr :CtrlPBufTagAll<cr>
         nnoremap <silent> <leader>a :CtrlPBuffer<cr>
+
+        map <silent> <leader>tt :call LanguageClient_textDocument_hover()<cr>
+        map <silent> <leader>tf :call LanguageClient_textDocument_formatting()<cr>
+        map <silent> <leader>te :call LanguageClient#explainErrorAtPoint()<cr>
+        map <silent> <leader>md :call LanguageClient_contextMenu()<cr>
       '';
       packages.myVimPackage = with pkgs.vimPlugins; {
         start = [

@@ -1,17 +1,17 @@
+import argparse
 import io
 import json
 import logging
 import sys
 from datetime import datetime
-from sys import argv
 
 import boto3
 import psycopg2
 import psycopg2.extras
 import PyRSS2Gen
-import radiorock
 from psycopg2.extensions import connection
 
+import radiorock
 
 log = logging.getLogger(__name__)
 
@@ -86,14 +86,18 @@ def push_to_s3(conf, key: str, data: str):
     )
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("show", type=str)
+    parser.add_argument("confpath", type=str)
+    args = parser.parse_args()
+
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    info = programs[argv[1]]
-    confpath = argv[2]
+    info = programs[args.show]
     log.info("Starting update process for %s", info["name"])
 
-    with open(confpath) as f:
+    with open(args.confpath) as f:
         conf = json.load(f)
 
     n = radiorock.fetch_and_write(
@@ -109,3 +113,7 @@ if __name__ == "__main__":
         rss = create_rss(info, stuff)
         data = rss.to_xml(encoding="utf-8")
         push_to_s3(conf, info["feedname"], data)
+
+
+if __name__ == "__main__":
+    main()

@@ -4,6 +4,7 @@ import json
 import logging
 import sys
 from datetime import datetime
+from typing import NamedTuple
 
 import boto3
 import psycopg2
@@ -15,17 +16,20 @@ import radiorock
 
 log = logging.getLogger(__name__)
 
+
+class Program(NamedTuple):
+    name: str
+    query: str
+    feedname: str
+
+
 programs = {
-    "thf": {
-        "name": "Total Hockey Forever",
-        "query": "Total Hockey Forever",
-        "feedname": "thf.xml",
-    },
-    "korp": {
-        "name": "Radio Rockin Korporaatio",
-        "query": "Korporaatio",
-        "feedname": "korp.xml",
-    },
+    "thf": Program(
+        name="Total Hockey Forever", query="Total Hockey Forever", feedname="thf.xml"
+    ),
+    "korp": Program(
+        name="Radio Rockin Korporaatio", query="Korporaatio", feedname="korp.xml"
+    ),
 }
 
 
@@ -48,9 +52,9 @@ def get_epi(conn: connection, name: str):
     return stuff
 
 
-def create_rss(info, stuff):
+def create_rss(info: Program, stuff):
     rss = PyRSS2Gen.RSS2(
-        title=info["name"],
+        title=info.name,
         link="http://fake-link.com",
         description="podcast description",
         lastBuildDate=datetime.now(),
@@ -78,12 +82,14 @@ def push_to_s3(conf, key: str, data: str):
     )
 
     data_obj = io.BytesIO(bytes(data, encoding="utf-8"))
+    log.info("Pushing to S3 bucket %s", conf["s3_bucket"])
     client.upload_fileobj(
         data_obj,
         conf["s3_bucket"],
         key,
         ExtraArgs={"ACL": "public-read", "ContentType": "application/xml"},
     )
+    log.info("Done pushin to S3")
 
 
 def main():
@@ -95,24 +101,22 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
     info = programs[args.show]
-    log.info("Starting update process for %s", info["name"])
+    log.info("Starting update process for %s", info.name)
 
     with open(args.confpath) as f:
         conf = json.load(f)
 
-    n = radiorock.fetch_and_write(
-        info["name"], conf["postgres_string"], query=info["query"]
-    )
+    n = radiorock.fetch_and_write(info.name, conf["postgres_string"], query=info.query)
     log.info("%d new episodes", n)
 
     if n > 0:
         conn = psycopg2.connect(conf["postgres_string"])
-        stuff = get_epi(conn, info["name"])
+        stuff = get_epi(conn, info.name)
         conn.close()
 
         rss = create_rss(info, stuff)
         data = rss.to_xml(encoding="utf-8")
-        push_to_s3(conf, info["feedname"], data)
+        push_to_s3(conf, info.feedname, data)
 
 
 if __name__ == "__main__":

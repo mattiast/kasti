@@ -23,7 +23,7 @@ class Stuff(NamedTuple):
 
 
 def get_episodes2() -> Iterator[Stuff]:
-    r = requests.get("https://www.is.fi/videotuomarit/")
+    r = requests.get("https://www.is.fi/aihe/videotuomarit/")
     doc = html.parse(BytesIO(r.content))
     alinks = doc.xpath("//a[@name]")
 

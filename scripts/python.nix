@@ -14,6 +14,7 @@ let
     pyls-isort
     pyls-black
     pyls-mypy
+    pudb
   ];
   python = pkgs.python37.withPackages run-pkgs;
   python-dev = python.withPackages (

@@ -19,17 +19,16 @@ log = logging.getLogger(__name__)
 
 class Program(NamedTuple):
     name: str
-    query: str
+    supla_id: int
     feedname: str
 
 
 programs = {
     "thf": Program(
-        name="Total Hockey Forever", query="Total Hockey Forever", feedname="thf.xml"
-    ),
-    "korp": Program(
-        name="Radio Rockin Korporaatio", query="Korporaatio", feedname="korp.xml"
-    ),
+        name="Total Hockey Forever",
+        supla_id=2256361,
+        feedname="thf.xml",
+    )
 }
 
 
@@ -106,7 +105,7 @@ def main():
     with open(args.confpath) as f:
         conf = json.load(f)
 
-    n = radiorock.fetch_and_write(info.name, conf["postgres_string"], query=info.query)
+    n = radiorock.fetch_and_write(info.name, conf["postgres_string"], info.supla_id)
     log.info("%d new episodes", n)
 
     if n > 0:

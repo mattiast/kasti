@@ -1,39 +1,39 @@
 import datetime as dt
 import logging
-from typing import Iterator, Optional
-from urllib.parse import quote
+from typing import Iterator
 
 import lxml.etree
 import psycopg2
 import requests
-from episodedb import EpisodeData, write_db
 
+from episodedb import EpisodeData, write_db
 
 log = logging.getLogger(__name__)
 
 
-def fetch_episodes(
-    tag_name: str, tag_cat: str = "ohjelma", page: int = 0
-) -> Iterator[EpisodeData]:
-    url = "https://www.radiorock.fi/api/content?tagCategory={}&tagName={}&page={}".format(
-        tag_cat, quote(tag_name), page
-    )
-
-    r = requests.get(url)
+def fetch_episodes(supla_id: int) -> Iterator[EpisodeData]:
+    url = f"https://supla-prod-component-api.nm-services.nelonenmedia.fi/api/component/260035"
+    params = {
+        "current_primary_content": "series",
+        "current_series_content_order_direction": "desc",
+        "current_series_id": str(supla_id),
+        "app": "supla",
+        "client": "web",
+    }
+    r = requests.get(url, params=params)
 
     stuff = r.json()
 
-    for post in stuff["posts"]:
-        if "media" not in post:
-            continue
-        title = post["media"]["title"]
-        description = post["media"]["description"]
-        ts = dt.datetime.utcfromtimestamp(post["created_at_epoch"] / 1000)
+    for post in stuff["items"]:
+        title = post["title"]
+        description = "description"
+        ts = post["subtitle_array"][2]["timestamp"]
+        ts = dt.datetime.utcfromtimestamp(ts)
         log.info("Found episode: %s", title)
-        media_id = post["media"]["id"]
+        media_id = post["id"]
 
         r = requests.get(
-            "https://gatling.nelonenmedia.fi/media-xml-cache?v=2&id={}".format(media_id)
+            f"https://gatling.nelonenmedia.fi/media-xml-cache?v=2&id={media_id}"
         )
         e = lxml.etree.fromstring(r.content)
         audios = e.xpath("//AudioMediaFile")
@@ -44,11 +44,8 @@ def fetch_episodes(
             )
 
 
-def fetch_and_write(showname: str, dbpath: str, query: Optional[str] = None) -> int:
-    if query is None:
-        query = showname
-
-    stuff = list(fetch_episodes(query))
+def fetch_and_write(showname: str, dbpath: str, show_id: int) -> int:
+    stuff = list(fetch_episodes(show_id))
     conn = psycopg2.connect(dbpath)
     n = write_db(conn, stuff, showname)
     conn.close()

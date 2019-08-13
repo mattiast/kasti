@@ -9,6 +9,7 @@ import Types
 import Data.Pool
 import Data.Time.Clock(NominalDiffTime)
 import qualified Data.ByteString.Char8 as B
+import qualified Data.Vector as V
 
 initPool :: String -> IO (Pool Connection)
 initPool connString = do
@@ -73,11 +74,12 @@ readNewEpisodes n conn = do
 
 
 writeEpisodes :: FeedId -> [Episode] -> Connection -> IO ()
-writeEpisodes fid eps conn =
+writeEpisodes fid eps conn = void $ withTransaction conn $ do
+    (newUrls :: [EpisodeUrl]) <-
+        fmap (fmap fromOnly) $ query conn "select url from unnest (?) as t(url) where url not in (select url from episodes)" (Only $ V.fromList $ fmap epUrl eps)
+    let newEpisodes = filter (\e -> epUrl e `elem` newUrls) eps
     executeMany conn "insert into episodes(feed_id, url, title, date) values (?,?,?,?) on conflict do nothing"
-            [ Only fid :. ep | ep <- eps ]
-    & withTransaction conn
-    & void
+            [ Only fid :. ep | ep <- newEpisodes ]
 
 writeFeed :: FeedInfo -> Connection -> IO ()
 writeFeed fi conn =

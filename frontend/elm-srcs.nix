@@ -6,8 +6,8 @@
       };
 
       "surprisetalk/elm-bulma" = {
-        sha256 = "0dwc7jsjshxhf8sfgw8a7hi7dk68hdh0gc5ygvh43wad3x1zqhzh";
-        version = "6.1.2";
+        sha256 = "0igkm6ryw9snn1wgff745wbrrh127qy9xlyrx9dk92j2zfwglccq";
+        version = "6.1.6";
       };
 
       "elm/json" = {
@@ -36,8 +36,8 @@
       };
 
       "ryannhg/date-format" = {
-        sha256 = "070qmq3b5ibqlbsdy4258s50f9a80nxrni43myjkq8dz8sh4b2nd";
-        version = "1.0.0";
+        sha256 = "1hjic1nrfiss5wjqsqvh0szb85ivjglmarcq1j8xl67z3ygv3lvi";
+        version = "2.3.0";
       };
 
       "elm/http" = {
@@ -56,8 +56,8 @@
       };
 
       "rtfeldman/elm-iso8601-date-strings" = {
-        sha256 = "1n4zhm00m37fgy4vb6cayplm4yz6k78ijbmqajrqfnbsyc26p8wr";
-        version = "1.1.2";
+        sha256 = "1fa5sslklldy0dq8bm0zdkb9ni50yxhb09xb6lgk00x55bmza9ik";
+        version = "1.1.3";
       };
 
       "elm/bytes" = {
@@ -66,8 +66,8 @@
       };
 
       "elm/file" = {
-        sha256 = "11lrkdj29mzw05lf5ffq50hp6jh0ly41zygvvz5klxlq056skz18";
-        version = "1.0.4";
+        sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
+        version = "1.0.5";
       };
 
       "elm/parser" = {

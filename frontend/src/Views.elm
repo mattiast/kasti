@@ -125,9 +125,9 @@ sortButtons : Html Msg
 sortButtons =
     connectedButtons Left
         []
-        [ easyButton buttonModifiers [] (SortBy ByFeed) "Feed"
-        , easyButton buttonModifiers [] (SortBy ByDate) "Date"
-        , easyButton buttonModifiers [] (SortBy ByTime) "Time"
+        [ easyButton buttonModifiers [ href "#" ] (SortBy ByFeed) "Feed"
+        , easyButton buttonModifiers [ href "#" ] (SortBy ByDate) "Date"
+        , easyButton buttonModifiers [ href "#" ] (SortBy ByTime) "Time"
         ]
 
 
@@ -165,21 +165,11 @@ showTime time =
         time
 
 
-devices : Width -> Devices (Maybe Width)
-devices w =
-    { mobile = Just w
-    , tablet = Just w
-    , desktop = Just w
-    , widescreen = Just w
-    , fullHD = Just w
-    }
-
-
 viewSelector : Model -> Html Msg
 viewSelector model =
     columns columnsModifiers
         []
-        [ column { columnModifiers | widths = devices Width3 }
+        [ column narrowColumnModifiers
             []
             [ feedList model.feeds ]
         , column columnModifiers
@@ -202,7 +192,7 @@ viewMenu state =
                 []
                 [ field []
                     [ easyButton { buttonModifiers | color = buttonColor, state = buttonState }
-                        []
+                        [ href "#" ]
                         (SyncFeedAsk SyncAll)
                         "Sync all feeds"
                     ]
@@ -284,7 +274,7 @@ viewNewFeedForm newFeed =
         []
         [ field []
             [ easyButton { buttonModifiers | color = color, state = state }
-                []
+                [ href "#" ]
                 NewFeedPost
                 "Add"
             ]
@@ -337,7 +327,7 @@ syncButton feed =
             stateClass feed.syncState
     in
     controlButton { buttonModifiers | color = color, state = state, size = Small }
-        []
+        [ href "#" ]
         [ onClick (SyncFeedAsk (SyncSingle feed.id)) ]
         [ span [ class "icon is-small" ]
             -- TODO icons too eventually
@@ -393,15 +383,15 @@ viewPlayer state =
         , fields Left
             []
             [ easyButton { buttonModifiers | color = Primary }
-                []
+                [ href "#" ]
                 (PostTime state)
                 "Save position"
             , easyButton { buttonModifiers | color = Primary }
-                []
+                [ href "#" ]
                 (AskTime state.episode)
                 "Get position"
             , easyButton { buttonModifiers | color = Primary }
-                []
+                [ href "#" ]
                 (SetDoubleSpeed (not state.doubleSpeed))
                 (if state.doubleSpeed then
                     "2x speed"

@@ -327,12 +327,12 @@ syncButton feed =
             stateClass feed.syncState
     in
     controlButton { buttonModifiers | color = color, state = state, size = Small }
-        [ href "#" ]
-        [ onClick (SyncFeedAsk (SyncSingle feed.id)) ]
+        []
+        [ href "#"
+        , onClick (SyncFeedAsk (SyncSingle feed.id))
+        ]
         [ span [ class "icon is-small" ]
-            -- TODO icons too eventually
-            [ i [ class "fa fa-refresh" ] []
-            ]
+            [ i [ class "fa fa-refresh" ] [] ]
         ]
 
 

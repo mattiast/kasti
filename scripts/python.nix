@@ -10,6 +10,7 @@ let
   dev-pkgs = ps: with ps; [
     jedi
     mypy
+    flake8
     python-language-server
     pyls-isort
     pyls-black

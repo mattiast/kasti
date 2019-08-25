@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 def fetch_episodes(supla_id: int) -> Iterator[EpisodeData]:
-    url = f"https://supla-prod-component-api.nm-services.nelonenmedia.fi/api/component/260035"
+    url = "https://prod-component-api.nm-services.nelonenmedia.fi/api/component/260035"
     params = {
         "current_primary_content": "series",
         "current_series_content_order_direction": "desc",
@@ -21,6 +21,7 @@ def fetch_episodes(supla_id: int) -> Iterator[EpisodeData]:
         "client": "web",
     }
     r = requests.get(url, params=params)
+    r.raise_for_status()
 
     stuff = r.json()
 

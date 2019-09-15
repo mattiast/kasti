@@ -13,14 +13,14 @@ syncFeed : SyncFeedId -> Cmd Msg
 syncFeed sfid =
     let
         cont =
-            Result.map ((\_ -> ())) >> RD.fromResult >> SyncFeedReceive sfid
+            Result.map (\_ -> ()) >> RD.fromResult >> SyncFeedReceive sfid
     in
-        case sfid of
-            SyncSingle fid ->
-                C.postSyncfeedByFeedId cont fid
+    case sfid of
+        SyncSingle fid ->
+            C.postSyncfeedByFeedId cont fid
 
-            SyncAll ->
-                C.postSyncfeedAll cont
+        SyncAll ->
+            C.postSyncfeedAll cont
 
 
 postProgress : PlayerState -> Cmd Msg

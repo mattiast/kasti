@@ -6,9 +6,11 @@ dateparser
 requests
 
 flake8
+flake8-mypy
+flake8-import-order
 pylint
 mypy
 black
-imps
+isort
 pudb
 jedi

@@ -24,7 +24,8 @@ class Program(NamedTuple):
 
 
 programs = {
-    "thf": Program(name="Total Hockey Forever", supla_id=2256361, feedname="thf.xml")
+    "thf": Program(name="Total Hockey Forever", supla_id=2256361, feedname="thf.xml"),
+    "tnf": Program(name="Total NHL Forever",    supla_id=3480955, feedname="tnf.xml"),
 }
 
 

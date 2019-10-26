@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mattiast/kasti-build:0.1.2
+      - image: mattiast/kasti-build:0.1.3
     steps:
       - checkout
       - setup_remote_docker

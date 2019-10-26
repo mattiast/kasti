@@ -5,7 +5,7 @@ module GetFeed
   ) where
 
 import Control.Applicative
-import Control.Concurrent.Async.Lifted.Safe (forConcurrently_)
+import Control.Concurrent.Async.Lifted.Safe (forConcurrently)
 import Control.Lens hiding ((.=))
 import Control.Monad.Reader
 import Data.Maybe
@@ -28,14 +28,16 @@ fetchFeed url = do
     let body = r ^. responseBody
     return $ parseFeedSource body
 
-syncFeeds :: (Foldable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO ()
+syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO ()
 syncFeeds fs = do
     let parallelDownloads = 5
     dlPool <- liftIO $ createPool (return ()) (\() -> return ()) 1 1.234 parallelDownloads
-    forConcurrently_ fs $ \(fid, fi) -> do
+    allEpis <- forConcurrently fs $ \(fid, fi) -> do
         es <- liftIO $ withResource dlPool $ const $ fetchEpisodes fi
-        conn <- ask
-        liftIO $ writeEpisodes fid es conn
+        return (fid, es)
+
+    conn <- ask
+    forM_ allEpis (\(fid, es) -> liftIO (writeEpisodes fid es conn))
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

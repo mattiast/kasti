@@ -2,12 +2,19 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mattiast/kasti-build:0.1.3
+      - image: nixorg/nix:circleci
     steps:
       - checkout
       - setup_remote_docker
       - restore_cache:
-          key: nix_store0
+          key: nix_store1
+      - run:
+          name: Set up nix environment
+          command: |
+              nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+              nix-channel --update
+              nix-env -iA docker -f '<nixpkgs>'
+              nix-env -iA awscli -f '<nixpkgs>'
       - run:
           name: Build app image
           command: |
@@ -34,7 +41,7 @@ jobs:
       - save_cache:
           paths:
             - /nix
-          key: nix_store0-{{ epoch }}
+          key: nix_store1-{{ epoch }}
 
 # Required environment variables:
 # - AWS_ACCOUNT_ID

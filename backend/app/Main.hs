@@ -35,3 +35,4 @@ getConf =
     <$> getEnv "DB_STRING"
     <*> getEnv "HTML_PATH"
     <*> getEnv "JS_PATH"
+    <*> (read <$> getEnv "PORT")

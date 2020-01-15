@@ -7,6 +7,7 @@ data Config = Config {
     dbString :: String
   , htmlPath :: FilePath
   , jsPath :: FilePath
+  , restPort :: Int
 } deriving Show
 
 data Context = Context {

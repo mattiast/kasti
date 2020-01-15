@@ -24,7 +24,7 @@ start config = do
     let context = Context config pool
     appStatic <- scottyApp $ jutska context
     let app = SS.app context appStatic
-    mainThread <- async $ run 3000 app
+    mainThread <- async $ run (restPort config) app
     return Handler
         { mainTid = mainThread
         , ctx = context

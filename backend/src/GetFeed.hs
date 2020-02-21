@@ -49,6 +49,7 @@ parsePubDate :: DateString -> Maybe UTCTime
 parsePubDate dt = let ds = T.unpack dt
                    in (parseTimeM True defaultTimeLocale rfc822DateFormat ds)
                    <|> (parseTimeM True defaultTimeLocale "%A, %e %B %Y %k:%M:%S %Z" ds)
+                   <|> (parseTimeM True defaultTimeLocale "%a, %e %b %Y %k:%M:%S" ds)  -- "Thu, 13 Feb 2020 00:00:00"
 
 itemEpisodeInfo :: Item -> Maybe Episode
 itemEpisodeInfo item = do

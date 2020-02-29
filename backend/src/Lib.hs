@@ -10,8 +10,14 @@ import Web.Scotty
 import EpisodeDb
 import Network.Wai.Handler.Warp (run)
 import Context
+import System.FilePath(takeFileName)
 
 import qualified ServantStuff as SS
+import qualified Data.Text.Lazy.IO as T
+import qualified Data.Text.Lazy as T
+import Data.Function((&))
+import Control.Monad.IO.Class(liftIO)
+import Control.Monad(unless)
 
 data Handler = Handler
     { mainTid :: Async ()
@@ -38,11 +44,14 @@ stop h = do
 jutska :: Context -> ScottyM ()
 jutska context = do
     let servePage = do
-            setHeader "Content-Type" "text/html; charset=utf-8"
-            file $ (htmlPath $ cConfig context)
+            stuff <- liftIO $ T.readFile (htmlPath $ cConfig context)
+            html $ stuff & T.replace "$JSFILE" (T.pack jsname)
+        jsname = takeFileName $ jsPath $ cConfig context
     get "/browse" servePage
     get "/continue" servePage
     get "/new" servePage
-    get "/elm.js" $ do
+    get ("/js/:jsname") $ do
+        jsn <- param "jsname"
+        unless (jsn == jsname) next
         setHeader "Content-Type" "application/javascript"
         file $ (jsPath $ cConfig context)

@@ -2,7 +2,6 @@
 with nixPkgs;
 let
   python = (import ./scripts/python.nix { pkgs = nixPkgs; }).python-dev;
-  myVim = import ./scripts/vim.nix { pkgs = nixPkgs; python = python; };
   neoVim = import ./neovim.nix { pkgs = nixPkgs; };
   scriptImage = import ./scripts/default.nix { nixPkgs = nixPkgs; };
   backend = (import ./backend/default.nix { nixPkgs = nixPkgs; });
@@ -38,7 +37,6 @@ let
     env = buildEnv { name = name; paths = buildInputs; };
     buildInputs = [
       python
-      myVim
       neoVim
       git
       elmPackages.elm

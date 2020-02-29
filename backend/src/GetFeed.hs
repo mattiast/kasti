@@ -58,6 +58,6 @@ itemEpisodeInfo item = do
     date <- getItemDate item
         >>= parsePubDate
     return $ Episode
-        (EpisodeUrl url)
+        url
         title
         date

@@ -26,15 +26,15 @@ closePool pool = do
     destroyAllResources pool
     putStrLn "DB connection pool closed"
 
-readFeeds :: Connection -> IO [(FeedId, FeedInfo)]
+readFeeds :: Connection -> IO [FStuff]
 readFeeds conn = do
     rows <- query_ conn "select id, name, url from feeds"
-    return [ (fid, fi) | Only fid :. fi <- rows ]
+    return [ FStuff fid fi | Only fid :. fi <- rows ]
 
-readEpisodes :: FeedId -> Connection -> IO [(EpisodeId, Episode)]
+readEpisodes :: FeedId -> Connection -> IO [EStuff]
 readEpisodes fid conn = do
     rows <- query conn "select id, url, title, date from episodes where feed_id = ?" (Only fid)
-    return [ (eid, ep) | Only eid :. ep <- rows ]
+    return [ EStuff eid ep | Only eid :. ep <- rows ]
 
 readFeed :: FeedId -> Connection -> IO (Maybe FeedInfo)
 readFeed fid conn = do

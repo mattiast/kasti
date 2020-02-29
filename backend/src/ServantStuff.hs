@@ -40,13 +40,13 @@ progressStuff :: Context -> (Server ProgressApi)
 progressStuff context =
     (\episodeId -> fmap noCache $ withConn (readPosition episodeId) context) :<|>
     fmap noCache (withConn readPositions context) :<|>
-    (\prog -> withConn (writePosition prog) context >> return NoContent)
+    (\prog -> withConn (writePosition prog) context >> return ())
 
 feedsStuff :: Context -> (Server FeedsApi)
 feedsStuff = withConn readFeeds
 
 feedStuff :: Context -> (Server FeedApi)
-feedStuff context fi = withConn (writeFeed fi) context >> return NoContent
+feedStuff context fi = withConn (writeFeed fi) context >> return ()
 
 episodeStuff :: Context -> (Server EpisodeApi)
 episodeStuff context =
@@ -56,14 +56,14 @@ episodeStuff context =
 syncfeedStuff :: Context -> (Server SyncFeedApi)
 syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn (syncOne feedId) context)
 
-syncAll :: Connection -> IO NoContent
+syncAll :: Connection -> IO ()
 syncAll conn = do
     fs <- readFeeds conn
-    runReaderT (syncFeeds fs) conn
-    return NoContent
+    runReaderT (syncFeeds [ (fid, fi) | FStuff fid fi <- fs ]) conn
+    return ()
 
-syncOne :: FeedId -> Connection -> IO NoContent
+syncOne :: FeedId -> Connection -> IO ()
 syncOne feedId conn = do
     mf <- readFeed feedId conn
     runReaderT (syncFeeds (fmap (feedId,) mf)) conn
-    return NoContent
+    return ()

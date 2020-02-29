@@ -32,7 +32,8 @@ library:
   - feed
   - wreq
   - postgresql-simple
-  - elm-export
+  - elm-bridge
+  - servant-elm
   - parallel
   - async
   - process
@@ -69,7 +70,7 @@ executables:
     dependencies:
     - kasti
     - optparse-applicative
-    - elm-export
+    - elm-bridge
     - servant-elm
     - servant
 

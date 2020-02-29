@@ -17,7 +17,7 @@ syncFeed sfid =
     in
     case sfid of
         SyncSingle fid ->
-            C.postSyncfeedByFeedId cont fid
+            C.postSyncfeedByFeedId fid cont
 
         SyncAll ->
             C.postSyncfeedAll cont
@@ -25,7 +25,7 @@ syncFeed sfid =
 
 postProgress : PlayerState -> Cmd Msg
 postProgress state =
-    C.postProgress (\_ -> PositionsAsk) (H.encodeProgress state)
+    C.postProgress (H.encodeProgress state) (\_ -> PositionsAsk)
 
 
 getFeeds : Cmd (RD.WebData (List Feed))
@@ -37,8 +37,8 @@ getFeeds =
 getProgress : Episode -> Cmd (RD.WebData PlayerState)
 getProgress ep =
     C.getProgressByEpisodeId
-        (RD.fromResult >> RD.map (\prog -> PlayerState ep prog.prPos prog.prDuration False))
         ep.id
+        (RD.fromResult >> RD.map (\prog -> PlayerState ep prog.prPos prog.prDuration False))
 
 
 getPositions : Cmd (RD.WebData (List ProgressInfo))
@@ -49,7 +49,7 @@ getPositions =
 
 getEpisodes : FeedId -> Cmd (RD.WebData (List Episode))
 getEpisodes feed_id =
-    C.getEpisodesByFeedId (RD.fromResult >> RD.map (List.map (\( id, ep ) -> H.makeEpisode id ep))) feed_id
+    C.getEpisodesByFeedId feed_id (RD.fromResult >> RD.map (List.map H.makeEpisode))
 
 
 getNewEpisodes : Cmd (RD.WebData (List NewEpisode))
@@ -60,4 +60,4 @@ getNewEpisodes =
 
 postNewFeed : NewFeed -> Cmd Msg
 postNewFeed newFeed =
-    C.postFeed (RD.fromResult >> RD.map (\_ -> ()) >> NewFeedReceive) (H.encodeNewFeed newFeed)
+    C.postFeed (H.encodeNewFeed newFeed) (RD.fromResult >> RD.map (\_ -> ()) >> NewFeedReceive)

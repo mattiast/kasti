@@ -5,8 +5,6 @@
 module Types where
 import Data.Aeson hiding (defaultOptions)
 import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.FromField
-import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToRow
 import Data.String
@@ -17,7 +15,7 @@ import Elm.Derive
 
 
 data Episode = Episode {
-    epUrl :: EpisodeUrl
+    epUrl :: Text
   , epTitle :: Text
   , epDate :: UTCTime
 } deriving (Show, Generic)
@@ -28,7 +26,7 @@ type EpisodeUrl = Text
 type EpisodeId = Int
 
 data ProgressMsg = ProgressMsg {
-    prEpId :: EpisodeId
+    prEpId :: Int
   , prPos :: Double
   , prDuration :: Double
 } deriving (Show, Generic)
@@ -42,15 +40,15 @@ data FeedInfo = FeedInfo {
 
 type FeedId = Int
 
-data EStuff = EStuff EpisodeId Episode
-data FStuff = FStuff FeedId FeedInfo
+data EStuff = EStuff Int Episode
+data FStuff = FStuff Int FeedInfo
 
 deriveBoth defaultOptions ''EStuff
 deriveBoth defaultOptions ''FStuff
 
 data ProgressInfo = ProgressInfo 
     { pi_ftitle :: String
-    , pi_epId :: EpisodeId
+    , pi_epId :: Int
     , pi_episode :: Episode
     , pi_prog :: ProgressMsg
     }
@@ -59,7 +57,7 @@ data ProgressInfo = ProgressInfo
 
 data NewEpisode = NewEpisode 
     { ne_ftitle :: String
-    , ne_epId :: EpisodeId
+    , ne_epId :: Int
     , ne_episode :: Episode
     }
     deriving (Show, Generic)

@@ -25,6 +25,11 @@
         version = "1.0.1";
       };
 
+      "bartavelle/json-helpers" = {
+        sha256 = "0k96qra2nq1j4j4ahfl98dkpkc6f2831mq5d5xxg27mp31qwq5nn";
+        version = "2.0.2";
+      };
+
       "elm/core" = {
         sha256 = "1l0qdbczw91kzz8sx5d5zwz9x662bspy7p21dsr3f2rigxiix2as";
         version = "1.0.2";

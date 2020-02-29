@@ -17,7 +17,7 @@ noCache = addHeader "no-cache, no-store, must-revalidate"
 
 type ProgressApi =
   "progress" :>
-    (Capture "episodeId" EpisodeId :> Get '[JSON] (NoCache ProgressMsg) :<|>
+    (Capture "episodeId" Int :> Get '[JSON] (NoCache ProgressMsg) :<|>
      "all" :> Get '[JSON] (NoCache [ProgressInfo]) :<|>
      ReqBody '[JSON] ProgressMsg :> Post '[JSON] ())
 

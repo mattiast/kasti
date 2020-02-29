@@ -1,5 +1,5 @@
 { mkDerivation, aeson, async, base, bytestring, containers
-, directory, elm-export, feed, filepath, hpack, http-types, lens
+, directory, elm-bridge, feed, filepath, hpack, http-types, lens
 , lens-aeson, lifted-async, mtl, optparse-applicative, parallel
 , postgresql-simple, process, random, resource-pool, scotty
 , servant, servant-elm, servant-server, stdenv, stm, text, time
@@ -12,15 +12,15 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson async base bytestring containers directory elm-export feed
+    aeson async base bytestring containers directory elm-bridge feed
     filepath http-types lens lens-aeson lifted-async mtl parallel
     postgresql-simple process random resource-pool scotty servant
-    servant-server stm text time transformers unliftio vector wai warp
-    wreq
+    servant-elm servant-server stm text time transformers unliftio
+    vector wai warp wreq
   ];
   libraryToolDepends = [ hpack ];
   executableHaskellDepends = [
-    aeson base bytestring containers directory elm-export filepath lens
+    aeson base bytestring containers directory elm-bridge filepath lens
     lens-aeson mtl optparse-applicative random servant servant-elm text
     time transformers unix vector
   ];
@@ -28,7 +28,7 @@ mkDerivation {
     aeson base bytestring containers directory filepath lens lens-aeson
     mtl random text time transformers vector
   ];
-  preConfigure = "hpack";
+  prePatch = "hpack";
   license = "unknown";
   hydraPlatforms = stdenv.lib.platforms.none;
 }

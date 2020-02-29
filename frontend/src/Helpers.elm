@@ -12,10 +12,10 @@ import Time
 import Types exposing (..)
 
 
-makeEpisode : Int -> C.Episode -> Episode
-makeEpisode id ce =
+makeEpisode : C.EStuff -> Episode
+makeEpisode (C.EStuff id ce) =
     { title = ce.epTitle
-    , url = ce.epUrl.fromEpUrl
+    , url = ce.epUrl
     , date = ce.epDate
     , id = id
     }
@@ -24,7 +24,7 @@ makeEpisode id ce =
 makeProgressInfo : C.ProgressInfo -> ProgressInfo
 makeProgressInfo cp =
     { ftitle = cp.pi_ftitle
-    , episode = makeEpisode cp.pi_epId cp.pi_episode
+    , episode = makeEpisode (C.EStuff cp.pi_epId cp.pi_episode)
     , position = cp.pi_prog.prPos
     , duration = cp.pi_prog.prDuration
     }
@@ -33,7 +33,7 @@ makeProgressInfo cp =
 makeNewEpisode : C.NewEpisode -> NewEpisode
 makeNewEpisode cn =
     { ftitle = cn.ne_ftitle
-    , episode = makeEpisode cn.ne_epId cn.ne_episode
+    , episode = makeEpisode (C.EStuff cn.ne_epId cn.ne_episode)
     }
 
 
@@ -52,8 +52,8 @@ encodeNewFeed newFeed =
     }
 
 
-makeFeed : ( Int, C.FeedInfo ) -> Feed
-makeFeed ( id, fi ) =
+makeFeed : C.FStuff -> Feed
+makeFeed (C.FStuff id fi) =
     { id = id
     , name = fi.fname
     , url = fi.furl

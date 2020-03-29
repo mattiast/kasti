@@ -133,8 +133,8 @@ sortButtons =
 
 onePosition : ProgressInfo -> Html Msg
 onePosition pi =
-    media [ onClick (EpisodePick pi.episode) ]
-        [ mediaContent []
+    media []
+        [ mediaContent [ onClick (EpisodePick pi.episode) ]
             [ p []
                 [ strong [] [ text pi.ftitle ]
                 , br [] []
@@ -144,6 +144,7 @@ onePosition pi =
         , mediaRight []
             [ p []
                 [ text (H.renderSeconds (pi.duration - pi.position))
+                , a [ href "#", onClick (ProgMsg (PostTime (PlayerState pi.episode pi.duration pi.duration False))) ] [ text "Remove" ]
                 , br [] []
                 , small [] [ text (showTime pi.episode.date) ]
                 ]

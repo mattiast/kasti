@@ -256,7 +256,7 @@ viewNewFeedForm newFeed =
     , navbarItem False
         []
         [ field []
-            [ label [] [ text "Name" ]
+            [ label [] [ text "URL" ]
             , controlInput controlInputModifiers
                 []
                 [ type_ "url"

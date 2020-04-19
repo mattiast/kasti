@@ -10,7 +10,7 @@
     <body>
         <script src="/js/$JSFILE"></script>
         <script>
-            var app = Elm.Browse.init();
+            var app = Elm.Main.init();
 
             app.ports.setCurrentTime.subscribe(function(time) {
                 var audio = document.getElementById('audio-player');

@@ -5,21 +5,43 @@
 with nixpkgs;
 
 let
-  srcs = ./elm-srcs.nix;
-  versionsDat = ./versions.dat;
-in stdenv.mkDerivation {
+  mkDerivation =
+    { srcs ? ./elm-srcs.nix
+    , src
+    , name
+    , srcdir ? "./src"
+    , targets ? []
+    , registryDat ? ./registry.dat
+    , outputJavaScript ? false
+    }:
+    stdenv.mkDerivation {
+      inherit name src;
+
+      buildInputs = [ elmPackages.elm kasti-elm-client ];
+
+      buildPhase = pkgs.elmPackages.fetchElmDeps {
+        elmPackages = import srcs;
+        elmVersion = "0.19.1";
+        inherit registryDat;
+      };
+
+      installPhase = let
+        elmfile = module: "${srcdir}/${builtins.replaceStrings ["."] ["/"] module}.elm";
+        extension = if outputJavaScript then "js" else "html";
+      in ''
+        cp -R ${kasti-elm-client}/* src
+        ${lib.concatStrings (map (module: ''
+          echo "compiling ${elmfile module}"
+          elm make ${elmfile module} --output $out
+        '') targets)}
+      '';
+    };
+in mkDerivation {
   name = "kasti-frontend.js";
+  srcs = ./elm-srcs.nix;
   src = ./.;
-
-  buildInputs = [ elmPackages.elm kasti-elm-client ];
-
-  buildPhase = elmPackages.fetchElmDeps {
-    elmPackages = import srcs;
-    inherit versionsDat;
-  };
-
-  installPhase = ''
-    cp -R ${kasti-elm-client}/* src
-    ${elmPackages.elm}/bin/elm make src/Browse.elm --output $out
-  '';
+  targets = ["Main"];
+  srcdir = "./src";
+  outputJavaScript = true;
 }
+

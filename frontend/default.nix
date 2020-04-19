@@ -6,7 +6,7 @@ with nixpkgs;
 
 let
   srcs = ./elm-srcs.nix;
-  versionsDat = ./versions.dat;
+  registryDat = ./registry.dat;
 in stdenv.mkDerivation {
   name = "kasti-frontend.js";
   src = ./.;
@@ -15,11 +15,12 @@ in stdenv.mkDerivation {
 
   buildPhase = elmPackages.fetchElmDeps {
     elmPackages = import srcs;
-    inherit versionsDat;
+    elmVersion = "0.19.1";
+    inherit registryDat;
   };
 
   installPhase = ''
     cp -R ${kasti-elm-client}/* src
-    ${elmPackages.elm}/bin/elm make src/Browse.elm --output $out
+    elm make src/Main.elm --output $out
   '';
 }

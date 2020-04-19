@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Set the right Nix channel, install utilities
           command: |
-              nix-channel --add https://nixos.org/channels/nixos-19.09 nixpkgs
+              nix-channel --add https://nixos.org/channels/nixos-20.03 nixpkgs
               nix-channel --update
 
               nix-env -iA docker -f '<nixpkgs>'

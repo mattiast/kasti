@@ -1,4 +1,4 @@
-port module Browse exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Browser.Navigation as N

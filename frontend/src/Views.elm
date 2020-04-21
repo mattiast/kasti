@@ -12,7 +12,7 @@ import DateFormat as DF
 import Debug exposing (toString)
 import Helpers as H
 import Html exposing (Html, a, audio, br, div, h4, i, p, small, span, strong, text)
-import Html.Attributes exposing (class, controls, href, id, name, placeholder, src, style, type_)
+import Html.Attributes as Attr exposing (class, controls, href, id, name, placeholder, src, style, type_)
 import Html.Events exposing (on, onClick, onInput)
 import RemoteData as RD
 import Time
@@ -27,7 +27,6 @@ view model =
         , viewChooser model
         , RD.map viewPlayer model.playerState
             |> RD.withDefault (audio [ id "audio-player", style "display" "none" ] [])
-            |> Html.map ProgMsg
         , case model.view of
             Browse ->
                 viewSelector model
@@ -365,7 +364,7 @@ episodeRow ep =
         ]
 
 
-viewPlayer : PlayerState -> Html MsgProg
+viewPlayer : PlayerState -> Html Msg
 viewPlayer state =
     div []
         [ h4 [ class "title is-4" ] [ text state.episode.title ]
@@ -377,7 +376,7 @@ viewPlayer state =
             , controls True
             , style "width" "1000px"
             , id "audio-player"
-            , H.onTimeUpdate
+            , Attr.map ProgMsg H.onTimeUpdate
             ]
             []
         , br [] []
@@ -385,20 +384,28 @@ viewPlayer state =
             []
             [ easyButton { buttonModifiers | color = Primary }
                 [ href "#" ]
-                (PostTime state)
-                "Save position"
+                (ProgMsg (PostTime state))
+                "Save"
             , easyButton { buttonModifiers | color = Primary }
                 [ href "#" ]
-                (AskTime state.episode)
-                "Get position"
+                (ProgMsg (AskTime state.episode))
+                "Back"
             , easyButton { buttonModifiers | color = Primary }
                 [ href "#" ]
-                (SetDoubleSpeed (not state.doubleSpeed))
+                (ProgMsg (SetDoubleSpeed (not state.doubleSpeed)))
                 (if state.doubleSpeed then
-                    "2x speed"
+                    "2x"
 
                  else
-                    "1x speed"
+                    "1x"
                 )
+            , easyButton { buttonModifiers | color = Primary }
+                [ href "#" ]
+                (ReceiveProgress (RD.Success { state | time = max (state.time - 20.0) 0.0 }))
+                "-20"
+            , easyButton { buttonModifiers | color = Primary }
+                [ href "#" ]
+                (ReceiveProgress (RD.Success { state | time = min (state.time + 20.0) state.duration }))
+                "+20"
             ]
         ]

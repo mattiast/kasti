@@ -5,11 +5,9 @@ module GetFeed
   ) where
 
 import Control.Applicative
-import Control.Concurrent.Async.Lifted.Safe (forConcurrently)
 import Control.Lens hiding ((.=))
 import Control.Monad.Reader
 import Data.Maybe
-import Data.Pool
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format
@@ -21,6 +19,10 @@ import Text.Feed.Query
 import Text.Feed.Types
 import Text.RSS.Syntax (DateString)
 import Types
+import UnliftIO.Exception(tryIO)
+import UnliftIO.Async(pooledForConcurrentlyN)
+import Data.Either(isRight)
+import Data.Foldable(traverse_)
 
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
@@ -31,13 +33,14 @@ fetchFeed url = do
 syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO ()
 syncFeeds fs = do
     let parallelDownloads = 5
-    dlPool <- liftIO $ createPool (return ()) (\() -> return ()) 1 1.234 parallelDownloads
-    allEpis <- forConcurrently fs $ \(fid, fi) -> do
-        es <- liftIO $ withResource dlPool $ const $ fetchEpisodes fi
+    allEpis <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryIO $ do
+        es <- liftIO $ fetchEpisodes fi
         return (fid, es)
 
+    let successfulEpis = sum $ fmap (\x -> if isRight x then 1 else 0) allEpis :: Int
+    liftIO $ putStrLn $ "Got " ++ show (successfulEpis) ++ " out of " ++ show (length fs)
     conn <- ask
-    forM_ allEpis (\(fid, es) -> liftIO (writeEpisodes fid es conn))
+    forM_ allEpis (traverse_ (\(fid, es) -> liftIO (writeEpisodes fid es conn)))
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

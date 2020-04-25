@@ -7,7 +7,6 @@
 module Api where
 
 import Servant.API
-import Servant.Elm
 import Types
 
 type NoCache a = Headers '[Header "Cache-Control" String] a

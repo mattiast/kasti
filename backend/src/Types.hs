@@ -3,11 +3,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Types where
-import Data.Aeson hiding (defaultOptions)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToRow
-import Data.String
 import Data.Text(Text)
 import Data.Time.Clock(UTCTime)
 import GHC.Generics

@@ -42,6 +42,7 @@ nnoremap <silent> <leader>mr :CtrlPBufTagAll<cr>
 nnoremap <silent> <leader>a :CtrlPBuffer<cr>
 
 map <silent> <leader>tt :call LanguageClient_textDocument_hover()<cr>
+map <silent> <leader>td :call LanguageClient_textDocument_definition()<cr>
 map <silent> <leader>tf :call LanguageClient_textDocument_formatting()<cr>
 map <silent> <leader>te :call LanguageClient#explainErrorAtPoint()<cr>
 map <silent> <leader>md :call LanguageClient_contextMenu()<cr>

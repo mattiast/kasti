@@ -1,2 +1,3 @@
-{ "pyls.configurationSources": ["flake8"]
+{ "pyls.configurationSources": ["flake8"],
+  "pyls.plugins.pylint.enabled": false
 }

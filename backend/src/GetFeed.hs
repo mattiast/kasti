@@ -19,7 +19,7 @@ import Text.Feed.Query
 import Text.Feed.Types
 import Text.RSS.Syntax (DateString)
 import Types
-import UnliftIO.Exception(tryIO)
+import UnliftIO.Exception(tryAny)
 import UnliftIO.Async(pooledForConcurrentlyN)
 import Data.Either(isRight)
 import Data.Foldable(traverse_)
@@ -33,7 +33,7 @@ fetchFeed url = do
 syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO ()
 syncFeeds fs = do
     let parallelDownloads = 5
-    allEpis <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryIO $ do
+    allEpis <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryAny $ do
         es <- liftIO $ fetchEpisodes fi
         return (fid, es)
 

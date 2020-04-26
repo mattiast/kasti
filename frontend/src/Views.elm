@@ -1,7 +1,6 @@
 module Views exposing (view)
 
 import Browser
-import Browser.Navigation as N
 import Bulma.Columns exposing (..)
 import Bulma.Components exposing (..)
 import Bulma.Elements exposing (..)
@@ -13,7 +12,7 @@ import Debug exposing (toString)
 import Helpers as H
 import Html exposing (Html, a, audio, br, div, h4, i, p, small, span, strong, text)
 import Html.Attributes as Attr exposing (class, controls, href, id, name, placeholder, src, style, type_)
-import Html.Events exposing (on, onClick, onInput)
+import Html.Events exposing (onClick, onInput)
 import RemoteData as RD
 import Time
 import Types exposing (..)

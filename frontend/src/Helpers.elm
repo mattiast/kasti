@@ -2,11 +2,9 @@ module Helpers exposing (encodeNewFeed, encodeProgress, makeEpisode, makeFeed, m
 
 import Client.Types as C
 import DateFormat as DF
-import Debug exposing (toString)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as J
-import Json.Encode as JE
 import RemoteData as RD
 import Time
 import Types exposing (..)

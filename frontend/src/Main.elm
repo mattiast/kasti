@@ -3,10 +3,7 @@ port module Main exposing (main)
 import Browser
 import Browser.Navigation as N
 import Client
-import Client.Types as C
-import Debug
 import Helpers as H
-import Http
 import Json.Decode as D
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
@@ -30,7 +27,7 @@ main =
 
 
 init : D.Value -> U.Url -> N.Key -> ( Model, Cmd Msg )
-init value loc key =
+init _ loc key =
     let
         firstView =
             parseView loc.path
@@ -82,7 +79,7 @@ update msg model =
             ( { model | episodes = stuff }, Cmd.none )
 
         ReceiveProgress stuff ->
-            ( { model | playerState = stuff |> Debug.log "rec prog" }
+            ( { model | playerState = stuff }
             , stuff
                 |> RD.map (\s -> setCurrentTime s.time)
                 |> RD.withDefault Cmd.none
@@ -120,7 +117,7 @@ update msg model =
             )
 
         Nop ->
-            ( Debug.log "nop" model, Cmd.none )
+            ( model, Cmd.none )
 
         SyncFeedAsk sfid ->
             let
@@ -188,7 +185,7 @@ update msg model =
             )
 
         ClickUrl urlRequest ->
-            case Debug.log "clickurl" urlRequest of
+            case urlRequest of
                 Browser.Internal url ->
                     ( model
                     , N.pushUrl model.navKey (U.toString url)

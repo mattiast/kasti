@@ -59,6 +59,7 @@ type alias Model =
     , view : WhichView
     , navKey : N.Key
     , positions : RD.WebData (List ProgressInfo)
+    , posSortBy : SortMsg
     , newEpisodes : RD.WebData (List NewEpisode)
     }
 

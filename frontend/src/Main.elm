@@ -44,6 +44,7 @@ init _ loc key =
       , view = firstView
       , navKey = key
       , positions = RD.NotAsked
+      , posSortBy = ByDate
       , newEpisodes = RD.NotAsked
       }
     , Cmd.batch
@@ -209,19 +210,7 @@ update msg model =
             )
 
         SortBy by ->
-            let
-                f =
-                    case by of
-                        ByFeed ->
-                            List.sortBy (\pi -> pi.ftitle)
-
-                        ByDate ->
-                            List.sortBy (\pi -> 0 - Time.posixToMillis pi.episode.date)
-
-                        ByTime ->
-                            List.sortBy (\pi -> pi.duration - pi.position)
-            in
-            ( H.modifyPositions f model, Cmd.none )
+            ( { model | posSortBy = by }, Cmd.none )
 
 
 parseView : String -> Maybe WhichView

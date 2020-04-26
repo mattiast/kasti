@@ -31,7 +31,7 @@ view model =
                 viewSelector model
 
             Continue ->
-                RD.map viewPositions model.positions
+                RD.map (viewPositions << getSortedPositions model.posSortBy) model.positions
                     |> RD.withDefault (text (toString model.positions))
 
             New ->
@@ -117,6 +117,19 @@ viewPositions prog =
                 ++ List.map onePosition prog
             )
         ]
+
+
+getSortedPositions : SortMsg -> List ProgressInfo -> List ProgressInfo
+getSortedPositions by =
+    case by of
+        ByFeed ->
+            List.sortBy (\pi -> pi.ftitle)
+
+        ByDate ->
+            List.sortBy (\pi -> 0 - Time.posixToMillis pi.episode.date)
+
+        ByTime ->
+            List.sortBy (\pi -> pi.duration - pi.position)
 
 
 sortButtons : Html Msg

@@ -6,7 +6,7 @@ import lxml.etree
 import psycopg2
 import requests
 
-from episodedb import EpisodeData, write_db
+from .episodedb import EpisodeData, write_db
 
 log = logging.getLogger(__name__)
 

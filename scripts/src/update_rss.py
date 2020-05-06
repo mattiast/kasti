@@ -12,7 +12,7 @@ import psycopg2.extras
 import PyRSS2Gen
 from psycopg2.extensions import connection
 
-import radiorock
+from .radiorock import fetch_and_write
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ def main():
     with open(args.confpath) as f:
         conf = json.load(f)
 
-    n = radiorock.fetch_and_write(info.name, conf["postgres_string"], info.supla_id)
+    n = fetch_and_write(info.name, conf["postgres_string"], info.supla_id)
     log.info("%d new episodes", n)
 
     if n > 0:

@@ -206,7 +206,7 @@ viewMenu state =
                     [ easyButton { buttonModifiers | color = buttonColor, state = buttonState }
                         [ href "#" ]
                         (SyncFeedAsk SyncAll)
-                        "Sync all feeds"
+                        ("Sync all feeds" ++ RD.withDefault "" (RD.map toString state.syncAllState))
                     ]
                 ]
 
@@ -318,7 +318,12 @@ feedList feeds =
                 feedItem f =
                     tableRow False
                         []
-                        [ tableCell [ onClick (AskEpList f.id) ] [ text f.name ]
+                        [ tableCell [ onClick (AskEpList f.id) ]
+                            [ text
+                                (f.name
+                                    ++ RD.withDefault "" (RD.map toString f.syncState)
+                                )
+                            ]
                         , tableCell [] [ syncButton f ]
                         ]
             in

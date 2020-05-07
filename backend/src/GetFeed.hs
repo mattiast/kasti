@@ -22,7 +22,6 @@ import Types
 import UnliftIO.Exception(tryAny)
 import UnliftIO.Async(pooledForConcurrentlyN)
 import Data.Either(isRight)
-import Data.Foldable(traverse_)
 
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
@@ -30,7 +29,7 @@ fetchFeed url = do
     let body = r ^. responseBody
     return $ parseFeedSource body
 
-syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO ()
+syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO Int
 syncFeeds fs = do
     let parallelDownloads = 5
     allEpis <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryAny $ do
@@ -40,7 +39,8 @@ syncFeeds fs = do
     let successfulEpis = sum $ fmap (\x -> if isRight x then 1 else 0) allEpis :: Int
     liftIO $ putStrLn $ "Got " ++ show (successfulEpis) ++ " out of " ++ show (length fs)
     conn <- ask
-    forM_ allEpis (traverse_ (\(fid, es) -> liftIO (writeEpisodes fid es conn)))
+    tavarat <- forM allEpis (traverse (\(fid, es) -> liftIO (writeEpisodes fid es conn)))
+    return $! sum $ fmap (either (const 0) id) tavarat
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

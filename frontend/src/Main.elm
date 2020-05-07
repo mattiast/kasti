@@ -8,7 +8,6 @@ import Json.Decode as D
 import Platform.Cmd as Cmd
 import Platform.Sub as Sub
 import RemoteData as RD
-import Time
 import Types exposing (..)
 import Url as U
 import Views

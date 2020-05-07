@@ -2,9 +2,6 @@ module Client exposing (getEpisodes, getFeeds, getNewEpisodes, getPositions, get
 
 import Client.Types as C
 import Helpers as H
-import Http
-import Json.Decode as D
-import Platform.Cmd as Cmd
 import RemoteData as RD
 import Types exposing (..)
 
@@ -13,7 +10,7 @@ syncFeed : SyncFeedId -> Cmd Msg
 syncFeed sfid =
     let
         cont =
-            Result.map (\_ -> ()) >> RD.fromResult >> SyncFeedReceive sfid
+            RD.fromResult >> SyncFeedReceive sfid
     in
     case sfid of
         SyncSingle fid ->

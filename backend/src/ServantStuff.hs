@@ -56,14 +56,12 @@ episodeStuff context =
 syncfeedStuff :: Context -> (Server SyncFeedApi)
 syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn (syncOne feedId) context)
 
-syncAll :: Connection -> IO ()
+syncAll :: Connection -> IO Int
 syncAll conn = do
     fs <- readFeeds conn
     runReaderT (syncFeeds [ (fid, fi) | FStuff fid fi <- fs ]) conn
-    return ()
 
-syncOne :: FeedId -> Connection -> IO ()
+syncOne :: FeedId -> Connection -> IO Int
 syncOne feedId conn = do
     mf <- readFeed feedId conn
     runReaderT (syncFeeds (fmap (feedId,) mf)) conn
-    return ()

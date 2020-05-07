@@ -28,8 +28,8 @@ type EpisodeApi =
 
 type SyncFeedApi = 
   "syncfeed" :>
-    ("all" :> Post '[JSON] () :<|>
-     Capture "feedId" FeedId :> Post '[JSON] ())
+    ("all" :> Post '[JSON] Int :<|>
+     Capture "feedId" FeedId :> Post '[JSON] Int)
 
 type FeedsApi = "feeds" :> Get '[JSON] [FStuff]
 type FeedApi = "feed" :> ReqBody '[JSON] FeedInfo :> Post '[JSON] ()

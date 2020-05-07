@@ -19,7 +19,7 @@ type alias Feed =
     { id : FeedId
     , name : String
     , url : String
-    , syncState : RD.WebData ()
+    , syncState : RD.WebData Int
     }
 
 
@@ -66,7 +66,7 @@ type alias Model =
 
 type alias MenuState =
     { newFeed : NewFeed
-    , syncAllState : RD.WebData ()
+    , syncAllState : RD.WebData Int
     , navbarActive : Bool
     }
 
@@ -112,7 +112,7 @@ type Msg
     | ProgMsg MsgProg
     | Nop
     | SyncFeedAsk SyncFeedId
-    | SyncFeedReceive SyncFeedId (RD.WebData ())
+    | SyncFeedReceive SyncFeedId (RD.WebData Int)
     | UpdateNewFeed NewFeed
     | NewFeedPost
     | NewFeedReceive (RD.WebData ())

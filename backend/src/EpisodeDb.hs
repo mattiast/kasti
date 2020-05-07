@@ -73,13 +73,14 @@ readNewEpisodes n conn = do
     return [NewEpisode ftitle eid ep | (ftitle, eid) :. ep <- rows ]
 
 
-writeEpisodes :: FeedId -> [Episode] -> Connection -> IO ()
-writeEpisodes fid eps conn = void $ withTransaction conn $ do
+writeEpisodes :: FeedId -> [Episode] -> Connection -> IO Int
+writeEpisodes fid eps conn = withTransaction conn $ do
     (newUrls :: [EpisodeUrl]) <-
         fmap (fmap fromOnly) $ query conn "select url from unnest (?) as t(url) where url not in (select url from episodes)" (Only $ V.fromList $ fmap epUrl eps)
     let newEpisodes = filter (\e -> epUrl e `elem` newUrls) eps
-    executeMany conn "insert into episodes(feed_id, url, title, date) values (?,?,?,?) on conflict do nothing"
+    numRows <- executeMany conn "insert into episodes(feed_id, url, title, date) values (?,?,?,?) on conflict do nothing"
             [ Only fid :. ep | ep <- newEpisodes ]
+    return $! fromIntegral numRows
 
 writeFeed :: FeedInfo -> Connection -> IO ()
 writeFeed fi conn =

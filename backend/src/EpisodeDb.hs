@@ -28,7 +28,16 @@ closePool pool = do
 
 readFeeds :: Connection -> IO [FStuff]
 readFeeds conn = do
-    rows <- query_ conn "select id, name, url from feeds"
+    rows <- query_ conn $
+        "select f.id, f.name, f.url, t.date \
+         \ from feeds f \
+         \ left join lateral ( \
+         \   select e.date \
+         \   from episodes e \
+         \   where e.feed_id = f.id \
+         \   order by date desc \
+         \   limit 1 \
+         \ ) t on true"
     return [ FStuff fid fi | Only fid :. fi <- rows ]
 
 readEpisodes :: FeedId -> Connection -> IO [EStuff]

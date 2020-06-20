@@ -19,6 +19,7 @@ type alias Feed =
     { id : FeedId
     , name : String
     , url : String
+    , ldate : Maybe Posix
     , syncState : RD.WebData Int
     }
 

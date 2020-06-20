@@ -33,6 +33,7 @@ data ProgressMsg = ProgressMsg {
 data FeedInfo = FeedInfo {
     fname :: Text
   , furl :: String
+  , flatestdate :: Maybe UTCTime
 } deriving (Show, Generic)
 
 
@@ -82,4 +83,4 @@ instance ToRow FeedInfo where
     toRow fi = toRow (fname fi, furl fi)
 
 instance FromRow FeedInfo where
-    fromRow = FeedInfo <$> field <*> field
+    fromRow = FeedInfo <$> field <*> field <*> field

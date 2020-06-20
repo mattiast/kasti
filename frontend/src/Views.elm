@@ -14,7 +14,7 @@ import Html exposing (Html, a, audio, br, div, h4, i, p, small, span, strong, te
 import Html.Attributes as Attr exposing (class, controls, href, id, name, placeholder, src, style, type_)
 import Html.Events exposing (onClick, onInput)
 import RemoteData as RD
-import Time
+import Time exposing (Posix)
 import Types exposing (..)
 
 
@@ -330,7 +330,8 @@ feedList feeds =
             table { tableModifiers | narrow = True }
                 []
                 [ tableBody [] <|
-                    List.map feedItem fs
+                    List.map feedItem <|
+                        List.sortBy (\f -> -(Maybe.withDefault 0 <| Maybe.map Time.posixToMillis f.ldate)) fs
                 ]
 
         _ ->

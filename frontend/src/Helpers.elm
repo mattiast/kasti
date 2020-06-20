@@ -47,6 +47,7 @@ encodeNewFeed : NewFeed -> C.FeedInfo
 encodeNewFeed newFeed =
     { fname = newFeed.name
     , furl = newFeed.url
+    , flatestdate = Nothing
     }
 
 
@@ -55,6 +56,7 @@ makeFeed (C.FStuff id fi) =
     { id = id
     , name = fi.fname
     , url = fi.furl
+    , ldate = fi.flatestdate
     , syncState = RD.NotAsked
     }
 

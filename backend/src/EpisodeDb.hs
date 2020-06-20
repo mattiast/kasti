@@ -47,7 +47,16 @@ readEpisodes fid conn = do
 
 readFeed :: FeedId -> Connection -> IO (Maybe FeedInfo)
 readFeed fid conn = do
-    (fis :: [FeedInfo]) <- query conn "select name, url from feeds where id = ?" (Only fid)
+    (fis :: [FeedInfo]) <- query conn
+        "select f.name, f.url, t.date \
+         \ from (select id, name, url from feeds where id = ?) f \
+         \ left join lateral ( \
+         \   select e.date \
+         \   from episodes e \
+         \   where e.feed_id = f.id \
+         \   order by date desc \
+         \   limit 1 \
+         \ ) t on true" (Only fid)
     return $ listToMaybe fis
 
 readPosition :: EpisodeId -> Connection -> IO ProgressMsg

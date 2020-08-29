@@ -8,6 +8,7 @@ import Control.Applicative
 import Control.Lens hiding ((.=))
 import Control.Monad.Reader
 import Data.Maybe
+import Data.Foldable(toList, traverse_)
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format
@@ -19,7 +20,7 @@ import Text.Feed.Query
 import Text.Feed.Types
 import Text.RSS.Syntax (DateString)
 import Types
-import UnliftIO.Exception(tryAny)
+import UnliftIO.Exception(tryAny, SomeException)
 import UnliftIO.Async(pooledForConcurrentlyN)
 import Data.Either(isRight)
 
@@ -32,10 +33,12 @@ fetchFeed url = do
 syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO Int
 syncFeeds fs = do
     let parallelDownloads = 5
-    allEpis <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryAny $ do
+    (allEpis :: t (Either SomeException (FeedId, [Episode]))) <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryAny $ do
         es <- liftIO $ fetchEpisodes fi
         return (fid, es)
 
+    let errors = [ e | Left e <- toList allEpis ]
+    liftIO $ traverse_ print errors
     let successfulEpis = sum $ fmap (\x -> if isRight x then 1 else 0) allEpis :: Int
     liftIO $ putStrLn $ "Got " ++ show (successfulEpis) ++ " out of " ++ show (length fs)
     conn <- ask

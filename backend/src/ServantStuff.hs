@@ -1,46 +1,46 @@
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeOperators #-}
 
 module ServantStuff
-  ( app
-  , server
-  ) where
-
-import Control.Monad.IO.Class
-import Network.Wai
-import Servant hiding (Context)
+  ( app,
+    server,
+  )
+where
 
 import Api
 import Context
+import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Data.Pool
 import Database.PostgreSQL.Simple
 import EpisodeDb
 import GetFeed (syncFeeds)
+import Network.Wai
+import Servant hiding (Context)
 import Types
 
 app :: Context -> Middleware
-app context application = let
-    x = server context
-    in serve (Proxy :: Proxy (Api :<|> Raw)) (x :<|> Tagged application)
+app context application =
+  let x = server context
+   in serve (Proxy :: Proxy (Api :<|> Raw)) (x :<|> Tagged application)
 
 server :: Context -> (Server Api)
-server context = let
-    a = progressStuff context
-    b = feedsStuff context
-    c = feedStuff context
-    d = episodeStuff context
-    e = syncfeedStuff context
-    in a :<|> b :<|> c :<|> d :<|> e
+server context =
+  let a = progressStuff context
+      b = feedsStuff context
+      c = feedStuff context
+      d = episodeStuff context
+      e = syncfeedStuff context
+   in a :<|> b :<|> c :<|> d :<|> e
 
 withConn :: (Connection -> IO a) -> (Context -> Handler a)
 withConn thing context = liftIO $ withResource (cPool context) thing
 
 progressStuff :: Context -> (Server ProgressApi)
 progressStuff context =
-    (\episodeId -> fmap noCache $ withConn (readPosition episodeId) context) :<|>
-    fmap noCache (withConn readPositions context) :<|>
-    (\prog -> withConn (writePosition prog) context >> return ())
+  (\episodeId -> fmap noCache $ withConn (readPosition episodeId) context)
+    :<|> fmap noCache (withConn readPositions context)
+    :<|> (\prog -> withConn (writePosition prog) context >> return ())
 
 feedsStuff :: Context -> (Server FeedsApi)
 feedsStuff = withConn readFeeds
@@ -50,18 +50,18 @@ feedStuff context fi = withConn (writeFeed fi) context >> return ()
 
 episodeStuff :: Context -> (Server EpisodeApi)
 episodeStuff context =
-    (fmap noCache $ withConn (readNewEpisodes 15) context) :<|>
-    (\feedId -> fmap noCache $ withConn (readEpisodes feedId) context)
+  (fmap noCache $ withConn (readNewEpisodes 15) context)
+    :<|> (\feedId -> fmap noCache $ withConn (readEpisodes feedId) context)
 
 syncfeedStuff :: Context -> (Server SyncFeedApi)
 syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn (syncOne feedId) context)
 
 syncAll :: Connection -> IO Int
 syncAll conn = do
-    fs <- readFeeds conn
-    runReaderT (syncFeeds [ (fid, fi) | FStuff fid fi <- fs ]) conn
+  fs <- readFeeds conn
+  runReaderT (syncFeeds [(fid, fi) | FStuff fid fi <- fs]) conn
 
 syncOne :: FeedId -> Connection -> IO Int
 syncOne feedId conn = do
-    mf <- readFeed feedId conn
-    runReaderT (syncFeeds (fmap (feedId,) mf)) conn
+  mf <- readFeed feedId conn
+  runReaderT (syncFeeds (fmap (feedId,) mf)) conn

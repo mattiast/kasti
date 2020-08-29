@@ -5,10 +5,6 @@ import qualified Lib as Kasti
 import Context
 import qualified System.Posix.Signals as Sig
 import Control.Concurrent.MVar
-import Data.Aeson(decodeStrict')
-import Data.Function((&))
-import Options.Applicative hiding (header)
-import qualified Data.ByteString as B
 import System.Environment(getEnv)
 
 main :: IO ()

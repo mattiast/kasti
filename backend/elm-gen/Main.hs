@@ -7,7 +7,6 @@ import Api
 import Data.Proxy
 import qualified Data.Text as T
 import Options.Applicative hiding (header)
-import Servant.API.ContentTypes (NoContent)
 import Servant.Elm
 import Types
 

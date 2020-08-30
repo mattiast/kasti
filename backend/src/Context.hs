@@ -8,6 +8,7 @@ import System.Log.Raven.Types (SentryService)
 
 data Config = Config
   { dbString :: String,
+    sentryDsn :: Maybe String,
     htmlPath :: FilePath,
     jsPath :: FilePath,
     restPort :: Int

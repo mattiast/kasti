@@ -5,7 +5,7 @@ import qualified Lib as Kasti
 import Context
 import qualified System.Posix.Signals as Sig
 import Control.Concurrent.MVar
-import System.Environment(getEnv)
+import System.Environment(getEnv, lookupEnv)
 
 main :: IO ()
 main = do
@@ -29,6 +29,7 @@ getConf :: IO Kasti.Config
 getConf =
     Config
     <$> getEnv "DB_STRING"
+    <*> lookupEnv "SENTRY_DSN"
     <*> getEnv "HTML_PATH"
     <*> getEnv "JS_PATH"
     <*> (read <$> getEnv "PORT")

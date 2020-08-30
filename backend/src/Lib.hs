@@ -22,7 +22,8 @@ import EpisodeDb
 import Network.Wai.Handler.Warp (run)
 import qualified ServantStuff as SS
 import System.FilePath (takeFileName)
-import System.Log.Raven (disabledRaven)
+import System.Log.Raven (disabledRaven, initRaven, stderrFallback)
+import System.Log.Raven.Transport.HttpConduit (sendRecord)
 import Web.Scotty
 
 data Handler = Handler
@@ -33,7 +34,9 @@ data Handler = Handler
 start :: Config -> IO Handler
 start config = do
   pool <- initPool (dbString config)
-  raven <- disabledRaven
+  raven <- case (sentryDsn config) of
+    Just dsn -> initRaven dsn id sendRecord stderrFallback
+    Nothing -> disabledRaven
   let context = Context config pool raven
   appStatic <- scottyApp $ jutska context
   let app = SS.app context appStatic

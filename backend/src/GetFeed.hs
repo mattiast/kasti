@@ -7,25 +7,28 @@ module GetFeed
   )
 where
 
+import Context (Context (..))
 import Control.Applicative
-import Control.Lens hiding ((.=))
+import Control.Lens ((^.))
 import Control.Monad.Reader
 import Data.Either (isRight)
 import Data.Foldable (toList, traverse_)
 import Data.Maybe
+import Data.Pool (withResource)
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format
-import Database.PostgreSQL.Simple (Connection)
 import EpisodeDb
-import Network.Wreq hiding ((:=))
+import Network.Wreq (get, responseBody)
+import System.Log.Raven (register)
+import System.Log.Raven.Types (SentryLevel (..), SentryService)
 import Text.Feed.Import
 import Text.Feed.Query
 import Text.Feed.Types
 import Text.RSS.Syntax (DateString)
 import Types
 import UnliftIO.Async (pooledForConcurrentlyN)
-import UnliftIO.Exception (tryAny)
+import UnliftIO.Exception (SomeException, tryAny)
 
 fetchFeed :: String -> IO (Maybe Feed)
 fetchFeed url = do
@@ -33,7 +36,10 @@ fetchFeed url = do
   let body = r ^. responseBody
   return $ parseFeedSource body
 
-syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Connection IO Int
+logw :: SentryService -> SomeException -> IO ()
+logw ss msg = register ss "get.feed" Warning (show msg) id
+
+syncFeeds :: (Traversable t) => t (FeedId, FeedInfo) -> ReaderT Context IO Int
 syncFeeds fs = do
   let parallelDownloads = 5
   allEpis <- pooledForConcurrentlyN parallelDownloads fs $ \(fid, fi) -> tryAny $ do
@@ -41,12 +47,14 @@ syncFeeds fs = do
     return (fid, es)
 
   let errors = [e | Left e <- toList allEpis]
-  liftIO $ traverse_ print errors
+  ss <- asks sentry
+  liftIO $ traverse_ (logw ss) errors
   let successfulEpis = sum $ fmap (\x -> if isRight x then 1 else 0) allEpis :: Int
   liftIO $ putStrLn $ "Got " ++ show (successfulEpis) ++ " out of " ++ show (length fs)
-  conn <- ask
-  tavarat <- forM allEpis (traverse (\(fid, es) -> liftIO (writeEpisodes fid es conn)))
-  return $! sum $ fmap (either (const 0) id) tavarat
+  pool <- asks cPool
+  withResource pool $ \conn -> do
+    tavarat <- forM allEpis (traverse (\(fid, es) -> liftIO (writeEpisodes fid es conn)))
+    return $! sum $ fmap (either (const 0) id) tavarat
 
 fetchEpisodes :: FeedInfo -> IO [Episode]
 fetchEpisodes fi = do

@@ -33,35 +33,35 @@ server context =
       e = syncfeedStuff context
    in a :<|> b :<|> c :<|> d :<|> e
 
-withConn :: (Connection -> IO a) -> (Context -> Handler a)
-withConn thing context = liftIO $ withResource (cPool context) thing
+withConn :: (Connection -> IO a) -> (Context -> IO a)
+withConn thing context = withResource (cPool context) thing
 
 progressStuff :: Context -> (Server ProgressApi)
 progressStuff context =
-  (\episodeId -> fmap noCache $ withConn (readPosition episodeId) context)
-    :<|> fmap noCache (withConn readPositions context)
-    :<|> (\prog -> withConn (writePosition prog) context >> return ())
+  (\episodeId -> fmap noCache $ (liftIO ( withConn (readPosition episodeId) context)))
+    :<|> fmap noCache (liftIO ( withConn readPositions context))
+    :<|> (\prog -> liftIO (( withConn) (writePosition prog) context >> return ()))
 
 feedsStuff :: Context -> (Server FeedsApi)
-feedsStuff = withConn readFeeds
+feedsStuff = liftIO . withConn readFeeds
 
 feedStuff :: Context -> (Server FeedApi)
-feedStuff context fi = withConn (writeFeed fi) context >> return ()
+feedStuff context fi = liftIO $ withConn (writeFeed fi) context >> return ()
 
 episodeStuff :: Context -> (Server EpisodeApi)
 episodeStuff context =
-  (fmap noCache $ withConn (readNewEpisodes 15) context)
-    :<|> (\feedId -> fmap noCache $ withConn (readEpisodes feedId) context)
+  (fmap noCache $ liftIO $ withConn (readNewEpisodes 15) context)
+    :<|> (\feedId -> fmap noCache $ liftIO $ withConn (readEpisodes feedId) context)
 
 syncfeedStuff :: Context -> (Server SyncFeedApi)
-syncfeedStuff context = (withConn syncAll context) :<|> (\feedId -> withConn (syncOne feedId) context)
+syncfeedStuff context = (liftIO $ syncAll context) :<|> (\feedId -> liftIO $ (syncOne feedId) context)
 
-syncAll :: Connection -> IO Int
+syncAll :: Context -> IO Int
 syncAll conn = do
-  fs <- readFeeds conn
+  fs <- withConn readFeeds conn
   runReaderT (syncFeeds [(fid, fi) | FStuff fid fi <- fs]) conn
 
-syncOne :: FeedId -> Connection -> IO Int
+syncOne :: FeedId -> Context -> IO Int
 syncOne feedId conn = do
-  mf <- readFeed feedId conn
+  mf <- withConn (readFeed feedId) conn
   runReaderT (syncFeeds (fmap (feedId,) mf)) conn

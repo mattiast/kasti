@@ -16,6 +16,7 @@ dependencies:
 - aeson
 - lens
 - lens-aeson
+- raven-haskell
 
 
 library:

@@ -4,6 +4,7 @@ module Context where
 
 import Data.Pool
 import Database.PostgreSQL.Simple
+import System.Log.Raven.Types (SentryService)
 
 data Config = Config
   { dbString :: String,
@@ -15,5 +16,6 @@ data Config = Config
 
 data Context = Context
   { cConfig :: Config,
-    cPool :: Pool Connection
+    cPool :: Pool Connection,
+    sentry :: SentryService
   }

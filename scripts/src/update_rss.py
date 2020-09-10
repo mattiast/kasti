@@ -12,7 +12,7 @@ import psycopg2.extras
 import PyRSS2Gen
 from psycopg2.extensions import connection
 
-from .radiorock import fetch_and_write
+from radiorock import fetch_and_write
 
 log = logging.getLogger(__name__)
 

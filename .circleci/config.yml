@@ -36,12 +36,10 @@ jobs:
       - run:
           name: Build scripts image
           command: |
-              nix-build -A scriptImage
-              docker load -i result
+              docker build -t $GOOGLE_GCR_HOST/$GOOGLE_PROJECT_ID/kasti-scripts:0.1.$CIRCLE_BUILD_NUM -f scripts/Dockerfile scripts
       - run:
           name: Push script image to GCR
           command: |
-              docker tag kasti-scripts:latest $GOOGLE_GCR_HOST/$GOOGLE_PROJECT_ID/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
               docker push                     $GOOGLE_GCR_HOST/$GOOGLE_PROJECT_ID/kasti-scripts:0.1.$CIRCLE_BUILD_NUM
       - save_cache:
           paths:

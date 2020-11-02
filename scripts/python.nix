@@ -6,6 +6,8 @@ let
     boto3
     psycopg2
     requests
+    fastapi
+    uvicorn
   ];
   dev-pkgs = ps: with ps; [
     jedi

@@ -4,13 +4,11 @@ boto3
 psycopg2-binary
 dateparser
 requests
+fastapi
+uvicorn
 
 flake8
-flake8-mypy
-flake8-import-order
 pylint
 mypy
 black
 isort
-pudb
-jedi

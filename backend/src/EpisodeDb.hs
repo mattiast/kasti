@@ -105,7 +105,7 @@ readNewEpisodes n conn = do
 writeEpisodes :: FeedId -> [Episode] -> Connection -> IO Int
 writeEpisodes fid eps conn = withTransaction conn $ do
   (newUrls :: [EpisodeUrl]) <-
-    fmap (fmap fromOnly) $ query conn "select url from unnest (?) as t(url) where url not in (select url from episodes)" (Only $ V.fromList $ fmap epUrl eps)
+    fmap (fmap fromOnly) $ query conn "select url from unnest (cast(? as text[])) as t(url) where url not in (select url from episodes)" (Only $ V.fromList $ fmap epUrl eps)
   let newEpisodes = filter (\e -> epUrl e `elem` newUrls) eps
   numRows <-
     executeMany
